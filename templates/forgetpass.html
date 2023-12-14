@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000A2B; /* Dark blue background */
+            color: #ECF0F1; /* Light text color */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .forgot-password-container {
+            background-color: rgba(255, 255, 255, 0.2); /* Lighter blue background */
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .forgot-password-container h2 {
+            color: #ECF0F1;
+        }
+        input[type="email"] {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            width: calc(100% - 20px);
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #2B99C0; /* Teal color */
+            color: #ECF0F1;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #2B99C0; /* Darker teal color */
+        }
+        .resend {
+            font-size: 14px; /* Adjusted font size */
+            color: #2B99C0;
+            margin-bottom: 15px;
+            cursor: pointer;
+            text-align: left; /* Align to the left */
+        }
+    </style>
+</head>
+<body>
+    <div class="forgot-password-container">
+        <h2>Enter email to reset password!</h2>
+        <form action="/reset-password" method="post">
+            <input type="email" id="email" name="email" placeholder="Email" required><br>
+            <div class="resend" onclick="window.location.href='/resend'">
+                Resend
+            </div>
+            <input type="submit" value="Send">
+        </form>
+    </div>
+</body>
+</html>
