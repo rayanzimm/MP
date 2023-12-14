@@ -1,17 +1,112 @@
-<html>
-    <head>
-        <title>login</title>
-    </head>
-    <body>
-        <form action="/" method='POST'>
-            Email: <input type='text' name='email'><br>
-            Password: <input type='password' name='password'>
-            <input type="submit">
-        </form>
+<!DOCTYPE html>
+<html lang="en">
 
-        <form action="/register" method="get">
-            <button type="submit">register</button>
-        </form>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000A2B; /* Updated background color */
+        }
 
-    </body>
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #fff; /* White text color */
+        }
+
+        form {
+            width: 300px;
+            background-color: rgba(255, 255, 255, 0.2); /* White background with 20% opacity */
+            padding: 50px;
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Box shadow for depth */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #fff; /* White text color */
+            text-align: left; /* Align labels to the left */
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+            
+            border-radius: 5px; /* Rounded corners */
+        }
+
+        input[type="submit"] {
+            background-color: #2B99C0; /* Primary color */
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease; /* Smooth transition */
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3; /* Darker shade on hover */
+        }
+
+        /* Style for the forgot password text button */
+        .forgot-password {
+            font-size: 14px; /* Adjusted font size */
+            color: #2B99C0;
+            margin-bottom: 15px;
+            text-decoration: underline;
+            cursor: pointer;
+            text-align: left; /* Align to the left */
+        }
+        .register {
+            font-size: 14px; /* Adjusted font size */
+            color: #2B99C0;
+            margin-bottom: 15px;
+            text-decoration: underline;
+            cursor: pointer;
+            text-align: right; /* Align to the left */
+        }
+
+        .image {
+            margin-bottom: 20px;
+        }
+        
+
+    </style>
+</head>
+
+<body>
+    <div class="container" align="center">
+        <div class="image" id="image">
+          <img src="C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\assets\img\finsaverdark.png" style="width:200px; height:140">
+        </div>
+    <form action="/" method="post">
+        <h2>Welcome!</h2>
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <!-- Forgot Password text button -->
+        <div class="forgot-password" onclick="window.location.href='/forgot-password'">
+            Forgot Password?
+        </div>
+
+        <input type="submit" value="Login">
+
+        <div class="register" onclick="window.location.href='/register'">
+            Register
+        </div>
+
+    </form>
+</body>
+
 </html>
