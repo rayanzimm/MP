@@ -1,4 +1,4 @@
-from flask import Flask, session, render_template, request, redirect
+from flask import Flask, session, render_template, request, redirect, flash
 import pyrebase
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -20,7 +20,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -77,6 +77,24 @@ def register():
             return render_template('register.html', error_message=str(e))
 
     return render_template('register.html')
+
+@app.route('/forgetpass', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == 'POST':
+        try:
+            # Assuming the email is sent in the request form
+            data = request.form
+            email = data.get('email')
+
+            if email:
+                auth.send_password_reset_email(email)
+                flash("Reset email has been successfuly sent! Please check your inbox.", "success")
+                
+            else:
+                flash("Email is required for password reset", "warning")
+        except:
+            flash("Please enter a valid email.", "warning")
+    return render_template('forgetpass.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
