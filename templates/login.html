@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <title>Login</title>
     <style>
         body {
@@ -13,28 +14,34 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: #000A2B; /* Updated background color */
+            background-color: #000A2B;
+            /* Updated background color */
         }
 
-        h2 {
+        h4 {
             text-align: center;
             margin-bottom: 20px;
-            color: #fff; /* White text color */
+            color: #fff;
+            /* White text color */
         }
 
         form {
-            width: 300px;
-            background-color: rgba(255, 255, 255, 0.2); /* White background with 20% opacity */
+            background-color: rgba(255, 255, 255, 0.2);
+            /* White background with 20% opacity */
             padding: 50px;
-            border-radius: 10px; /* Rounded corners */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Box shadow for depth */
+            border-radius: 10px;
+            /* Rounded corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            /* Box shadow for depth */
         }
 
         label {
             display: block;
             margin-bottom: 8px;
-            color: #fff; /* White text color */
-            text-align: left; /* Align labels to the left */
+            color: #fff;
+            /* White text color */
+            text-align: left;
+            /* Align labels to the left */
         }
 
         input {
@@ -42,71 +49,105 @@
             padding: 10px;
             margin-bottom: 16px;
             box-sizing: border-box;
-            
-            border-radius: 5px; /* Rounded corners */
+
+            border-radius: 5px;
+            /* Rounded corners */
         }
 
         input[type="submit"] {
-            background-color: #2B99C0; /* Primary color */
+            background-color: #2B99C0;
+            /* Primary color */
             color: white;
             cursor: pointer;
-            transition: background-color 0.3s ease; /* Smooth transition */
+            transition: background-color 0.3s ease;
+            /* Smooth transition */
         }
 
         input[type="submit"]:hover {
-            background-color: #0056b3; /* Darker shade on hover */
+            background-color: #207290;
+            /* Darker shade on hover */
         }
+        
+        
 
         /* Style for the forgot password text button */
         .forgot-password {
-            font-size: 14px; /* Adjusted font size */
+            font-size: 14px;
+            /* Adjusted font size */
             color: #2B99C0;
             margin-bottom: 15px;
             text-decoration: underline;
             cursor: pointer;
-            text-align: left; /* Align to the left */
+            text-align: left;
+            /* Align to the left */
         }
+
         .register {
-            font-size: 14px; /* Adjusted font size */
+            font-size: 14px;
+            /* Adjusted font size */
             color: #2B99C0;
             margin-bottom: 15px;
             text-decoration: underline;
             cursor: pointer;
-            text-align: right; /* Align to the left */
+            text-align: right;
+            /* Align to the left */
         }
 
         .image {
             margin-bottom: 20px;
         }
-        
 
+        .container {
+            width: 35%;
+        }
+        
     </style>
 </head>
 
 <body>
     <div class="container" align="center">
         <div class="image" id="image">
-          <img src="D:\Microsoft VS Code\git MP\MP\assets\img\finsaverdark.png" style="width:200px; height:140">
+            <img src="D:\Microsoft VS Code\git MP\MP\assets\img\finsaverdark.png" style="width:200px; height:140">
         </div>
-    <form action="/" method="post">
-        <h2>Welcome!</h2>
-        <label for="email">Email:</label>
-        <input type="text" id="email" name="email" required>
+        <form action="/" method="post">
+            <h4>Welcome!</h4>
+            <label for="email">Email:</label>
+            <input type="text" id="email" name="email" required>
 
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <!-- Forgot Password text button -->
-        <div class="forgot-password" onclick="window.location.href='/forgetpass'">
-            Forgot Password?
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <!-- Forgot Password text button -->
+            <div class="forgot-password" onclick="window.location.href='/forgetpass'">
+                Forgot Password?
+            </div>
+
+            <input type="submit" value="Login">
+
+            <div class="register" onclick="window.location.href='/register'">
+                Register
+            </div>
+
+        </form>
+        <div class="error-message" name="errorMessage">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                <span>{{ message }}</span>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+
+            {% endif %}
+            {% endwith %}
         </div>
-
-        <input type="submit" value="Login">
-
-        <div class="register" onclick="window.location.href='/register'">
-            Register
-        </div>
-
-    </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 
 </html>

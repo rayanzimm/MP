@@ -1,77 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Home</title>
-<style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-color: #000A2B; /* Updated background color */
-    }
-    .navbar {
-        background-color: #212946;
-        width: 200px;
-        height: 89%;
-        position: fixed;
-        overflow: visible;
-        display: flex;
-        flex-direction: column;
-    }
-    .navbar a {
-        display: block;
-        color: white;
-        padding: 16px;
-        text-decoration: none;
-    }
-    .navbar a:hover {
-        background-color: #2B99C0;
-        color: black;
-    }
-    .navbar a.active {
-        background-color: #151a2c;
-        color: white;
-    }
-    .main {
-        margin-left: 200px;
-        padding: 0px 10px;
-    }
-    .logout {
-        margin-top: auto;
-        color: white;
-        padding: 16px;
-    }
 
-    .image {
-        height: 11%;
-    }
-</style>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #000A2B;
+            /* Updated background color */
+        }
+
+        .navbar {
+            background-color: #212946;
+            width: 200px;
+            height: 89%;
+            position: fixed;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar a {
+            display: block;
+            color: white;
+            padding: 16px;
+            text-decoration: none;
+        }
+
+        .navbar a:hover {
+            background-color: #2B99C0;
+            color: black;
+        }
+
+        .navbar a.active {
+            background-color: #151a2c;
+            color: white;
+        }
+
+        .main {
+            margin-left: 200px;
+            padding: 0px 10px;
+        }
+
+        .logout {
+            margin-top: auto;
+            color: white;
+            padding: 16px;
+        }
+
+        .image {
+            height: 11%;
+        }
+    </style>
 </head>
+
 <body>
     <div class="image" align="left">
         <a href="#home"><img src="D:\Microsoft VS Code\git MP\MP\assets\img\finsaver1.png" style="width:200px;"></a>
     </div>
-<div class="navbar">
-    
-    
-    <a href="#user" class="active">User101</a>
-    <a href="#rewards">Rewards</a>
-    <a href="#news">News</a>
-    <a href="#analysis">Analysis</a>
-    <a href="#account">Account</a>
-    <a href="#history">History</a>
-    <a href="#achievements">Achievements</a>
-    <a href="#settings">Settings</a>
-    <form action="/logout" method="get" class="logout">
-        <button type="submit">Logout</button>
-    </form>
-</div>
+    <div class="navbar">
 
-<div class="main">
-    <!-- Main content goes here -->
-</div>
+
+        <a href="#user" class="active">User101</a>
+        <a href="#rewards">Rewards</a>
+        <a href="#news">News</a>
+        <a href="#analysis">Analysis</a>
+        <a href="#account">Account</a>
+        <a href="#history">History</a>
+        <a href="#achievements">Achievements</a>
+        <a href="#settings">Settings</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()">Logout</a>
+    </div>
+
+    <div class="main">
+        <!-- Main content goes here -->
+    </div>
+
+    <script>
+        function confirmLogout() {
+            var result = confirm("Are you sure you want to log out?");
+            if (result) {
+                window.location.href = '/logout';  // Redirect to /logout if the user clicks "OK"
+            } else {
+                // Do nothing or handle the "Cancel" action
+            }
+        }
+    </script>
 
 </body>
+
 </html>

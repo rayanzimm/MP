@@ -1,7 +1,8 @@
-from flask import Flask, session, render_template, request, redirect, flash
+from flask import Flask, session, render_template, request, redirect, flash, url_for
 import pyrebase
 import firebase_admin
 from firebase_admin import credentials, firestore
+import re
 
 app = Flask(__name__)
 
@@ -37,7 +38,7 @@ def index():
             user = auth.sign_in_with_email_and_password(email, password)
             session['user'] = email
         except:
-            return 'Failed to login'
+            flash("Invalid email or password.", "warning")
     return render_template('login.html')
 
 @app.route('/logout')
@@ -56,6 +57,21 @@ def register():
         address = request.form.get('address')
         mobile = request.form.get('mobile')
         
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email) or not email.endswith('.com'):
+            flash("Please enter a valid email.", "warning")
+        
+        # Validate firstName and lastName are valid strings
+        elif not all(map(str.isalpha, [firstName, lastName])):
+            flash("Please enter a valid name.", "warning")
+        
+        # Validate the password length
+        if len(password) > 10:
+            flash("Maximum characters for password is 10.", "warning")
+        
+        # Validate mobile contains only numbers
+        if not mobile.isdigit():
+            flash("Please enter a valid phone number.", "warning")
+        
         try:
             user = auth.create_user_with_email_and_password(email, password)
             
@@ -71,10 +87,11 @@ def register():
             db.collection('users').add(user_data)
             
             session['user'] = email
+            flash("Registration successful!", "success")
             return render_template('login.html')  # Redirect to login page after successful registration
+            
         except Exception as e:
-            # Handle registration errors, you might want to display an error message or log the exception
-            return render_template('register.html', error_message=str(e))
+            flash(f"An error occurred: {str(e)}", "warning")
 
     return render_template('register.html')
 
@@ -86,15 +103,16 @@ def reset_password():
             data = request.form
             email = data.get('email')
 
-            if email:
+            if re.match(r"[^@]+@[^@]+\.[^@]+", email) and email.endswith('.com'):
                 auth.send_password_reset_email(email)
                 flash("Reset email has been successfuly sent! Please check your inbox.", "success")
                 
             else:
-                flash("Email is required for password reset", "warning")
-        except:
-            flash("Please enter a valid email.", "warning")
+                flash("Please enter a valid email", "warning")
+        except Exception as e:
+            flash(f"An error occurred: {str(e)}", "warning")
     return render_template('forgetpass.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)

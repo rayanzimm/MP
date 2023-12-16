@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <title>Register</title>
     <style>
         body {
@@ -17,9 +18,9 @@
         }
 
         form {
-            width: 800px;
             background-color: rgba(255, 255, 255, 0.2);
             padding: 20px;
+            margin: auto;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             display: flex;
@@ -33,7 +34,7 @@
             box-sizing: border-box;
         }
 
-        h2 {
+        h4 {
             color: #fff;
             text-align: center;
             width: 100%;
@@ -70,17 +71,21 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            text-transform: uppercase;
             letter-spacing: 1px;
             margin-top: 10px;
         }
 
         .btn:hover {
-            background-color: #2B99C0;
+            background-color: #207290;
+            color: white;
         }
 
         .image {
             margin-bottom: 20px;
+        }
+
+        .container {
+            width: 55%;
         }
 
     </style>
@@ -91,8 +96,8 @@
         <div class="image" align="center">
             <img src="D:\Microsoft VS Code\git MP\MP\assets\img\finsaverdark.png" style="width:200px; height:140">
         </div>
-        <form action="/register" method='POST' class='signup-form'>
-            <h2>Enter Details Below</h2>
+        <form action="/register" method='POST' class='signup-form' name="signup-form">
+            <h4>Enter Details Below</h4>
             <div class='form-group'>
                 <label for='firstName'>First Name</label>
                 <input type='text' id='firstName' name='firstName'>
@@ -123,7 +128,28 @@
             </div>
             <input type='submit' class='btn' value='Register'>
         </form>
+        <div class="error-message">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                <span>{{ message }}</span>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+
+            {% endif %}
+            {% endwith %}
+        </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
 </body>
 
 </html>
