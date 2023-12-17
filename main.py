@@ -21,7 +21,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -112,6 +112,66 @@ def reset_password():
         except Exception as e:
             flash(f"An error occurred: {str(e)}", "warning")
     return render_template('forgetpass.html')
+
+
+@app.route('/update_profile', methods=['GET', 'POST'])
+def update_profile():
+    if 'user' not in session:
+        return redirect('/')
+    
+    user_email = session['user']
+    user_ref = db.collection('users').where('email', '==', user_email).get()
+    
+    if request.method == 'POST':
+        new_address = request.form.get('new_address')
+        new_mobile = request.form.get('new_mobile')
+        new_firstName = request.form.get('new_firstName')
+        new_lastName = request.form.get('new_lastName')
+        new_dob = request.form.get('new_dob')
+        # Update user details in Firestore
+        for user_doc in user_ref:
+            user_id = user_doc.id
+            db.collection('users').document(user_id).update({
+                'address': new_address,
+                'mobile': new_mobile,
+                'firstName': new_firstName,
+                'lastName': new_lastName,
+                'dob': new_dob,
+            })
+            
+        return redirect('/')
+    
+    return render_template('update_profile.html')
+
+@app.route('/delete_profile', methods=['GET', 'POST'])
+def delete_profile():
+    if 'user' not in session:
+        return redirect('/')
+    
+    user_email = session['user']
+    user_ref = db.collection('users').where('email', '==', user_email).get()
+
+    if request.method == 'POST':
+        # Delete user from Firestore
+        for user_doc in user_ref:
+            user_id = user_doc.id
+            db.collection('users').document(user_id).delete()
+
+        # Delete user from Firebase Authentication
+        try:
+            user = auth.sign_in_with_email_and_password(user_email, 'password')  # Sign in to get the user's UID
+            uid = user['localId']
+            #auth.delete_user(uid)
+            auth.delete_user_account(uid)
+        except Exception as e:
+            # Handle authentication deletion errors
+            print(f"Failed to delete user from authentication: {str(e)}")
+
+        # Logout the user after deletion
+        session.pop('user')
+        return redirect('/')
+
+    return render_template('delete_profile.html')
 
 
 if __name__ == '__main__':

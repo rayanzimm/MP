@@ -14,4 +14,4 @@ password = '123456'
 
 #auth.send_email_verification(user['idToken'])
 
-#auth.send_password_reset_email(email)
+

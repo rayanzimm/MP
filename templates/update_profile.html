@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Profile</title>
+</head>
+<body>
+
+    <h1>Update Profile</h1>
+
+    <form method="POST" action="/update_profile">
+        <label for="new_address">New Address:</label>
+        <input type="text" id="new_address" name="new_address" required><br>
+
+        <label for="new_mobile">New Mobile Number:</label>
+        <input type="text" id="new_mobile" name="new_mobile" required><br>
+
+        <label for="new_firstName">New First Name:</label>
+        <input type="text" id="new_firstName" name="new_firstName" required><br>
+
+        <label for="new_lastName">New Last name:</label>
+        <input type="text" id="new_lastName" name="new_lastName" required><br>
+        
+        <label for="new_dob">New DOB:</label>
+        <input type="text" id="new_dob" name="new_dob" required><br>
+
+
+        <input type="submit" value="Update">
+    </form>
+
+    
+    <div class="main">
+        <div class="delete_profile" onclick="window.location.href='/delete_profile'">
+            delete
+        </div>
+    </div>
+
+</body>
+</html>
