@@ -21,7 +21,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -37,9 +37,16 @@ def index():
         try:
             user = auth.sign_in_with_email_and_password(email, password)
             session['user'] = email
+            return redirect('/home')
         except:
             flash("Invalid email or password.", "warning")
     return render_template('login.html')
+
+@app.route('/home')
+def home():
+    if 'user' not in session:
+        return redirect('/')
+    return render_template('home.html')
 
 @app.route('/logout')
 def logout():
@@ -65,12 +72,15 @@ def register():
             flash("Please enter a valid name.", "warning")
         
         # Validate the password length
-        if len(password) > 10:
-            flash("Maximum characters for password is 10.", "warning")
+        if len(password) > 6:
+            flash("Minumum characters for password is 6.", "warning")
         
         # Validate mobile contains only numbers
-        if not mobile.isdigit():
+        if not mobile.isdigit() or len(mobile)!=8:
             flash("Please enter a valid phone number.", "warning")
+
+        if dob=="":
+            flash("Please enter a valid date of birth.", "warning")
         
         try:
             user = auth.create_user_with_email_and_password(email, password)
@@ -148,10 +158,11 @@ def delete_profile():
     if 'user' not in session:
         return redirect('/')
     
-    user_email = session['user']
-    user_ref = db.collection('users').where('email', '==', user_email).get()
+    email = session['user']
+    user_ref = db.collection('users').where('email', '==', email).get()
 
     if request.method == 'POST':
+        password = request.form.get('password')
         # Delete user from Firestore
         for user_doc in user_ref:
             user_id = user_doc.id
@@ -159,9 +170,9 @@ def delete_profile():
 
         # Delete user from Firebase Authentication
         try:
-            user = auth.sign_in_with_email_and_password(user_email, 'password')  # Sign in to get the user's UID
-            uid = user['localId']
-            #auth.delete_user(uid)
+            user = auth.sign_in_with_email_and_password(email, password)  # Sign in to get the user's UID
+            uid = auth.get_account_info(user['localId'])
+            
             auth.delete_user_account(uid)
         except Exception as e:
             # Handle authentication deletion errors
