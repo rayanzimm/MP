@@ -8,7 +8,7 @@ from firebase_admin import auth
 from werkzeug.utils import secure_filename
 import os
 app = Flask(__name__)
-UPLOAD_FOLDER = r'C:\Poly module\Year 3\MP\Website Code\MP\assets\img'
+UPLOAD_FOLDER = r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\assets\img'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -28,7 +28,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -194,7 +194,7 @@ def update_profile():
 
         # Update user details in Firestore
         user_doc.reference.update(update_data)
-
+        flash("Profile updated successfully!", "success")
         return redirect('/profile')
 
     return render_template('update_profile.html', user_data=user_data)
@@ -255,7 +255,7 @@ def delete_profile():
 
         # You may also want to clear the session data completely
         session.clear()
-
+        flash("Account successfully deleted!", "success")
         return redirect('/')
 
     return render_template('delete_profile.html')
