@@ -4,7 +4,7 @@ import pyrebase
 import firebase_admin
 from firebase_admin import credentials, firestore
 import re
-
+from firebase_admin import auth
 app = Flask(__name__)
 
 config = {
@@ -22,7 +22,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -161,7 +161,6 @@ def delete_profile():
         return redirect('/')
     
     email = session['user']
-    user_ref = db.collection('users').where('email', '==', email).get()
 
     if request.method == 'POST':
         password = request.form.get('password')
@@ -173,24 +172,32 @@ def delete_profile():
             # Incorrect password or other authentication error
             flash("Incorrect password. Please try again.", "warning")
             return render_template('delete_profile.html')
+
         try:
-            auth.delete_user(user['localId'])
+            # Get the user document reference in Firestore
+            user_ref = db.collection('users').where('email', '==', email).get()
+            
+            # Delete user information from Firestore
+            for user_doc in user_ref:
+                user_id = user_doc.id
+                db.collection('users').document(user_id).delete()
+
+            # Delete user from authentication
+            auth.delete_user_account(user['idToken'])
         except auth.AuthError as e:
             # Handle error if user deletion from authentication fails
             flash("Error deleting user from authentication.", "danger")
             return render_template('delete_profile.html')
         
-        # Delete user from Firestore
-        for user_doc in user_ref:   
-            user_id = user_doc.id
-            db.collection('users').document(user_id).delete()
-
         # Logout the user after deletion
         session.pop('user')
+
+        # You may also want to clear the session data completely
+        session.clear()
+
         return redirect('/')
 
     return render_template('delete_profile.html')
-
 
 if __name__ == '__main__':
     app.run(debug=True)
