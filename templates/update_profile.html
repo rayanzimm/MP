@@ -1,41 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000A2B;
+            /* Dark blue background */
+            color: #ECF0F1;
+            /* Light text color */
+            padding: 20px;
+        }
+
+        .profile-container {
+            background-color: rgba(255, 255, 255, 0.2);
+            /* Lighter blue background */
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 600px;
+            margin: auto;
+
+
+        }
+
+        h2 {
+            color: #ECF0F1;
+            text-align: center;
+        }
+
+        label,
+        input,
+        button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        label {
+            margin-top: 20px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="date"],
+        input[type="password"] {
+            width: 96.5%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            /* Light gray border */
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #2B99C0;
+            /* Teal color */
+            color: #ECF0F1;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        button:hover {
+            background-color: #207290;
+            /* Darker teal color */
+        }
+    </style>
 </head>
+
 <body>
+    <div class="profile-container">
+        <h2>Update Profile</h2>
+        <form method="POST" action="/update_profile" enctype="multipart/form-data">
 
-    <h1>Update Profile</h1>
+            <label for="new_photo">Upload New Photo:</label>
+            <input type="file" name="new_photo" id="new_photo" accept="image/*"
+                   value="{{ user_data.get('photo_path', '') }}">
+            
 
-    <form method="POST" action="/update_profile">
-        <label for="new_address">New Address:</label>
-        <input type="text" id="new_address" name="new_address" required><br>
+            <label for="new_firstName">New First Name:</label>
+            <input type="text" id="new_firstName" name="new_firstName" required
+                value="{{ user_data.get('firstName', '') }}">
 
-        <label for="new_mobile">New Mobile Number:</label>
-        <input type="text" id="new_mobile" name="new_mobile" required><br>
+            <label for="new_lastName">New Last Name:</label>
+            <input type="text" id="new_lastName" name="new_lastName" required
+                value="{{ user_data.get('lastName', '') }}">
 
-        <label for="new_firstName">New First Name:</label>
-        <input type="text" id="new_firstName" name="new_firstName" required><br>
+            <label for="new_mobile">New Mobile Number:</label>
+            <input type="text" id="new_mobile" name="new_mobile" required value="{{ user_data.get('mobile', '') }}">
 
-        <label for="new_lastName">New Last name:</label>
-        <input type="text" id="new_lastName" name="new_lastName" required><br>
-        
-        <label for="new_dob">New DOB:</label>
-        <input type="text" id="new_dob" name="new_dob" required><br>
+            <label for="new_dob">New Date of Birth:</label>
+            <input type="date" id="new_dob" name="new_dob" required value="{{ user_data.get('dob', '') }}">
 
+            <label for="new_address">New Address:</label>
+            <input type="text" id="new_address" name="new_address" required value="{{ user_data.get('address', '') }}">
 
-        <input type="submit" value="Update">
-    </form>
-
-    
-    <div class="main">
-        <div class="delete_profile" onclick="window.location.href='/delete_profile'">
-            delete
-        </div>
+            <button type="submit">Update Profile</button>
+        </form>
     </div>
-
 </body>
+
 </html>

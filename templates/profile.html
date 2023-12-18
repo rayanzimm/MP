@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>User Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000A2B;
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            justify-content: stretch;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .navbar {
+            background-color: #212946;
+            width: 200px;
+            height: 100%;
+            position: fixed;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            color: white;
+        }
+
+        .navbar a {
+            display: block;
+            color: white;
+            padding: 16px;
+            text-decoration: none;
+        }
+
+        .navbar a:hover {
+            background-color: #2B99C0;
+            color: black;
+        }
+
+        .navbar a.active {
+            background-color: #151a2c;
+            color: white;
+        }
+
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            color: white;
+            align-items: center; /* Center content horizontally */
+            justify-content: center; /* Center content vertically */
+        }
+
+        .profile-container {
+            text-align: left;
+            margin-left: auto;
+            margin-right: auto; /* Center the container */
+            max-width: 400px; /* Limit the container width if needed */
+        }
+
+        .profile-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #D8D8D8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .profile-photo img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 50%;
+        }
+
+        .change-button {
+            margin-left: 10px;
+            cursor: pointer;
+            color: #2B99C0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <a href="#user" class="active">User101</a>
+        <a href="#rewards">Rewards</a>
+        <a href="#news">News</a>
+        <a href="#analysis">Analysis</a>
+        <a href="#account">Account</a>
+        <a href="#history">History</a>
+        <a href="#achievements">Achievements</a>
+        <a href="#settings">Settings</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()">Logout</a>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="profile-container">
+            <div class="profile-photo">
+                <!-- Placeholder or default image -->
+                <!-- <img src="placeholder.jpg" alt="Profile Photo"> -->
+            </div>
+            <h2>ACCOUNT INFORMATION</h2>
+            <!-- Add other profile information below -->
+            <div class="profile-section">
+                <p>First Name: {{ user_data.get('firstName', 'N/A') }}</p>
+                <p>Last Name: {{ user_data.get('lastName', 'N/A') }}</p>
+                <p>Email: {{ user_data.get('email', 'N/A') }}</p>
+                <p>Mobile: {{ user_data.get('mobile', 'N/A') }}</p>
+                <p>Birthday: {{ user_data.get('dob', 'N/A') }}</p>
+                <p>Address: {{ user_data.get('address', 'N/A') }}</p>
+            </div>
+            <div class="update_profile" onclick="window.location.href='/update_profile'">
+                Update Profile
+            </div>
+            <div class="main">
+                <div class="delete_profile" onclick="window.location.href='/delete_profile'">
+                    delete
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function confirmLogout() {
+            var result = confirm("Are you sure you want to log out?");
+            if (result) {
+                window.location.href = '/logout';
+            } else {
+                // Do nothing or handle the "Cancel" action
+            }
+        }
+
+        function changeFirstName() {
+            // Implement logic for changing the first name
+            alert("Change First Name clicked");
+        }
+
+        function changeLastName() {
+            // Implement logic for changing the last name
+            alert("Change Last Name clicked");
+        }
+
+        function changeEmail() {
+            // Implement logic for changing the email
+            alert("Change Email clicked");
+        }
+
+        function changeMobile() {
+            // Implement logic for changing the mobile number
+            alert("Change Mobile clicked");
+        }
+
+        function changeBirthday() {
+            // Implement logic for changing the birthday
+            alert("Change Birthday clicked");
+        }
+
+        function changeAddress() {
+            // Implement logic for changing the address
+            alert("Change Address clicked");
+        }
+
+        function changePassword() {
+            // Implement logic for changing the password
+            alert("Change Password clicked");
+        }
+    </script>
+</body>
+
+</html>

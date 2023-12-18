@@ -5,7 +5,13 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import re
 from firebase_admin import auth
+from werkzeug.utils import secure_filename
+import os
 app = Flask(__name__)
+UPLOAD_FOLDER = r'C:\Poly module\Year 3\MP\Website Code\MP\assets\img'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 config = {
     'apiKey': "AIzaSyCwckzqjSuDBdPvFGmwxW_t86FMcaiFYOs",
@@ -27,6 +33,9 @@ firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
 app.secret_key = 'secret'
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -64,46 +73,55 @@ def register():
         dob = request.form.get('dob')
         address = request.form.get('address')
         mobile = request.form.get('mobile')
-        
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", email) or not email.endswith('.com'):
-            flash("Please enter a valid email.", "warning")
-        
+
+        # Check if a file is included in the request
+        if 'photo' in request.files:
+            photo = request.files['photo']
+            if photo.filename != '' and allowed_file(photo.filename):
+                # Save the uploaded photo with an absolute path
+                filename = secure_filename(photo.filename)
+                full_path = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], filename)
+                photo.save(full_path)
+                flash("Photo uploaded successfully!", "success")
+
+                try:
+                    user = auth.create_user_with_email_and_password(email, password)
+
+                    # Store additional user information in Firestore, including the file path
+                    user_data = {
+                        'email': email,
+                        'firstName': firstName,
+                        'lastName': lastName,
+                        'dob': dob,
+                        'address': address,
+                        'mobile': mobile,
+                        'photo_path': os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    }
+                    db.collection('users').add(user_data)
+
+                    session['user'] = email
+                    flash("Registration successful!", "success")
+                    return render_template('login.html')  # Redirect to the login page after successful registration
+
+                except Exception as e:
+                    flash(f"An error occurred during user creation: {str(e)}", "warning")
+            else:
+                flash("Invalid file format. Please upload a valid image.", "warning")
+
         # Validate firstName and lastName are valid strings
-        elif not all(map(str.isalpha, [firstName, lastName])):
+        if not all(map(str.isalpha, [firstName, lastName])):
             flash("Please enter a valid name.", "warning")
-        
+
         # Validate the password length
-        elif len(password) > 6:
-            flash("Minumum characters for password is 6.", "warning")
-        
+        elif len(password) < 6:
+            flash("Minimum characters for the password are 6.", "warning")
+
         # Validate mobile contains only numbers
-        elif not mobile.isdigit() or len(mobile)!=8:
+        elif not mobile.isdigit() or len(mobile) != 8:
             flash("Please enter a valid phone number.", "warning")
 
-        elif dob=="":
+        elif dob == "":
             flash("Please enter a valid date of birth.", "warning")
-        
-        else:
-            try:
-                user = auth.create_user_with_email_and_password(email, password)
-                
-                # Store additional user information in Firestore
-                user_data = {
-                    'email': email,
-                    'firstName': firstName,
-                    'lastName': lastName,
-                    'dob': dob,
-                    'address': address,
-                    'mobile': mobile
-                }
-                db.collection('users').add(user_data)
-                
-                session['user'] = email
-                flash("Registration successful!", "success")
-                return render_template('login.html')  # Redirect to login page after successful registration
-                
-            except Exception as e:
-                flash(f"An error occurred: {str(e)}", "warning")
 
     return render_template('register.html')
 
@@ -130,30 +148,73 @@ def reset_password():
 def update_profile():
     if 'user' not in session:
         return redirect('/')
-    
+
     user_email = session['user']
-    user_ref = db.collection('users').where('email', '==', user_email).get()
+    user_ref = db.collection('users').where('email', '==', user_email).stream()
     
+    # Assuming there is only one user with the given email
+    user_doc = next(user_ref, None)
+    
+    if not user_doc:
+        # Handle the case where the user is not found
+        return redirect('/')
+
+    user_data = user_doc.to_dict()
+
     if request.method == 'POST':
         new_address = request.form.get('new_address')
         new_mobile = request.form.get('new_mobile')
         new_firstName = request.form.get('new_firstName')
         new_lastName = request.form.get('new_lastName')
         new_dob = request.form.get('new_dob')
+
+        # Check if a file is included in the request
+        if 'new_photo' in request.files:
+            new_photo = request.files['new_photo']
+            if new_photo.filename != '' and allowed_file(new_photo.filename):
+                # Save the uploaded photo to the upload folder
+                filename = secure_filename(new_photo.filename)
+                full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                new_photo.save(full_path)
+                flash("New photo uploaded successfully!", "success")
+            else:
+                flash("Invalid file format. Please upload a valid image.", "warning")
+
+        # Update user details in Firestore, including the new file path if a new photo is uploaded
+        update_data = {
+            'address': new_address,
+            'mobile': new_mobile,
+            'firstName': new_firstName,
+            'lastName': new_lastName,
+            'dob': new_dob
+        }
+
+        if 'new_photo' in request.files:
+            update_data['photo_path'] = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
         # Update user details in Firestore
-        for user_doc in user_ref:
-            user_id = user_doc.id
-            db.collection('users').document(user_id).update({
-                'address': new_address,
-                'mobile': new_mobile,
-                'firstName': new_firstName,
-                'lastName': new_lastName,
-                'dob': new_dob,
-            })
-            
+        user_doc.reference.update(update_data)
+
+        return redirect('/profile')
+
+    return render_template('update_profile.html', user_data=user_data)
+
+@app.route('/profile')
+def profile():
+    if 'user' not in session:
         return redirect('/')
     
-    return render_template('update_profile.html')
+    user_email = session['user']
+    user_ref = db.collection('users').where('email', '==', user_email).get()
+
+    # Assuming there is only one user with the given email
+    for user_doc in user_ref:
+        user_data = user_doc.to_dict()
+        if user_data:
+            return render_template('profile.html', user_data=user_data)
+        else:
+            flash("User not found.", "warning")
+            return redirect('/')
 
 @app.route('/delete_profile', methods=['GET', 'POST'])
 def delete_profile():
