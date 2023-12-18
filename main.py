@@ -1,4 +1,5 @@
 from flask import Flask, session, render_template, request, redirect, flash, url_for
+from google.cloud.firestore_v1.base_query import FieldFilter
 import pyrebase
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -72,36 +73,37 @@ def register():
             flash("Please enter a valid name.", "warning")
         
         # Validate the password length
-        if len(password) > 6:
+        elif len(password) > 6:
             flash("Minumum characters for password is 6.", "warning")
         
         # Validate mobile contains only numbers
-        if not mobile.isdigit() or len(mobile)!=8:
+        elif not mobile.isdigit() or len(mobile)!=8:
             flash("Please enter a valid phone number.", "warning")
 
-        if dob=="":
+        elif dob=="":
             flash("Please enter a valid date of birth.", "warning")
         
-        try:
-            user = auth.create_user_with_email_and_password(email, password)
-            
-            # Store additional user information in Firestore
-            user_data = {
-                'email': email,
-                'firstName': firstName,
-                'lastName': lastName,
-                'dob': dob,
-                'address': address,
-                'mobile': mobile
-            }
-            db.collection('users').add(user_data)
-            
-            session['user'] = email
-            flash("Registration successful!", "success")
-            return render_template('login.html')  # Redirect to login page after successful registration
-            
-        except Exception as e:
-            flash(f"An error occurred: {str(e)}", "warning")
+        else:
+            try:
+                user = auth.create_user_with_email_and_password(email, password)
+                
+                # Store additional user information in Firestore
+                user_data = {
+                    'email': email,
+                    'firstName': firstName,
+                    'lastName': lastName,
+                    'dob': dob,
+                    'address': address,
+                    'mobile': mobile
+                }
+                db.collection('users').add(user_data)
+                
+                session['user'] = email
+                flash("Registration successful!", "success")
+                return render_template('login.html')  # Redirect to login page after successful registration
+                
+            except Exception as e:
+                flash(f"An error occurred: {str(e)}", "warning")
 
     return render_template('register.html')
 
@@ -163,20 +165,25 @@ def delete_profile():
 
     if request.method == 'POST':
         password = request.form.get('password')
+
+        # Verify user's password
+        try:
+            user = auth.sign_in_with_email_and_password(email, password)
+        except Exception as e:
+            # Incorrect password or other authentication error
+            flash("Incorrect password. Please try again.", "warning")
+            return render_template('delete_profile.html')
+        try:
+            auth.delete_user(user['localId'])
+        except auth.AuthError as e:
+            # Handle error if user deletion from authentication fails
+            flash("Error deleting user from authentication.", "danger")
+            return render_template('delete_profile.html')
+        
         # Delete user from Firestore
-        for user_doc in user_ref:
+        for user_doc in user_ref:   
             user_id = user_doc.id
             db.collection('users').document(user_id).delete()
-
-        # Delete user from Firebase Authentication
-        try:
-            user = auth.sign_in_with_email_and_password(email, password)  # Sign in to get the user's UID
-            uid = auth.get_account_info(user['localId'])
-            
-            auth.delete_user_account(uid)
-        except Exception as e:
-            # Handle authentication deletion errors
-            print(f"Failed to delete user from authentication: {str(e)}")
 
         # Logout the user after deletion
         session.pop('user')
