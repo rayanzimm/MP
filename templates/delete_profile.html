@@ -1,32 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Delete Profile</title>
-    <!-- Add your CSS links or styles here -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000A2B;
+            color: #ECF0F1; 
+            display: flex;
+            flex-direction: column; 
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            padding: 20px; /* Added padding to create a box around the content */
+            border-radius: 10px; /* Added border-radius for rounded corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Added box shadow for depth */
+        }
+
+        h2,
+        p,
+        a {
+            color: #ECF0F1;
+            font-size: 24px; /* Increased font size for the header */
+            margin-bottom: 20px; /* Added margin for better spacing */
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label {
+            color: #ECF0F1;
+            font-size: 18px; /* Adjusted font size for the label */
+            margin-bottom: 10px; /* Added margin for better spacing */
+        }
+
+        input[type="password"] {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            margin-bottom: 20px; /* Added margin for better spacing */
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #E74C3C; 
+            color: #ECF0F1;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #C0392B; 
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            color: #2B99C0; 
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #2B99C0; 
+        }
+    </style>
 </head>
+
 <body>
-    <h2>Delete Profile</h2>
+    <div class="container">
+        <h2>Delete Profile</h2>
+        <p>Are you sure you want to delete your profile? This action cannot be undone.</p>
 
-    <form method="POST" action="{{ url_for('delete_profile') }}">
-        <label for="password">Enter Your Password:</label>
-        <input type="password" name="password" required>
-        <button type="submit">Delete My Account</button>
-    </form>
+        <form method="POST" action="{{ url_for('delete_profile') }}">
+            <label for="password">Enter Your Password:</label>
+            <input type="password" name="password" required>
+            <button type="submit">Delete My Account</button>
+        </form>
+        <a href="/">Cancel</a>
 
-    <!-- Display flash messages if any -->
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class="flashes">
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+        <!-- Display flash messages if any -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="flashes">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
 
-    <!-- Add your additional HTML content or links here -->
-
+        <!-- Add your additional HTML content or links here -->
+    </div>
 </body>
 </html>
