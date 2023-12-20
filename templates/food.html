@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <title>FOOD TESTING</title>
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000A2B;
+        }
+
+        form {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start; /* Align items to the top */
+        }
+
+        .form-group {
+            width: calc(50% - 10px);
+            box-sizing: border-box;
+        }
+
+        h4 {
+            color: #fff;
+            text-align: center;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            margin: 5px 0;
+            color: #fff;
+        }
+
+        input[type='text'],
+        input[type='email'],
+        input[type='password'],
+        input[type='tel'],
+        input[type='date'] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 80%;
+            padding: 10px;
+            border: none;
+            background-color: #2B99C0;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #207290;
+            color: white;
+        }
+
+       
+        .container {
+            width: 55%;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <form action="/addfood" method='POST' class='signup-form' name="signup-form" enctype="multipart/form-data">
+            <h4>FOOD</h4>
+        
+            <div class='form-group'>
+                <label for='foodName'>Food Name</label>
+                <input type='text' id='foodName' name='foodName'>
+            </div>
+            <div class='form-group'>
+                <label for='cost'>Cost</label>
+                <input type='text' id='cost' name='cost'>
+            </div>
+            
+            <input type='submit' class='btn' value='Submit'>
+        </form>
+        <div class="error-message">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                <span>{{ message }}</span>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+
+            {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>

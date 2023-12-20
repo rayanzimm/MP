@@ -22,7 +22,7 @@
         .navbar {
             background-color: #212946;
             width: 200px;
-            height: 89%;
+            height: 100%;
             position: fixed;
             overflow: visible;
             display: flex;
@@ -36,10 +36,7 @@
             text-decoration: none;
         }
 
-        .navbar a:hover {
-            background-color: #2B99C0;
-            color: black;
-        }
+        
 
         .navbar a.active {
             background-color: #151a2c;
@@ -54,6 +51,7 @@
             color: white;
             align-items: center;
             justify-content: flex-start;
+            margin-left: 200px;
         }
 
         .profile-photo {
@@ -64,69 +62,88 @@
             display: flex;
             overflow: hidden;
             margin: 20px 0;
-            margin-left: 180px;
+
         }
 
         .profile-container {
-            max-width: 100px;
+
             margin-right: 100px;
         }
 
         .profile-section {
-            padding: 50px;
-            margin-right: 600px;
+            width: 800px;
+            margin: auto;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 5px;
         }
 
         .profile-section p {
-            margin-bottom: 40px;
+            margin: 15px;
+            padding: 5px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            border-bottom: 2px solid rgba(204, 204, 204, 0.238);
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .update-profile-button {
-  padding: 10px 20px;
-  margin: 10px;
+            padding: 10px 20px;
+            margin: 10px;
 
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+
+        }
 
 
-.delete-profile-button {
-  padding: 10px 20px;
-  margin: 10px;
-  background-color: #db3434;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
+        .delete-profile-button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #db3434;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
 
-.update-profile-button:hover,
-.delete-profile-button:hover {
-  background-color: #2980b9;
-}
+        }
 
-.logout {
+        .update-profile-button:hover {
+            background-color: #2980b9;
+        }
+
+        .delete-profile-button:hover {
+            background-color: #a12626;
+        }
+
+        .logout {
             margin-top: auto;
             color: white;
             padding: 16px;
-}
+        }
 
-.image {
-            height: 11%;
-}
 
     </style>
 </head>
 
 <body>
-    <div class="image" align="left">
-        <a href="#home"><img src="assets\img\finsaver1.png" style="width:200px;"></a>
-    </div>
+    
     <div class="navbar">
-        <a href="#user" class="active">User101</a>
+        <div class="image" align="left">
+            <a href="{{ url_for('home')}}">
+                <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
+            </a>
+        </div>
         <a href="#rewards">Rewards</a>
         <a href="#news">News</a>
         <a href="#analysis">Analysis</a>
@@ -138,23 +155,27 @@
     </div>
 
     <div class="content-wrapper">
-        <div class="profile-photo"></div>
-        <div class="profile-container">
-            <!-- Placeholder or default image -->
-            <!-- <img src="placeholder.jpg" alt="Profile Photo"> -->
+        <div class="profile-photo">
+            <img src="{{ user_data.get('photo_path', url_for('static', filename='assets/img/defaultprofile.png')) }}" alt="Profile Photo">
         </div>
+        
         <h2>ACCOUNT INFORMATION</h2>
         <!-- Add other profile information below -->
         <div class="profile-section">
-            <p>First Name: {{ user_data.get('firstName', 'N/A') }}</p>
-            <p>Last Name: {{ user_data.get('lastName', 'N/A') }}</p>
-            <p>Email: {{ user_data.get('email', 'N/A') }}</p>
-            <p>Mobile: {{ user_data.get('mobile', 'N/A') }}</p>
-            <p>Birthday: {{ user_data.get('dob', 'N/A') }}</p>
-            <p>Address: {{ user_data.get('address', 'N/A') }}</p>
+            <p><span>First Name:</span> {{ user_data.get('firstName', 'N/A') }}</p>
+            <p><span>Last Name:</span> {{ user_data.get('lastName', 'N/A') }}</p>
+            <p><span>Email:</span> {{ user_data.get('email', 'N/A') }}</p>
+            <p><span>Mobile:</span> {{ user_data.get('mobile', 'N/A') }}</p>
+            <p><span>Birthday:</span> {{ user_data.get('dob', 'N/A') }}</p>
+            <p><span>Address:</span> {{ user_data.get('address', 'N/A') }}</p>
+            <div class="buttons">
+                <button class="update-profile-button" onclick="window.location.href='/update_profile'">Update
+                    Profile</button>
+                <button class="delete-profile-button" onclick="window.location.href='/delete_profile'">Delete
+                    Profile</button>
+            </div>
         </div>
-        <button class="update-profile-button" onclick="window.location.href='/update_profile'">Update Profile</button>
-        <button class="delete-profile-button" onclick="window.location.href='/delete_profile'">Delete Profile</button>
+
     </div>
 
     <script>

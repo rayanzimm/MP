@@ -8,7 +8,7 @@ from firebase_admin import auth
 from werkzeug.utils import secure_filename
 import os
 app = Flask(__name__)
-UPLOAD_FOLDER = r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\assets\img'
+UPLOAD_FOLDER = r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\static\assets\img'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -259,6 +259,33 @@ def delete_profile():
         return redirect('/')
 
     return render_template('delete_profile.html')
+
+@app.route('/food')
+def food():
+    if 'user' not in session:
+        return redirect('/')
+    return render_template('food.html')
+
+
+@app.route('/addfood', methods=['GET', 'POST'])
+def addfood():
+    if request.method == 'POST':
+        foodName = request.form.get('foodName')
+        cost = request.form.get('cost')
+
+        try:
+            food_data = {
+                'foodName': foodName,
+                'cost': cost,
+            }
+            db.collection('food').add(food_data)
+
+            session['user'] = foodName  # Use 'user' instead of 'food'
+            return render_template('food.html')
+
+        except Exception as e:
+            flash(f"An error occurred during food creation: {str(e)}", "warning")
+            return render_template('food.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
