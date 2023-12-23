@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News</title>
+    <style>
+        html {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #000A2B;
+            /* Updated background color */
+            display: flex;
+            height: 100%;
+        }
+
+        .container {
+            height: 100%;
+            width: 100%;
+        }
+
+        .navbar {
+            background-color: #212946;
+            width: 200px;
+            height: 100%;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+            position: fixed;
+        }
+
+        .navbar a {
+            display: block;
+            color: white;
+            padding: 16px;
+            text-decoration: none;
+        }
+
+        .navbar a.active {
+            background-color: #151a2c;
+            color: white;
+        }
+
+        .main {
+            margin-left: 25px;
+            display: block;
+            flex-grow: 1;
+        }
+
+        .logout {
+            margin-top: auto;
+            color: white;
+            padding: 16px;
+        }
+
+        .ticker-form-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            margin-top: 20px;
+        }
+
+        .ticker-form {
+            margin-left: auto;
+            margin-right: 30px;
+        }
+
+        .latest-news {
+            margin: 0;
+            color: white;
+            font-size: 20px;
+        }
+
+        .newsList {
+            margin-left: auto;
+            margin-right: 10px;
+        }
+
+        .newsCard {
+            width: 300px;
+            /* Set a fixed width */
+            height: 300px;
+            /* Set a fixed height */
+            background-color: #28354A;
+            color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .newsCard img {
+            width: 100%;
+            /* Make the image fill the width of the card */
+            height: 150px;
+            /* Set the height of the image */
+            object-fit: cover;
+            /* Maintain the aspect ratio and cover the container */
+            border-radius: 8px 8px 0 0;
+            /* Round the top corners */
+            margin-bottom: 10px;
+        }
+
+        .newsCard a {
+            color: #00B4CC;
+            text-decoration: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+        }
+
+        .newsCard h6 {
+            font-size: 12px;
+            /* Adjust the font size as needed */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin: 0;
+            /* Remove default margin */
+        }
+
+        .newsCard h6.source {
+            bottom: 30px;
+            /* Adjusted to place "Source by" above "Published" */
+        }
+
+        .newsCard a:hover {
+            text-decoration: underline;
+        }
+
+        .line {
+            display: block;
+            height: 1px;
+            border: 0;
+            border-top: 1px solid #6B7C93;
+            margin-top: 1em 0;
+            margin-bottom: 10px;
+            padding: 0;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="navbar">
+            <div class="image" align="left">
+                <a href="{{ url_for('home')}}">
+                    <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
+                </a>
+            </div>
+            <a href="#rewards">Rewards</a>
+            <a href="{{  url_for('news') }}">News</a>
+            <a href="#analysis">Analysis</a>
+            <a href="{{ url_for('profile')}}">Profile</a>
+            <a href="#history">History</a>
+            <a href="#achievements">Achievements</a>
+            <a href="#settings">Settings</a>
+            <a href="javascript:void(0);" class="logout" onclick="confirmLogout()">Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="ticker-form-container">
+            <h1 class="latest-news">Latest News</h1>
+            <form action="{{ url_for('news') }}" method="GET" class="ticker-form justify-end" id="tickerForm">
+                <select id="ticker" name="ticker">
+                    <option value="">Select a Ticker</option>
+                    {% for t in tickers %}
+                    <option value="{{ t }}" {% if t==selected_ticker %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+
+        <div class="newsList">
+            <div class="row">
+                {% for article in news_data[:30] %}
+                <div class="newsCard">
+                    <img src="{{ article.image_url }}" alt="News Image" style="height: 175px;">
+                    <span class="line"></span>
+                    <h3 style="margin-bottom: 5px;"><a href="{{ article.article_url }}" style="text-align: center;">{{
+                            article.title }}</a></h3>
+                    <h6>By: {{ article.author }}</h6>
+                    <h6>{{ article.published_utc }}</h6>
+
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        function confirmLogout() {
+            var result = confirm("Are you sure you want to log out?");
+            if (result) {
+                window.location.href = '/logout';  // Redirect to /logout if the user clicks "OK"
+            } else {
+                // Do nothing or handle the "Cancel" action
+            }
+        }
+        document.getElementById('ticker').addEventListener('change', function () {
+            document.getElementById('tickerForm').submit();
+        });
+    </script>
+
+</body>
+
+</html>

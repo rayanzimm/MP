@@ -7,6 +7,9 @@ import re
 from firebase_admin import auth
 from werkzeug.utils import secure_filename
 import os
+import requests
+import json
+
 app = Flask(__name__)
 UPLOAD_FOLDER = r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\static\assets\img'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -286,6 +289,50 @@ def addfood():
         except Exception as e:
             flash(f"An error occurred during food creation: {str(e)}", "warning")
             return render_template('food.html')
+        
+@app.route('/news', methods=['GET', 'POST'])
+def news():
+    api = 'KeEBnRS1TZoCUZYZVdA3MgSENtmqZHU8'
+    base_url = 'https://api.polygon.io/v2/reference/news'
+
+    ticker_url = f'https://api.polygon.io/v3/reference/tickers?market=stocks&active=true&limit=1000&apiKey={api}'
+    ticker_response = requests.get(ticker_url)
+    ticker_data = ticker_response.json()
+    tickers = [result.get('ticker') for result in ticker_data.get('results', [])]
+
+    # This ticker is from the form in news.html
+    ticker = request.args.get('ticker', default='', type=str)
+    url = f'{base_url}?order=desc&limit=1000&sort=published_utc&apiKey={api}&ticker={ticker}'
+
+    try:
+        payload = {}
+        headers = {}
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+        data = json.loads(response.text)
+        newsData = data['results']
+        
+
+        # Function to format news article data
+        formatted_data = []
+        for i in range(min(1000, len(newsData))):
+           formatted_data.append({
+                'title': newsData[i]["title"],
+                'author': newsData[i]["author"],
+                'published_utc': newsData[i]["published_utc"],
+                'article_url': newsData[i]["article_url"],
+                'image_url': newsData[i]["image_url"]
+            })
+
+        return render_template('news.html', news_data=formatted_data, selected_ticker=ticker, tickers=tickers)
+
+        # Extract information for the specified number of news articles
+    
+    except Exception as e:
+        flash(f"An error has occured: {str(e)}", "warning")
+        return render_template('news.html', news_data=[], selected_ticker=None, tickers=tickers)
+    
+
 
 if __name__ == '__main__':
     app.run(debug=True)
