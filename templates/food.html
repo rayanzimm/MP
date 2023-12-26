@@ -8,62 +8,71 @@
     <title>FOOD TESTING</title>
     <style>
         body {
-            font-family: 'Lato', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
             background-color: #000A2B;
-        }
-
-        form {
-            background-color: rgba(255, 255, 255, 0.2);
-            padding: 20px;
-            margin: auto;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: flex-start; /* Align items to the top */
-        }
-
-        .form-group {
-            width: calc(50% - 10px);
-            box-sizing: border-box;
-        }
-
-        h4 {
-            color: #fff;
-            text-align: center;
-            width: 100%;
         }
 
         label {
             display: block;
-            margin: 5px 0;
+            margin-bottom: 8px;
             color: #fff;
+            text-align: left;
         }
 
-        input[type='text'],
-        input[type='email'],
-        input[type='password'],
-        input[type='tel'],
-        input[type='date'] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #fff;
+            font-size: 24px;
+        }
+
+        .add-box-btn {
+            background: none;
+            border: none;
+            font-size: 36px;
+            cursor: pointer;
             margin-bottom: 10px;
         }
 
-        .btn {
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            width: 80%;
+        .box-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center; /* Center the form groups */
+            align-items: flex-start;
+        }
+
+        .form-group {
+            margin-right: 10px;
+            margin-bottom: 10px;
+            text-align: center; /* Center the content inside the form group */
+            display: flex; /* Enable flexbox for form groups */
+        }
+
+        .form-group label {
+            flex: 1; /* Allow label to take available space */
+            margin-right: 8px; /* Add some spacing between label and input */
+        }
+
+        .form-group input {
+            flex: 2; /* Allow input to take more space */
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+
+        .delete-btn:hover {
+            background-color: #bd2130;
+            color: white;
+        }
+
+        .modal-btn-submit {
+            width: 50%;
             padding: 10px;
             border: none;
             background-color: #2B99C0;
@@ -75,14 +84,13 @@
             margin-top: 10px;
         }
 
-        .btn:hover {
+        .modal-btn-submit:hover {
             background-color: #207290;
             color: white;
         }
 
-       
-        .container {
-            width: 55%;
+        .home-btn {
+            margin-top: 20px;
         }
 
     </style>
@@ -90,42 +98,198 @@
 
 <body>
     <div class="container">
-        <form action="/addfood" method='POST' class='signup-form' name="signup-form" enctype="multipart/form-data">
-            <h4>FOOD</h4>
-        
+        <button class="close-button" onclick="window.location.href='/home'">X</button>
+        <!-- Header -->
+        <div class="header">FOOD</div>
+        <div id="dynamicContent" class="box-container">
+            <button type="button" class='modal-btn' onclick="addNewBox()">+</button>
+
+            <form action="/addfood" method="POST" class="submitfood" name="submitfood">
+                <input type="hidden" id="food_id" name="food_id" value="{{ food_id }}">
+                <div class='form-group'>
+                    <label for='foodName'>Food Name</label>
+                    <input type='text' id='foodName' name='foodName' value="{{ food_data.foodName if food_data else '' }}">
+                </div>
+                <div class='form-group'>
+                    <label for='cost'>Cost</label>
+                    <input type='text' id='cost' name='cost' value="{{ food_data.cost if food_data else '' }}">
+                </div>
+                <button type="submit" class='modal-btn-submit'>Save Food Expense</button>
+            </form>
+            {% for expense in food_expenses %}
             <div class='form-group'>
                 <label for='foodName'>Food Name</label>
-                <input type='text' id='foodName' name='foodName'>
+                <input type='text' id='foodName' name='foodName' value="{{ expense.foodName }}">
             </div>
             <div class='form-group'>
                 <label for='cost'>Cost</label>
-                <input type='text' id='cost' name='cost'>
+                <input type='text' id='cost' name='cost' value="{{ expense.cost }}">
             </div>
-            
-            <input type='submit' class='btn' value='Submit'>
-        </form>
-        <div class="error-message">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                <span>{{ message }}</span>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            {% endfor %}
-
-            {% endif %}
-            {% endwith %}
+            <!-- Add other dynamic fields as needed... -->
+        {% endfor %}
+    </form>
+</div>
         </div>
+        
+    </div>
+    <div id="foodDataContainer"></div>
+    
+
+    <!-- Display Flash Messages -->
+    <div class="error-message" name="errorMessage">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
+
+
+    <script>
+        var newBoxCount = 0;
+    
+        function addNewBox() {
+            newBoxCount++;
+    
+            // Create a container for each pair of boxes
+            var boxContainer = document.createElement("div");
+            boxContainer.className = "box-container";
+    
+            // Create the first box
+            var newBox1 = createNewBox(newBoxCount);
+            // Create the second box
+            var newBox2 = createNewBox(newBoxCount);
+    
+            // Create an edit button for the container
+            var editBtn = document.createElement("button");
+            editBtn.type = "button";
+            editBtn.className = "edit-btn";
+            editBtn.textContent = "Edit";
+            editBtn.onclick = function () {
+                toggleEditMode(boxContainer);
+            };
+    
+            // Create a delete button for the container
+            var deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.className = "delete-btn";
+            deleteBtn.textContent = "Delete";
+            deleteBtn.onclick = function () {
+                deleteBoxContainer(boxContainer);
+            };
+    
+            // Append the boxes and the edit and delete buttons to the container
+            boxContainer.appendChild(newBox1);
+            boxContainer.appendChild(newBox2);
+            boxContainer.appendChild(editBtn);
+            boxContainer.appendChild(deleteBtn);
+    
+            // Get the dynamicContent div
+            var dynamicContent = document.getElementById("dynamicContent");
+    
+            // Append the container to the dynamicContent div
+            dynamicContent.appendChild(boxContainer);
+    
+            // After adding the new box, fetch and display the data
+            fetchDataAndDisplay(boxContainer);
+        }
+    
+        function deleteBoxContainer(boxContainer) {
+            var dynamicContent = document.getElementById("dynamicContent");
+            dynamicContent.removeChild(boxContainer);
+        }
+    
+        function toggleEditMode(boxContainer) {
+            // Find the input fields within the boxContainer
+            var foodNameInput = boxContainer.querySelector('input[id^="newField"]');
+            var costInput = boxContainer.querySelector('input[id^="newField"]');
+    
+            // Toggle the readonly attribute
+            foodNameInput.readOnly = !foodNameInput.readOnly;
+            costInput.readOnly = !costInput.readOnly;
+        }
+    
+        function createNewBox(boxCount) {
+            var newBox = document.createElement("div");
+            newBox.className = "form-group";
+            newBox.innerHTML =
+                '<label for="newField' + boxCount + '">New Field</label>' +
+                '<input type="text" id="newField' + boxCount + '" name="newField" readonly>'; // Set input fields as readonly
+    
+            return newBox;
+        }
+    
+        function fetchAndDisplayFoodData() {
+        var fetchDataUrl = "/fetchfooddata";
+
+        // Make an AJAX request to fetch the data
+        fetch(fetchDataUrl)
+            .then(response => response.json())
+            .then(data => {
+                // Check if there is data returned
+                if (data.length > 0) {
+                    // Display the fetched data
+                    displayFoodData(data);
+                } else {
+                    // Handle the case when no data is returned
+                    console.log('No food data found.');
+                }
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    }
+
+    // Function to display food data
+    function displayFoodData(foodData) {
+        var foodDataContainer = document.getElementById("foodDataContainer");
+
+        // Clear existing data
+        foodDataContainer.innerHTML = '';
+
+        // Iterate through the fetched data and create HTML elements
+        foodData.forEach(function (food) {
+            var foodItemDiv = document.createElement("div");
+            foodItemDiv.className = "food-item";
+
+            // Create elements for food data (adjust as needed)
+            var foodNameLabel = document.createElement("label");
+            foodNameLabel.textContent = "Food Name: ";
+            var foodNameSpan = document.createElement("span");
+            foodNameSpan.textContent = food.foodName;
+
+            var costLabel = document.createElement("label");
+            costLabel.textContent = "Cost: ";
+            var costSpan = document.createElement("span");
+            costSpan.textContent = food.cost;
+
+            // Append elements to the foodItemDiv
+            foodItemDiv.appendChild(foodNameLabel);
+            foodItemDiv.appendChild(foodNameSpan);
+            foodItemDiv.appendChild(document.createElement("br")); // Line break for spacing
+            foodItemDiv.appendChild(costLabel);
+            foodItemDiv.appendChild(costSpan);
+
+            // Append the foodItemDiv to the foodDataContainer
+            foodDataContainer.appendChild(foodItemDiv);
+        });
+    }
+
+    // Call the function to fetch and display food data
+    fetchAndDisplayFoodData();
+
+    </script>
+    
 </body>
 
 </html>

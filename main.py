@@ -11,7 +11,7 @@ import requests
 import json
 
 app = Flask(__name__)
-UPLOAD_FOLDER = r'C:\Poly module\Year 3\MP\Website Code\MP\static\assets\img'
+UPLOAD_FOLDER = r'D:\Microsoft VS Code\MP\MP\static\assets\img'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -31,7 +31,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -267,28 +267,82 @@ def delete_profile():
 def food():
     if 'user' not in session:
         return redirect('/')
-    return render_template('food.html')
+
+    user_email = session['user']
+
+    # Fetch the list of food expenses for the logged-in user
+    food_expenses = db.collection('food').where('user_email', '==', user_email).stream()
+
+    return render_template('food.html', food_expenses=food_expenses)
+
+
 
 
 @app.route('/addfood', methods=['GET', 'POST'])
 def addfood():
     if request.method == 'POST':
+        user_email = session['user']
+        food_id = request.form.get('food_id')
         foodName = request.form.get('foodName')
         cost = request.form.get('cost')
 
         try:
+            # Original data
             food_data = {
+                'user_email': user_email,
                 'foodName': foodName,
                 'cost': cost,
             }
-            db.collection('food').add(food_data)
 
-            session['user'] = foodName  # Use 'user' instead of 'food'
-            return render_template('food.html')
+            # Get dynamic fields
+            dynamic_fields = request.form.getlist('newField')
+            print("Dynamic Fields:", dynamic_fields)
+
+            # Process dynamic fields and add them to food_data
+            for index, value in enumerate(dynamic_fields):
+                food_data[f'newField_{index + 1}'] = value
+
+            if food_id:
+                # Editing an existing food expense
+                food_ref = db.collection('food').document(food_id)
+                food_ref.update(food_data)
+            else:
+                # Adding a new food expense
+                db.collection('food').add(food_data)
+
+            flash("Food expense saved successfully!", "success")
+            return redirect('/food')
 
         except Exception as e:
             flash(f"An error occurred during food creation: {str(e)}", "warning")
-            return render_template('food.html')
+
+    return render_template('food.html')
+
+@app.route('/fetchfooddata', methods=['GET'])
+def fetch_food_data():
+    try:
+        # Check if the user is authenticated
+        if 'user' not in session:
+            return jsonify({'error': 'User not authenticated'}), 401
+
+        user_email = session['user']
+
+        # Query the database to fetch food data based on user_email
+        food_data = (
+            db.collection('food')
+            .where('user_email', '==', user_email)
+            .stream()  # Use stream to iterate over query results
+        )
+
+        # Convert the data to a list of dictionaries
+        food_list = [food.to_dict() for food in food_data]
+
+        # Render the HTML template with the fetched data
+        return render_template('fetchfooddata.html', food_list=food_list)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
         
 @app.route('/news', methods=['GET', 'POST'])
 def news():

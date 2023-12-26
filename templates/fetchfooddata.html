@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <title>Food Data</title>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        h2 {
+            color: #007bff;
+        }
+
+        .food-item {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .food-item p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .food-item strong {
+            font-weight: bold;
+        }
+
+        .edit-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .edit-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>User Food Data</h2>
+
+        <div id="foodDataContainer">
+            {% for food_item in food_list %}
+                <div class="food-item">
+                    <button class="edit-btn" onclick="editFood('{{ food_item.foodName }}', '{{ food_item.cost }}')">Edit</button>
+                    <p><strong>Food Name:</strong> {{ food_item.foodName }}</p>
+                    <p><strong>Cost:</strong> {{ food_item.cost }}</p>
+                    <!-- Add more fields as needed -->
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        function editFood(foodName, cost) {
+            // You can implement the logic for editing here
+            console.log('Edit:', foodName, cost);
+        }
+    </script>
+</body>
+
+</html>

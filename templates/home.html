@@ -11,7 +11,6 @@
             margin: 0;
             font-family: Arial, sans-serif;
             background-color: #000A2B;
-            /* Updated background color */
         }
 
         .navbar {
@@ -31,16 +30,9 @@
             text-decoration: none;
         }
 
-        
-
         .navbar a.active {
             background-color: #151a2c;
             color: white;
-        }
-
-        .main {
-            margin-left: 200px;
-            padding: 0px 10px;
         }
 
         .logout {
@@ -53,6 +45,45 @@
             background-color: #212946;
         }
 
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .header {
+            color: #ffffff;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: calc(50% - 20px); /* 50% width with 20px gap between cards */
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        .card p {
+            color: #7f8c8d;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: auto;
+        }
     </style>
 </head>
 
@@ -64,7 +95,7 @@
             </a>
         </div>
         <a href="#rewards">Rewards</a>
-        <a href="{{  url_for('news') }}">News</a>
+        <a href="#news">News</a>
         <a href="#analysis">Analysis</a>
         <a href="{{ url_for('profile')}}">Profile</a>
         <a href="#history">History</a>
@@ -73,12 +104,40 @@
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()">Logout</a>
     </div>
 
-    <div class="main">
-        <div class="update_profile" onclick="window.location.href='/update_profile'">
-            update
+    <div class="main-content">
+        <div class="header">
+            <h2>TOTAL SAVINGS</h2>
+            <p>$45,050</p>
+            <!-- Add progress bar and pie chart here -->
         </div>
-    </div>
+        <!-- Add more cards for Income, Transport, Investment, Food, etc. -->
+        <div class="card-container">
+            <div class="card" onclick="redirectTo('/income')">
+                <h2>INCOME</h2>
+                <p>$15,000</p>
+                <!-- Add progress bar and pie chart for Income here -->
+            </div>
 
+            <div class="card" onclick="redirectTo('/transport')">
+                <h2>TRANSPORT</h2>
+                <p>$5,000</p>
+                <!-- Add progress bar and pie chart for Transport here -->
+            </div>
+
+            <div class="card" onclick="redirectTo('/investment')">
+                <h2>INVESTMENT</h2>
+                <p>$10,000</p>
+                <!-- Add progress bar and pie chart for Investment here -->
+            </div>
+
+            <div class="card" onclick="redirectTo('/food')">
+                <h2>FOOD</h2>
+                <p>$8,000</p>
+                <!-- Add progress bar and pie chart for Food here -->
+            </div>
+        </div>
+        <!-- Add more cards for other categories as needed -->
+    </div>
 
     <script>
         function confirmLogout() {
@@ -88,6 +147,10 @@
             } else {
                 // Do nothing or handle the "Cancel" action
             }
+        }
+
+        function redirectTo(page) {
+            window.location.href = page;
         }
     </script>
 
