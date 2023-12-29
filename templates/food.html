@@ -9,19 +9,13 @@
     <style>
         body {
             background-color: #000A2B;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
             color: #fff;
-            text-align: left;
+            font-family: 'Arial', sans-serif;
         }
 
         .header {
             text-align: center;
             margin-bottom: 20px;
-            color: #fff;
             font-size: 24px;
         }
 
@@ -36,24 +30,27 @@
         .box-container {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center; /* Center the form groups */
+            justify-content: center;
             align-items: flex-start;
+            margin-bottom: 20px;
         }
 
         .form-group {
             margin-right: 10px;
             margin-bottom: 10px;
-            text-align: center; /* Center the content inside the form group */
-            display: flex; /* Enable flexbox for form groups */
+            text-align: center;
+            display: flex;
         }
 
         .form-group label {
-            flex: 1; /* Allow label to take available space */
-            margin-right: 8px; /* Add some spacing between label and input */
+            flex: 1;
+            margin-right: 8px;
+            color: #fff;
+            text-align: left;
         }
 
         .form-group input {
-            flex: 2; /* Allow input to take more space */
+            flex: 2;
         }
 
         .delete-btn {
@@ -89,17 +86,50 @@
             color: white;
         }
 
-        .home-btn {
+        .edit-btn {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .edit-btn:hover {
+            background-color: #218838;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .foodDataContainer {
             margin-top: 20px;
         }
 
+        .food-item {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .food-item p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .food-item strong {
+            font-weight: bold;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
         <button class="close-button" onclick="window.location.href='/home'">X</button>
-        <!-- Header -->
         <div class="header">FOOD</div>
         <div id="dynamicContent" class="box-container">
             <button type="button" class='modal-btn' onclick="addNewBox()">+</button>
@@ -114,7 +144,7 @@
                     <label for='cost'>Cost</label>
                     <input type='text' id='cost' name='cost' value="{{ food_data.cost if food_data else '' }}">
                 </div>
-                <button type="submit" class='modal-btn-submit'>Save Food Expense</button>
+                <button type="submit" class='modal-btn-submit' onclick="saveAndRedirect()">Save Food Expense</button>
             </form>
             {% for expense in food_expenses %}
             <div class='form-group'>
@@ -125,16 +155,23 @@
                 <label for='cost'>Cost</label>
                 <input type='text' id='cost' name='cost' value="{{ expense.cost }}">
             </div>
+            {% endfor %}
             <!-- Add other dynamic fields as needed... -->
-        {% endfor %}
-    </form>
-</div>
+           
         </div>
-        
     </div>
-    <div id="foodDataContainer"></div>
-    
 
+    <div id="foodDataContainer">
+        {% for food_item in food_list %}
+            <div class="food-item">
+                <button class="edit-btn" onclick="editFood('{{ food_item.foodName }}', '{{ food_item.cost }}')">Edit</button>
+                <p><strong>Food Name:</strong> {{ food_item.foodName }}</p>
+                <p><strong>Cost:</strong> {{ food_item.cost }}</p>
+                <!-- Add more fields as needed -->
+            </div>
+        {% endfor %}
+    </div>
+    
     <!-- Display Flash Messages -->
     <div class="error-message" name="errorMessage">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -154,8 +191,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-
-
 
     <script>
         var newBoxCount = 0;
@@ -205,6 +240,13 @@
             // After adding the new box, fetch and display the data
             fetchDataAndDisplay(boxContainer);
         }
+        function saveAndRedirect() {
+        // Submit the form
+        document.forms["submitfood"].submit();
+        
+        // Redirect to fetchfooddata.html
+        window.location.href = '/fetchfooddata.html';
+    }
     
         function deleteBoxContainer(boxContainer) {
             var dynamicContent = document.getElementById("dynamicContent");
@@ -225,7 +267,7 @@
             var newBox = document.createElement("div");
             newBox.className = "form-group";
             newBox.innerHTML =
-                '<label for="newField' + boxCount + '">New Field</label>' +
+                '<label for="food_item.foodName' + boxCount + '">food_item.foodName</label>' +
                 '<input type="text" id="newField' + boxCount + '" name="newField" readonly>'; // Set input fields as readonly
     
             return newBox;
@@ -249,6 +291,11 @@
             })
             .catch(error => console.error('Error fetching data:', error));
     }
+    
+    function editFood(foodName, cost) {
+            // You can implement the logic for editing here
+            console.log('Edit:', foodName, cost);
+        }
 
     // Function to display food data
     function displayFoodData(foodData) {
@@ -285,11 +332,12 @@
         });
     }
 
+    
+
     // Call the function to fetch and display food data
     fetchAndDisplayFoodData();
 
     </script>
-    
 </body>
 
 </html>

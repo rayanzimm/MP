@@ -342,6 +342,58 @@ def fetch_food_data():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/editfood/<user_email>', methods=['GET', 'POST'])
+def editfood(user_email):
+    if 'user' not in session or session['user'] != user_email:
+        flash("Unauthorized access", "warning")
+        return redirect('/')
+
+    try:
+        # Fetch the most recent food expense for the user
+        food_query = db.collection('food').where('user_email', '==', user_email).order_by('timestamp', direction=firestore.Query.DESCENDING).limit(1)
+        food_docs = food_query.stream()
+
+        if not food_docs:
+            flash("No food expenses found for the user", "warning")
+            return redirect('/food')
+
+        # Use the most recent food expense
+        food_doc = next(food_docs)
+
+        if request.method == 'POST':
+            # Update food expense based on the form submission
+            foodName = request.form.get('foodName')
+            cost = request.form.get('cost')
+
+            food_data = {
+                'foodName': foodName,
+                'cost': cost,
+            }
+
+            # Get dynamic fields
+            dynamic_fields = request.form.getlist('newField')
+            print("Dynamic Fields:", dynamic_fields)
+
+            # Process dynamic fields and add them to food_data
+            for index, value in enumerate(dynamic_fields):
+                food_data[f'newField_{index + 1}'] = value
+
+            # Update the food expense
+            food_ref = db.collection('food').document(food_doc.id)
+            food_ref.update(food_data)
+
+            flash("Food expense updated successfully!", "success")
+            return redirect('/food')
+
+        # Pre-fill the form with existing data for editing
+        food_data = food_doc.to_dict()
+        return render_template('editfood.html', food_data=food_data)
+
+    except Exception as e:
+        flash(f"An error occurred during food editing: {str(e)}", "warning")
+        return redirect('/food')
+
 
         
 @app.route('/news', methods=['GET', 'POST'])

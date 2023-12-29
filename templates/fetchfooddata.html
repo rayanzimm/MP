@@ -60,17 +60,28 @@
     <div class="container">
         <h2>User Food Data</h2>
 
-        <div id="foodDataContainer">
+        <!-- <div id="foodDataContainer">
             {% for food_item in food_list %}
                 <div class="food-item">
                     <button class="edit-btn" onclick="editFood('{{ food_item.foodName }}', '{{ food_item.cost }}')">Edit</button>
                     <p><strong>Food Name:</strong> {{ food_item.foodName }}</p>
                     <p><strong>Cost:</strong> {{ food_item.cost }}</p>
-                    <!-- Add more fields as needed -->
+                 
                 </div>
             {% endfor %}
         </div>
+    </div> -->
+    <div id="foodDataContainer">
+        {% for food_item in food_list %}
+            <div class="food-item">
+                <a class="edit-btn" href="{{ url_for('editfood', user_email=session['user']) }}">Edit</a>
+                <p><strong>Food Name:</strong> {{ food_item.foodName }}</p>
+                <p><strong>Cost:</strong> {{ food_item.cost }}</p>
+                <!-- Add more fields as needed -->
+            </div>
+        {% endfor %}
     </div>
+    
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
