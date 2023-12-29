@@ -132,7 +132,7 @@
         <button class="close-button" onclick="window.location.href='/home'">X</button>
         <div class="header">FOOD</div>
         <div id="dynamicContent" class="box-container">
-            <button type="button" class='modal-btn' onclick="addNewBox()">+</button>
+            <!-- <button type="button" class='modal-btn' onclick="addNewBox()">+</button> -->
 
             <form action="/addfood" method="POST" class="submitfood" name="submitfood">
                 <input type="hidden" id="food_id" name="food_id" value="{{ food_id }}">
@@ -144,35 +144,34 @@
                     <label for='cost'>Cost</label>
                     <input type='text' id='cost' name='cost' value="{{ food_data.cost if food_data else '' }}">
                 </div>
-                <button type="submit" class='modal-btn-submit' onclick="saveAndRedirect()">Save Food Expense</button>
+                <button type="submit" class='modal-btn-submit'>Save Food Expense</button>
             </form>
             {% for expense in food_expenses %}
-            <div class='form-group'>
+            <!-- <div class='form-group'>
                 <label for='foodName'>Food Name</label>
                 <input type='text' id='foodName' name='foodName' value="{{ expense.foodName }}">
             </div>
             <div class='form-group'>
                 <label for='cost'>Cost</label>
                 <input type='text' id='cost' name='cost' value="{{ expense.cost }}">
-            </div>
+            </div> -->
             {% endfor %}
-            <!-- Add other dynamic fields as needed... -->
-           
+          
         </div>
     </div>
 
-    <div id="foodDataContainer">
+    <!-- <div id="foodDataContainer">
         {% for food_item in food_list %}
             <div class="food-item">
-                <button class="edit-btn" onclick="editFood('{{ food_item.foodName }}', '{{ food_item.cost }}')">Edit</button>
+                <a class="edit-btn" href="{{ url_for('editfood', user_email=session['user']) }}">Edit</a>
                 <p><strong>Food Name:</strong> {{ food_item.foodName }}</p>
                 <p><strong>Cost:</strong> {{ food_item.cost }}</p>
-                <!-- Add more fields as needed -->
+                
             </div>
         {% endfor %}
     </div>
-    
-    <!-- Display Flash Messages -->
+     -->
+
     <div class="error-message" name="errorMessage">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -193,85 +192,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
     <script>
-        var newBoxCount = 0;
     
-        function addNewBox() {
-            newBoxCount++;
-    
-            // Create a container for each pair of boxes
-            var boxContainer = document.createElement("div");
-            boxContainer.className = "box-container";
-    
-            // Create the first box
-            var newBox1 = createNewBox(newBoxCount);
-            // Create the second box
-            var newBox2 = createNewBox(newBoxCount);
-    
-            // Create an edit button for the container
-            var editBtn = document.createElement("button");
-            editBtn.type = "button";
-            editBtn.className = "edit-btn";
-            editBtn.textContent = "Edit";
-            editBtn.onclick = function () {
-                toggleEditMode(boxContainer);
-            };
-    
-            // Create a delete button for the container
-            var deleteBtn = document.createElement("button");
-            deleteBtn.type = "button";
-            deleteBtn.className = "delete-btn";
-            deleteBtn.textContent = "Delete";
-            deleteBtn.onclick = function () {
-                deleteBoxContainer(boxContainer);
-            };
-    
-            // Append the boxes and the edit and delete buttons to the container
-            boxContainer.appendChild(newBox1);
-            boxContainer.appendChild(newBox2);
-            boxContainer.appendChild(editBtn);
-            boxContainer.appendChild(deleteBtn);
-    
-            // Get the dynamicContent div
-            var dynamicContent = document.getElementById("dynamicContent");
-    
-            // Append the container to the dynamicContent div
-            dynamicContent.appendChild(boxContainer);
-    
-            // After adding the new box, fetch and display the data
-            fetchDataAndDisplay(boxContainer);
-        }
-        function saveAndRedirect() {
-        // Submit the form
-        document.forms["submitfood"].submit();
-        
-        // Redirect to fetchfooddata.html
-        window.location.href = '/fetchfooddata.html';
-    }
-    
-        function deleteBoxContainer(boxContainer) {
-            var dynamicContent = document.getElementById("dynamicContent");
-            dynamicContent.removeChild(boxContainer);
-        }
-    
-        function toggleEditMode(boxContainer) {
-            // Find the input fields within the boxContainer
-            var foodNameInput = boxContainer.querySelector('input[id^="newField"]');
-            var costInput = boxContainer.querySelector('input[id^="newField"]');
-    
-            // Toggle the readonly attribute
-            foodNameInput.readOnly = !foodNameInput.readOnly;
-            costInput.readOnly = !costInput.readOnly;
-        }
-    
-        function createNewBox(boxCount) {
-            var newBox = document.createElement("div");
-            newBox.className = "form-group";
-            newBox.innerHTML =
-                '<label for="food_item.foodName' + boxCount + '">food_item.foodName</label>' +
-                '<input type="text" id="newField' + boxCount + '" name="newField" readonly>'; // Set input fields as readonly
-    
-            return newBox;
-        }
     
         function fetchAndDisplayFoodData() {
         var fetchDataUrl = "/fetchfooddata";
@@ -292,10 +213,7 @@
             .catch(error => console.error('Error fetching data:', error));
     }
     
-    function editFood(foodName, cost) {
-            // You can implement the logic for editing here
-            console.log('Edit:', foodName, cost);
-        }
+
 
     // Function to display food data
     function displayFoodData(foodData) {
@@ -332,9 +250,6 @@
         });
     }
 
-    
-
-    // Call the function to fetch and display food data
     fetchAndDisplayFoodData();
 
     </script>

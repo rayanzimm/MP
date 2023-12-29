@@ -9,9 +9,10 @@ from werkzeug.utils import secure_filename
 import os
 import requests
 import json
+from openai import OpenAI
 
 app = Flask(__name__)
-UPLOAD_FOLDER = r'D:\Microsoft VS Code\MP\MP\static\assets\img'
+UPLOAD_FOLDER = r'static\assets\img'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -36,6 +37,24 @@ firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
 app.secret_key = 'secret'
+
+# def openai(prompt):
+
+#     client = OpenAI(
+#         # This is the default and can be omitted
+#         api_key= "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"
+#     )
+#     chat_completion = client.chat.completions.create(
+#         messages=[
+#             {
+#                 "role": "user",
+#                 "content": prompt
+#             }
+#         ],
+#         model="gpt-3.5-turbo",
+#     )
+#     print(chat_completion)
+# openai("why is the sky blue?")
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -83,7 +102,7 @@ def register():
             if photo.filename != '' and allowed_file(photo.filename):
                 # Save the uploaded photo with an absolute path
                 filename = secure_filename(photo.filename)
-                full_path = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], filename)
+                full_path = "static/assets/img/" + filename
                 photo.save(full_path)
                 flash("Photo uploaded successfully!", "success")
 
@@ -98,7 +117,7 @@ def register():
                         'dob': dob,
                         'address': address,
                         'mobile': mobile,
-                        'photo_path': os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        'photo_path': "static/assets/img/" + filename
                     }
                     db.collection('users').add(user_data)
 
@@ -177,7 +196,7 @@ def update_profile():
             if new_photo.filename != '' and allowed_file(new_photo.filename):
                 # Save the uploaded photo to the upload folder
                 filename = secure_filename(new_photo.filename)
-                full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                full_path = "static/assets/img/" + filename
                 new_photo.save(full_path)
                 flash("New photo uploaded successfully!", "success")
             else:
@@ -287,6 +306,11 @@ def addfood():
         cost = request.form.get('cost')
 
         try:
+            # Check if foodName or cost is empty
+            if not foodName or not cost:
+                flash("Please fill in both food name and cost.", "warning")
+                return render_template('food.html')
+
             # Original data
             food_data = {
                 'user_email': user_email,
@@ -311,12 +335,13 @@ def addfood():
                 db.collection('food').add(food_data)
 
             flash("Food expense saved successfully!", "success")
-            return redirect('/food')
+            return redirect('/fetchfooddata')
 
         except Exception as e:
             flash(f"An error occurred during food creation: {str(e)}", "warning")
 
     return render_template('food.html')
+
 
 @app.route('/fetchfooddata', methods=['GET'])
 def fetch_food_data():
@@ -343,58 +368,70 @@ def fetch_food_data():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
-@app.route('/editfood/<user_email>', methods=['GET', 'POST'])
-def editfood(user_email):
-    if 'user' not in session or session['user'] != user_email:
-        flash("Unauthorized access", "warning")
+
+@app.route('/user_food_expenses')
+def user_food_expenses():
+    if 'user' not in session:
         return redirect('/')
 
-    try:
-        # Fetch the most recent food expense for the user
-        food_query = db.collection('food').where('user_email', '==', user_email).order_by('timestamp', direction=firestore.Query.DESCENDING).limit(1)
-        food_docs = food_query.stream()
+    user_email = session['user']
 
-        if not food_docs:
-            flash("No food expenses found for the user", "warning")
-            return redirect('/food')
+    # Fetch the list of food expenses for the logged-in user
+    food_expenses = db.collection('food').where('user_email', '==', user_email).stream()
 
-        # Use the most recent food expense
-        food_doc = next(food_docs)
+    # Create a list to store the food data
+    user_food_data = []
 
-        if request.method == 'POST':
-            # Update food expense based on the form submission
-            foodName = request.form.get('foodName')
-            cost = request.form.get('cost')
-
-            food_data = {
-                'foodName': foodName,
-                'cost': cost,
-            }
-
-            # Get dynamic fields
-            dynamic_fields = request.form.getlist('newField')
-            print("Dynamic Fields:", dynamic_fields)
-
-            # Process dynamic fields and add them to food_data
-            for index, value in enumerate(dynamic_fields):
-                food_data[f'newField_{index + 1}'] = value
-
-            # Update the food expense
-            food_ref = db.collection('food').document(food_doc.id)
-            food_ref.update(food_data)
-
-            flash("Food expense updated successfully!", "success")
-            return redirect('/food')
-
-        # Pre-fill the form with existing data for editing
+    # Iterate through the food expenses and extract relevant information
+    for food_doc in food_expenses:
         food_data = food_doc.to_dict()
-        return render_template('editfood.html', food_data=food_data)
+        user_food_data.append({
+            'foodName': food_data.get('foodName', ''),
+            'cost': food_data.get('cost', ''),
+            # Add any additional fields you want to retrieve
+            # Example: 'newField_1': food_data.get('newField_1', ''),
+            #          'newField_2': food_data.get('newField_2', ''),
+        })
 
-    except Exception as e:
-        flash(f"An error occurred during food editing: {str(e)}", "warning")
-        return redirect('/food')
+    return render_template('user_food_expenses.html', user_food_data=user_food_data)
 
+from flask import request
 
+from flask import redirect, url_for
+
+@app.route('/edit_food_expense', methods=['GET', 'POST'])
+def edit_food_expense():
+    if 'user' not in session:
+        return redirect('/')
+
+    user_email = session['user']
+
+    if request.method == 'POST':
+        # Retrieve form data
+        new_food_name = request.form.get('new_food_name')
+        new_cost = request.form.get('new_cost')
+
+        try:
+            # Update the food expense document in Firestore
+            food_ref = db.collection('food').where('user_email', '==', user_email).where('foodName', '==', new_food_name).get()
+            
+            # Assuming there's only one matching document, you might need to adjust if there are multiple matches
+            for food_doc in food_ref:
+                food_doc.reference.update({
+                    'cost': new_cost,
+                    # Update additional fields as needed
+                    # Example: 'newField_1': request.form.get('newField_1'),
+                    #          'newField_2': request.form.get('newField_2'),
+                })
+
+                flash("Food expense updated successfully!", "success")
+                return redirect('/user_food_expenses')
+
+            flash("Food expense not found for the user.", "warning")
+        except Exception as e:
+            flash(f"An error occurred during food expense update: {str(e)}", "warning")
+
+    return render_template('edit_food_expense.html')
         
 @app.route('/news', methods=['GET', 'POST'])
 def news():
@@ -438,7 +475,7 @@ def news():
         flash(f"An error has occured: {str(e)}", "warning")
         return render_template('news.html', news_data=[], selected_ticker=None, tickers=tickers)
     
-
+# @app.route('/openai', methods=['POST'])
 
 if __name__ == '__main__':
     app.run(debug=True)

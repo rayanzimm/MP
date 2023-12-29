@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Food Expenses</title>
+</head>
+<body>
+
+<h1>User Food Expenses</h1>
+
+{% if user_food_data %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Food Name</th>
+                <th>Cost</th>
+                <!-- Add additional table headers for any extra fields -->
+            </tr>
+        </thead>
+        <tbody>
+            
+            {% for food_item in user_food_data %}
+                <tr>
+                   
+                    <td>{{ food_item['foodName'] }}</td>
+                    <td>{{ food_item['cost'] }}</td>
+                    <button class="edit-btn" >Edit</button>
+                    <!-- Add additional table cells for any extra fields -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No food expenses found for the user.</p>
+{% endif %}
+
+</body>
+</html>
