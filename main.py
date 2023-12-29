@@ -32,7 +32,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 

@@ -156,8 +156,8 @@
 
     <div class="content-wrapper">
         <div class="profile-photo">
-            <img src="{{ user_data.get('photo_path', url_for('static', filename='assets/img/defaultprofile.png')) }}" alt="Profile Photo">
-        </div>
+            <img src="{{ url_for('static', filename=user_data.get('photo_path', 'assets/img/defaultprofile.png')|replace('\\', '/')) }}" alt="Profile Photo">
+             </div>
         
         <h2>ACCOUNT INFORMATION</h2>
         <!-- Add other profile information below -->
