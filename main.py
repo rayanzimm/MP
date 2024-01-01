@@ -10,8 +10,9 @@ import os
 import requests
 import json
 
+
 app = Flask(__name__)
-UPLOAD_FOLDER = r'D:\Microsoft VS Code\MP\MP\static\assets\img'
+UPLOAD_FOLDER = r'static\assets\img'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -31,11 +32,29 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
 app.secret_key = 'secret'
+
+# def openai(prompt):
+
+#     client = OpenAI(
+#         # This is the default and can be omitted
+#         api_key= "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"
+#     )
+#     chat_completion = client.chat.completions.create(
+#         messages=[
+#             {
+#                 "role": "user",
+#                 "content": prompt
+#             }
+#         ],
+#         model="gpt-3.5-turbo",
+#     )
+#     print(chat_completion)
+# openai("why is the sky blue?")
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -83,7 +102,7 @@ def register():
             if photo.filename != '' and allowed_file(photo.filename):
                 # Save the uploaded photo with an absolute path
                 filename = secure_filename(photo.filename)
-                full_path = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], filename)
+                full_path = "static/assets/img/" + filename
                 photo.save(full_path)
                 flash("Photo uploaded successfully!", "success")
 
@@ -98,7 +117,7 @@ def register():
                         'dob': dob,
                         'address': address,
                         'mobile': mobile,
-                        'photo_path': os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        'photo_path': "static/assets/img/" + filename
                     }
                     db.collection('users').add(user_data)
 
@@ -177,7 +196,7 @@ def update_profile():
             if new_photo.filename != '' and allowed_file(new_photo.filename):
                 # Save the uploaded photo to the upload folder
                 filename = secure_filename(new_photo.filename)
-                full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                full_path = "static/assets/img/" + filename
                 new_photo.save(full_path)
                 flash("New photo uploaded successfully!", "success")
             else:
@@ -270,12 +289,21 @@ def food():
 
     user_email = session['user']
 
-    # Fetch the list of food expenses for the logged-in user
-    food_expenses = db.collection('food').where('user_email', '==', user_email).stream()
 
-    return render_template('food.html', food_expenses=food_expenses)
+    food_ref = db.collection('food').where('user_email', '==', user_email).stream()
+    for food_doc in food_ref:
+        food_data = food_doc.to_dict()
+
+        if food_data:
+            return render_template('food.html', food_data=food_data)
+        else:
+            flash("No Food Expenses.", "warning")
+            return redirect('/')
+        
 
 
+
+    
 
 
 @app.route('/addfood', methods=['GET', 'POST'])
@@ -287,11 +315,25 @@ def addfood():
         cost = request.form.get('cost')
 
         try:
+            # Check if foodName or cost is empty
+            if not foodName or not cost:
+                flash("Please fill in both food name and cost.", "warning")
+                return render_template('food.html')
+
+            latest_food = db.collection('food').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
+            latest_index = 0
+
+            for food_doc in latest_food:
+                latest_index = int(food_doc.to_dict().get('unique_index', 0))
+
+            unique_index = latest_index + 1
+
             # Original data
             food_data = {
                 'user_email': user_email,
                 'foodName': foodName,
                 'cost': cost,
+                'unique_index': unique_index
             }
 
             # Get dynamic fields
@@ -311,37 +353,80 @@ def addfood():
                 db.collection('food').add(food_data)
 
             flash("Food expense saved successfully!", "success")
-            return redirect('/food')
+            return redirect('/user_food_expenses')
 
         except Exception as e:
             flash(f"An error occurred during food creation: {str(e)}", "warning")
 
     return render_template('food.html')
 
-@app.route('/fetchfooddata', methods=['GET'])
-def fetch_food_data():
-    try:
-        # Check if the user is authenticated
-        if 'user' not in session:
-            return jsonify({'error': 'User not authenticated'}), 401
 
-        user_email = session['user']
 
-        # Query the database to fetch food data based on user_email
-        food_data = (
-            db.collection('food')
-            .where('user_email', '==', user_email)
-            .stream()  # Use stream to iterate over query results
-        )
+    
 
-        # Convert the data to a list of dictionaries
-        food_list = [food.to_dict() for food in food_data]
+@app.route('/user_food_expenses')
+def user_food_expenses():
+    if 'user' not in session:
+        return redirect('/')
 
-        # Render the HTML template with the fetched data
-        return render_template('fetchfooddata.html', food_list=food_list)
+    user_email = session['user']
 
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    # Fetch the list of food expenses for the logged-in user
+    food_expenses = db.collection('food').where('user_email', '==', user_email).stream()
+
+    # Create a list to store the food data
+    user_food_data = []
+
+    # Iterate through the food expenses and extract relevant information
+    for food_doc in food_expenses:
+        food_data = food_doc.to_dict()
+        user_food_data.append({
+            'foodName': food_data.get('foodName', ''),
+            'cost': food_data.get('cost', ''),
+            'unique_index': food_data.get('unique_index', '')
+        })
+
+    return render_template('user_food_expenses.html', user_food_data=user_food_data, food_data = food_data)
+
+
+@app.route('/edit_food_expenses', methods=['GET', 'POST'])
+def edit_food_expense():
+    # Redirect to the home page if the user is not logged in
+    if 'user' not in session:
+        return redirect('/')
+
+    user_email = session['user']
+    food_unique_index = request.form.get('unique_index')
+
+    food_ref = db.collection('food').where('user_email', '==', user_email).where('unique_index', '==', int(food_unique_index)).get()
+    food_iter = iter(food_ref)
+    food_doc = next(food_iter, None)
+
+
+    if not food_doc:
+       return redirect('/')
+   
+    food_data = food_doc.to_dict()
+    
+    if request.method == 'POST':
+        print(request.form)
+        new_food_name = request.form.get('foodName')
+        new_cost = request.form.get('cost')
+
+        food_data={
+            'cost': new_cost,
+            'foodName':new_food_name
+        }
+        print(food_data)
+        user_food_data=[]
+        food_doc.reference.update(food_data)
+        user_food_data.append(food_data)
+
+        flash("Food expense updated successfully!", "success")
+        return redirect('/user_food_expenses')
+
+    
+    return render_template('user_food_expenses.html', user_food_data=user_food_data, food_data=food_data)
 
         
 @app.route('/news', methods=['GET', 'POST'])
@@ -386,7 +471,7 @@ def news():
         flash(f"An error has occured: {str(e)}", "warning")
         return render_template('news.html', news_data=[], selected_ticker=None, tickers=tickers)
     
-
+# @app.route('/openai', methods=['POST'])
 
 if __name__ == '__main__':
     app.run(debug=True)
