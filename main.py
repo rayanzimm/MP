@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 import os
 import requests
 import json
-#from openai import OpenAI
+
 
 app = Flask(__name__)
 UPLOAD_FOLDER = r'static\assets\img'
@@ -102,7 +102,7 @@ def register():
             if photo.filename != '' and allowed_file(photo.filename):
                 # Save the uploaded photo with an absolute path
                 filename = secure_filename(photo.filename)
-                full_path = "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/" + filename
+                full_path = "static/assets/img/" + filename
                 photo.save(full_path)
                 flash("Photo uploaded successfully!", "success")
 
@@ -117,7 +117,7 @@ def register():
                         'dob': dob,
                         'address': address,
                         'mobile': mobile,
-                        'photo_path': "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/" + filename
+                        'photo_path': "static/assets/img/" + filename
                     }
                     db.collection('users').add(user_data)
 
@@ -196,7 +196,7 @@ def update_profile():
             if new_photo.filename != '' and allowed_file(new_photo.filename):
                 # Save the uploaded photo to the upload folder
                 filename = secure_filename(new_photo.filename)
-                full_path = "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/" + filename
+                full_path = "static/assets/img/" + filename
                 new_photo.save(full_path)
                 flash("New photo uploaded successfully!", "success")
             else:
@@ -289,12 +289,21 @@ def food():
 
     user_email = session['user']
 
-    # Fetch the list of food expenses for the logged-in user
-    food_expenses = db.collection('food').where('user_email', '==', user_email).stream()
 
-    return render_template('food.html', food_expenses=food_expenses)
+    food_ref = db.collection('food').where('user_email', '==', user_email).stream()
+    for food_doc in food_ref:
+        food_data = food_doc.to_dict()
+
+        if food_data:
+            return render_template('food.html', food_data=food_data)
+        else:
+            flash("No Food Expenses.", "warning")
+            return redirect('/')
+        
 
 
+
+    
 
 
 @app.route('/addfood', methods=['GET', 'POST'])
@@ -311,11 +320,20 @@ def addfood():
                 flash("Please fill in both food name and cost.", "warning")
                 return render_template('food.html')
 
+            latest_food = db.collection('food').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
+            latest_index = 0
+
+            for food_doc in latest_food:
+                latest_index = int(food_doc.to_dict().get('unique_index', 0))
+
+            unique_index = latest_index + 1
+
             # Original data
             food_data = {
                 'user_email': user_email,
                 'foodName': foodName,
                 'cost': cost,
+                'unique_index': unique_index
             }
 
             # Get dynamic fields
@@ -335,7 +353,7 @@ def addfood():
                 db.collection('food').add(food_data)
 
             flash("Food expense saved successfully!", "success")
-            return redirect('/fetchfooddata')
+            return redirect('/user_food_expenses')
 
         except Exception as e:
             flash(f"An error occurred during food creation: {str(e)}", "warning")
@@ -343,30 +361,7 @@ def addfood():
     return render_template('food.html')
 
 
-@app.route('/fetchfooddata', methods=['GET'])
-def fetch_food_data():
-    try:
-        # Check if the user is authenticated
-        if 'user' not in session:
-            return jsonify({'error': 'User not authenticated'}), 401
 
-        user_email = session['user']
-
-        # Query the database to fetch food data based on user_email
-        food_data = (
-            db.collection('food')
-            .where('user_email', '==', user_email)
-            .stream()  # Use stream to iterate over query results
-        )
-
-        # Convert the data to a list of dictionaries
-        food_list = [food.to_dict() for food in food_data]
-
-        # Render the HTML template with the fetched data
-        return render_template('fetchfooddata.html', food_list=food_list)
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
     
 
 @app.route('/user_food_expenses')
@@ -388,50 +383,51 @@ def user_food_expenses():
         user_food_data.append({
             'foodName': food_data.get('foodName', ''),
             'cost': food_data.get('cost', ''),
-            # Add any additional fields you want to retrieve
-            # Example: 'newField_1': food_data.get('newField_1', ''),
-            #          'newField_2': food_data.get('newField_2', ''),
+            'unique_index': food_data.get('unique_index', '')
         })
 
-    return render_template('user_food_expenses.html', user_food_data=user_food_data)
+    return render_template('user_food_expenses.html', user_food_data=user_food_data, food_data = food_data)
 
-from flask import request
 
-from flask import redirect, url_for
-
-@app.route('/edit_food_expense', methods=['GET', 'POST'])
+@app.route('/edit_food_expenses', methods=['GET', 'POST'])
 def edit_food_expense():
+    # Redirect to the home page if the user is not logged in
     if 'user' not in session:
         return redirect('/')
 
     user_email = session['user']
+    food_unique_index = request.form.get('unique_index')
 
+    food_ref = db.collection('food').where('user_email', '==', user_email).where('unique_index', '==', int(food_unique_index)).get()
+    food_iter = iter(food_ref)
+    food_doc = next(food_iter, None)
+
+
+    if not food_doc:
+       return redirect('/')
+   
+    food_data = food_doc.to_dict()
+    
     if request.method == 'POST':
-        # Retrieve form data
-        new_food_name = request.form.get('new_food_name')
-        new_cost = request.form.get('new_cost')
+        print(request.form)
+        new_food_name = request.form.get('foodName')
+        new_cost = request.form.get('cost')
 
-        try:
-            # Update the food expense document in Firestore
-            food_ref = db.collection('food').where('user_email', '==', user_email).where('foodName', '==', new_food_name).get()
-            
-            # Assuming there's only one matching document, you might need to adjust if there are multiple matches
-            for food_doc in food_ref:
-                food_doc.reference.update({
-                    'cost': new_cost,
-                    # Update additional fields as needed
-                    # Example: 'newField_1': request.form.get('newField_1'),
-                    #          'newField_2': request.form.get('newField_2'),
-                })
+        food_data={
+            'cost': new_cost,
+            'foodName':new_food_name
+        }
+        print(food_data)
+        user_food_data=[]
+        food_doc.reference.update(food_data)
+        user_food_data.append(food_data)
 
-                flash("Food expense updated successfully!", "success")
-                return redirect('/user_food_expenses')
+        flash("Food expense updated successfully!", "success")
+        return redirect('/user_food_expenses')
 
-            flash("Food expense not found for the user.", "warning")
-        except Exception as e:
-            flash(f"An error occurred during food expense update: {str(e)}", "warning")
+    
+    return render_template('user_food_expenses.html', user_food_data=user_food_data, food_data=food_data)
 
-    return render_template('edit_food_expense.html')
         
 @app.route('/news', methods=['GET', 'POST'])
 def news():
