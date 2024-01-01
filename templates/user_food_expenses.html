@@ -99,7 +99,7 @@
                         <td>{{ food_item['foodName'] }}</td>
                         <td>{{ food_item['cost'] }}</td>
                         <td>
-                            <button class="edit-btn" onclick="openModal('{{ food_item['foodName'] }}', '{{ food_item['cost'] }}')">Edit</button>
+                            <button class="edit-btn" onclick="openModal('{{ food_item['foodName'] }}', '{{ food_item['cost'] }}', '{{ food_item['unique_index'] }}')">Edit</button>
                         </td>
                     </tr>
                 {% endfor %}
@@ -117,7 +117,7 @@
             <input type="text" id="foodName" name="foodName" required>
             <label for="cost">Cost:</label>
             <input type="text" id="cost" name="cost" required >
-            <input type="hidden" name="unique_index" value="{{ food_data.unique_index }}">
+            <input type="hidden" name="unique_index" id="unique_index" value="">
             <button class="edit-btn" type="submit">Update Expense</button>
         </form>
         </div>
@@ -132,9 +132,10 @@
 
 
 <script>
-    function openModal(foodName, cost) {
+    function openModal(foodName, cost, uniqueIndex) {
         document.getElementById("foodName").value = foodName;
         document.getElementById("cost").value = cost;
+        document.getElementById("unique_index").value = uniqueIndex;
         document.getElementById("editModal").style.display = "block";
     }
 

@@ -398,7 +398,12 @@ def edit_food_expense():
     user_email = session['user']
     food_unique_index = request.form.get('unique_index')
 
-    food_ref = db.collection('food').where('user_email', '==', user_email).where('unique_index', '==', int(food_unique_index)).get()
+
+    if not food_unique_index or not food_unique_index.strip():
+        raise ValueError("Invalid or empty unique_index")
+    
+    food_unique_index = int(food_unique_index)
+    food_ref = db.collection('food').where('user_email', '==', user_email).where('unique_index', '==', food_unique_index).get()
     food_iter = iter(food_ref)
     food_doc = next(food_iter, None)
 
