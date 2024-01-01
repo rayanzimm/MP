@@ -156,7 +156,8 @@
 
     <div class="content-wrapper">
         <div class="profile-photo">
-            <img src="{{ url_for('static', filename=user_data.get('photo_path', 'assets/img/defaultprofile.png')|replace('\\', '/')) }}" alt="Profile Photo">
+            <img src="{{ user_data.get('photo_path', 'assets/img/defaultprofile.png')|replace('\\', '/') }}" alt="Profile Photo">
+
              </div>
         
         <h2>ACCOUNT INFORMATION</h2>
