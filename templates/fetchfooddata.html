@@ -8,8 +8,8 @@
     <title>Food Data</title>
     <style>
         body {
-            background-color: #f8f9fa;
-            color: #495057;
+            background-color: #000A2B;
+            color: #ffffff;
             font-family: 'Arial', sans-serif;
         }
 
@@ -18,7 +18,7 @@
         }
 
         h2 {
-            color: #007bff;
+            color: #ffffff;
         }
 
         .food-item {
@@ -42,7 +42,7 @@
             position: absolute;
             top: 5px;
             right: 5px;
-            background-color: #28a745;
+            background-color: #2881a7;
             color: #fff;
             border: none;
             padding: 5px 10px;
@@ -51,7 +51,7 @@
         }
 
         .edit-btn:hover {
-            background-color: #218838;
+            background-color: #216288;
         }
     </style>
 </head>
@@ -59,6 +59,7 @@
 <body>
     <div class="container">
         <h2>User Food Data</h2>
+        <button class="close-button" onclick="window.location.href='/food'">X</button>
 
         <div id="foodDataContainer">
             {% for food_item in food_list %}
@@ -66,11 +67,12 @@
                     <button class="edit-btn" onclick="editFood('{{ food_item.foodName }}', '{{ food_item.cost }}')">Edit</button>
                     <p><strong>Food Name:</strong> {{ food_item.foodName }}</p>
                     <p><strong>Cost:</strong> {{ food_item.cost }}</p>
-                    <!-- Add more fields as needed -->
+                 
                 </div>
             {% endfor %}
         </div>
     </div>
+   
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
