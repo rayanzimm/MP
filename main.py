@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 import os
 import requests
 import json
-from openai import OpenAI
+#from openai import OpenAI
 
 app = Flask(__name__)
 UPLOAD_FOLDER = r'static\assets\img'
@@ -32,7 +32,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -102,7 +102,7 @@ def register():
             if photo.filename != '' and allowed_file(photo.filename):
                 # Save the uploaded photo with an absolute path
                 filename = secure_filename(photo.filename)
-                full_path = "static/assets/img/" + filename
+                full_path = "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/" + filename
                 photo.save(full_path)
                 flash("Photo uploaded successfully!", "success")
 
@@ -117,7 +117,7 @@ def register():
                         'dob': dob,
                         'address': address,
                         'mobile': mobile,
-                        'photo_path': "static/assets/img/" + filename
+                        'photo_path': "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/" + filename
                     }
                     db.collection('users').add(user_data)
 
@@ -196,7 +196,7 @@ def update_profile():
             if new_photo.filename != '' and allowed_file(new_photo.filename):
                 # Save the uploaded photo to the upload folder
                 filename = secure_filename(new_photo.filename)
-                full_path = "static/assets/img/" + filename
+                full_path = "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/" + filename
                 new_photo.save(full_path)
                 flash("New photo uploaded successfully!", "success")
             else:
