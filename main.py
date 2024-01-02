@@ -433,6 +433,50 @@ def edit_food_expense():
     
     return render_template('user_food_expenses.html', user_food_data=user_food_data, food_data=food_data)
 
+@app.route('/delete_food_expense/<int:unique_index>', methods=['GET'])
+def delete_food_expense(unique_index):
+    if 'user' not in session:
+        return redirect('/')
+    
+    user_email = session['user']
+    
+    # Find the food expense with the given unique index
+    food_ref = db.collection('food').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
+    food_iter = iter(food_ref)
+    food_doc = next(food_iter, None)
+    
+    if not food_doc:
+        # Food expense not found
+        flash("Food expense not found.", "warning")
+        return redirect('/user_food_expenses')
+    
+    try:
+        # Delete the food expense from Firestore
+        food_doc.reference.delete()
+        flash("Food expense deleted successfully!", "success")
+        
+        # Fetch the updated list of food expenses for the logged-in user
+        food_expenses = db.collection('food').where('user_email', '==', user_email).stream()
+        
+        # Create a list to store the food data
+        user_food_data = []
+
+        # Iterate through the food expenses and extract relevant information
+        for food_doc in food_expenses:
+            food_data = food_doc.to_dict()
+            user_food_data.append({
+                'foodName': food_data.get('foodName', ''),
+                'cost': food_data.get('cost', ''),
+                'unique_index': food_data.get('unique_index', '')
+            })
+
+    except Exception as e:
+        # Handle any errors that may occur during deletion
+        flash(f"An error occurred during food expense deletion: {str(e)}", "danger")
+        return redirect('/user_food_expenses')
+    
+    # Pass the updated data to the template
+    return render_template('user_food_expenses.html', user_food_data=user_food_data)
         
 @app.route('/news', methods=['GET', 'POST'])
 def news():
