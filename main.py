@@ -32,7 +32,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -78,7 +78,40 @@ def index():
 def home():
     if 'user' not in session:
         return redirect('/')
-    return render_template('home.html')
+    
+    user_email = session['user']
+
+    # Fetch the total cost for each expense type
+    total_food_cost = fetch_total_cost('food', user_email)
+    total_transport_cost = fetch_total_cost('transport', user_email)
+    total_income_cost = fetch_total_cost('income', user_email)
+    total_investment_cost = fetch_total_cost('investment', user_email)
+    total_investmentReturns_cost = fetch_total_cost('investmentReturns', user_email)
+
+    total_expense = total_food_cost + total_transport_cost + total_investment_cost - total_investmentReturns_cost
+    total_savings = total_income_cost - total_expense
+
+    return render_template('home.html',
+                           total_food_cost=total_food_cost,
+                           total_transport_cost=total_transport_cost,
+                           total_income_cost=total_income_cost,
+                           total_investment_cost=total_investment_cost,
+                           total_investmentReturns_cost=total_investmentReturns_cost,
+                           total_savings=total_savings)
+
+
+def fetch_total_cost(expense_type, user_email):
+    total_cost = 0
+
+    # Fetch the list of expenses for the given expense type and user
+    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).stream()
+
+    # Iterate through the expenses and calculate the total cost
+    for expense_doc in expense_ref:
+        expense_data = expense_doc.to_dict()
+        total_cost += float(expense_data.get('cost', 0))
+
+    return total_cost
 
 @app.route('/logout')
 def logout():
@@ -380,12 +413,6 @@ def user_food_expenses():
             'unique_index': food_data.get('unique_index', '')
         })
 
-        # Add the cost to the total_food_cost
-        total_food_cost += float(food_data.get('cost', 0))
-
-    # Pass the total_food_cost variable to the template
-    session['total_food_cost'] = total_food_cost
-
     # Render user_food_expense.html
     return render_template('user_food_expenses.html', user_food_data=user_food_data)
 
@@ -575,12 +602,6 @@ def user_transport_expenses():
             'unique_index': transport_data.get('unique_index', '')
         })
 
-        # Add the cost to the total_food_cost
-        total_transport_cost += float(transport_data.get('cost', 0))
-
-    # Pass the total_food_cost variable to the template
-    session['total_transport_cost'] = total_transport_cost
-
     # Render user_food_expense.html
     return render_template('user_transport_expenses.html', user_transport_data=user_transport_data)
 
@@ -763,12 +784,6 @@ def user_income_expenses():
             'cost': income_data.get('cost', ''),
             'unique_index': income_data.get('unique_index', '')
         })
-
-        # Add the cost to the total_food_cost
-        total_income_cost += float(income_data.get('cost', 0))
-
-    # Pass the total_food_cost variable to the template
-    session['total_income_cost'] = total_income_cost
 
     # Render user_food_expense.html
     return render_template('user_income_expenses.html', user_income_data=user_income_data)
@@ -964,11 +979,6 @@ def user_investment_expenses():
         # Add the cost to the total_food_cost
         total_investment_cost += float(investment_data.get('cost', 0))
 
-    # Pass the total_food_cost variable to the template
-    session['total_investment_cost'] = total_investment_cost
-
-    # Render user_food_expense.html
-    return render_template('user_investment_expenses.html', user_investment_data=user_investment_data)
 
 @app.route('/edit_investment_expenses', methods=['GET', 'POST'])
 def edit_investment_expense():
@@ -1149,12 +1159,6 @@ def user_investment_returns():
             'cost': investmentReturns_data.get('cost', ''),
             'unique_index': investmentReturns_data.get('unique_index', '')
         })
-
-        # Add the cost to the total_food_cost
-        total_investmentReturns_cost += float(investmentReturns_data.get('cost', 0))
-
-    # Pass the total_food_cost variable to the template
-    session['total_investmentReturns_cost'] = total_investmentReturns_cost
 
     # Render user_food_expense.html
     return render_template('user_investment_returns.html', user_investmentReturns_data=user_investmentReturns_data)

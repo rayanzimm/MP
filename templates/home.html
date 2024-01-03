@@ -113,7 +113,7 @@
     <div class="main-content">
         <div class="header">
             <h2>TOTAL SAVINGS</h2>
-            <p>$45,050</p>
+            <p>${{ total_savings }}</p>
             <canvas id="pieChart"></canvas>
             <!-- Add progress bar and pie chart here -->
         </div>
@@ -123,7 +123,7 @@
             <div class="card" onclick="redirectTo('/user_income_expenses')">
                 <h2>INCOME</h2>
                 {% if 'total_income_cost' in session %}
-                    <p>Total Income : ${{ session['total_income_cost'] }}</p>
+                    <p>Total Income : ${{ total_income_cost }}</p>
                 {% else %}
                     <p>Total Income : Not available</p>
                 {% endif %}
@@ -133,7 +133,7 @@
             <div class="card" onclick="redirectTo('/user_transport_expenses')">
                 <h2>TRANSPORT</h2>
                 {% if 'total_transport_cost' in session %}
-                    <p>Total Transport Cost: ${{ session['total_transport_cost'] }}</p>
+                    <p>Total Transport Cost: ${{ total_transport_cost }}</p>
                 {% else %}
                     <p>Total Transport Cost: Not available</p>
                 {% endif %}
@@ -143,7 +143,7 @@
             <div class="card" onclick="redirectTo('/user_investment_expenses')">
                 <h2>INVESTMENT</h2>
                 {% if 'total_investment_cost' in session %}
-                    <p>Total Investment Expenses: ${{ session['total_investment_cost'] }}</p> <p>Total Investment Returns: ${{ session['total_investmentReturns_cost'] }}</p>
+                    <p>Total Investment Expenses: ${{ total_investment_cost }}</p> <p>Total Investment Returns: ${{ total_investmentReturns_cost }}</p>
                 {% else %}
                     <p>Total Investment Cost: Not available</p>
                 {% endif %}
@@ -153,7 +153,7 @@
             <div class="card" onclick="redirectTo('/user_food_expenses')">
                 <h2>FOOD</h2>
                 {% if 'total_food_cost' in session %}
-                    <p>Total Food Cost: ${{ session['total_food_cost'] }}</p>
+                    <p>Total Food Cost: ${{ total_food_cost }}</p>
                 {% else %}
                     <p>Total Food Cost: Not available</p>
                 {% endif %}
