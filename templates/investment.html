@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <title>FOOD TESTING</title>
+    <title>investment TESTING</title>
     <style>
         body {
             background-color: #000A2B;
@@ -104,11 +104,11 @@
             margin-top: 50px;
         }
 
-        .foodDataContainer {
+        .investmentDataContainer {
             margin-top: 20px;
         }
 
-        .food-item {
+        .investment-item {
             border: 1px solid #ddd;
             border-radius: 5px;
             padding: 15px;
@@ -116,12 +116,12 @@
             position: relative;
         }
 
-        .food-item p {
+        .investment-item p {
             margin: 0;
             font-size: 16px;
         }
 
-        .food-item strong {
+        .investment-item strong {
             font-weight: bold;
         }
     </style>
@@ -130,26 +130,26 @@
 <body>
     <div class="container">
         <button class="close-button" onclick="window.location.href='/home'">X</button>
-        <div class="header">FOOD</div>
+        <div class="header">investment</div>
         <div id="dynamicContent" class="box-container">
             <!-- <button type="button" class='modal-btn' onclick="addNewBox()">+</button> -->
 
-            <form action="/addfood" method="POST" class="submitfood" name="submitfood">
-                <input type="hidden" id="food_id" name="food_id" value="{{ food_id }}">
+            <form action="/addinvestment" method="POST" class="submitinvestment" name="submitinvestment">
+                <input type="hidden" id="investment_id" name="investment_id" value="{{ investment_id }}">
                 <div class='form-group'>
-                    <label for='foodName'>Food Name</label>
-                    <input type='text' id='foodName' name='foodName' value="{{ food_data.foodName if food_data else '' }}">
+                    <label for='investmentName'>investment Name</label>
+                    <input type='text' id='investmentName' name='investmentName' value="{{ investment_data.investmentName if investment_data else '' }}">
                 </div>
                 <div class='form-group'>
                     <label for='cost'>Cost</label>
-                    <input type='text' id='cost' name='cost' value="{{ food_data.cost if food_data else '' }}">
+                    <input type='text' id='cost' name='cost' value="{{ investment_data.cost if investment_data else '' }}">
                 </div>
-                <button type="submit" class='modal-btn-submit'>Save Food Expense</button>
+                <button type="submit" class='modal-btn-submit'>Save investment Expense</button>
             </form>
-            {% for expense in food_expenses %}
+            {% for expense in investment_expenses %}
             <!-- <div class='form-group'>
-                <label for='foodName'>Food Name</label>
-                <input type='text' id='foodName' name='foodName' value="{{ expense.foodName }}">
+                <label for='investmentName'>investment Name</label>
+                <input type='text' id='investmentName' name='investmentName' value="{{ expense.investmentName }}">
             </div>
             <div class='form-group'>
                 <label for='cost'>Cost</label>
@@ -160,12 +160,12 @@
         </div>
     </div>
 
-    <!-- <div id="foodDataContainer">
-        {% for food_item in food_list %}
-            <div class="food-item">
-                <a class="edit-btn" href="{{ url_for('editfood', user_email=session['user']) }}">Edit</a>
-                <p><strong>Food Name:</strong> {{ food_item.foodName }}</p>
-                <p><strong>Cost:</strong> {{ food_item.cost }}</p>
+    <!-- <div id="investmentDataContainer">
+        {% for investment_item in investment_list %}
+            <div class="investment-item">
+                <a class="edit-btn" href="{{ url_for('editinvestment', user_email=session['user']) }}">Edit</a>
+                <p><strong>investment Name:</strong> {{ investment_item.investmentName }}</p>
+                <p><strong>Cost:</strong> {{ investment_item.cost }}</p>
                 
             </div>
         {% endfor %}
@@ -194,8 +194,8 @@
     <script>
     
     
-        function fetchAndDisplayFoodData() {
-        var fetchDataUrl = "/fetchfooddata";
+        function fetchAndDisplayinvestmentData() {
+        var fetchDataUrl = "/fetchinvestmentdata";
 
         // Make an AJAX request to fetch the data
         fetch(fetchDataUrl)
@@ -204,10 +204,10 @@
                 // Check if there is data returned
                 if (data.length > 0) {
                     // Display the fetched data
-                    displayFoodData(data);
+                    displaynvestmentData(data);
                 } else {
                     // Handle the case when no data is returned
-                    console.log('No food data found.');
+                    console.log('No investment data found.');
                 }
             })
             .catch(error => console.error('Error fetching data:', error));
@@ -215,42 +215,42 @@
     
 
 
-    // Function to display food data
-    function displayFoodData(foodData) {
-        var foodDataContainer = document.getElementById("foodDataContainer");
+    // Function to display investment data
+    function displaynvestmentData(investmentData) {
+        var investmentDataContainer = document.getElementById("investmentDataContainer");
 
         // Clear existing data
-        foodDataContainer.innerHTML = '';
+        investmentDataContainer.innerHTML = '';
 
         // Iterate through the fetched data and create HTML elements
-        foodData.forEach(function (food) {
-            var foodItemDiv = document.createElement("div");
-            foodItemDiv.className = "food-item";
+        investmentData.forEach(function (investment) {
+            var investmentItemDiv = document.createElement("div");
+            investmentItemDiv.className = "investment-item";
 
-            // Create elements for food data (adjust as needed)
-            var foodNameLabel = document.createElement("label");
-            foodNameLabel.textContent = "Food Name: ";
-            var foodNameSpan = document.createElement("span");
-            foodNameSpan.textContent = food.foodName;
+            // Create elements for investment data (adjust as needed)
+            var investmentNameLabel = document.createElement("label");
+            investmentNameLabel.textContent = "investment Name: ";
+            var investmentNameSpan = document.createElement("span");
+            investmentNameSpan.textContent = investment.investmentName;
 
             var costLabel = document.createElement("label");
             costLabel.textContent = "Cost: ";
             var costSpan = document.createElement("span");
-            costSpan.textContent = food.cost;
+            costSpan.textContent = investment.cost;
 
-            // Append elements to the foodItemDiv
-            foodItemDiv.appendChild(foodNameLabel);
-            foodItemDiv.appendChild(foodNameSpan);
-            foodItemDiv.appendChild(document.createElement("br")); // Line break for spacing
-            foodItemDiv.appendChild(costLabel);
-            foodItemDiv.appendChild(costSpan);
+            // Append elements to the investmentItemDiv
+            investmentItemDiv.appendChild(investmentNameLabel);
+            investmentItemDiv.appendChild(investmentNameSpan);
+            investmentItemDiv.appendChild(document.createElement("br")); // Line break for spacing
+            investmentItemDiv.appendChild(costLabel);
+            investmentItemDiv.appendChild(costSpan);
 
-            // Append the foodItemDiv to the foodDataContainer
-            foodDataContainer.appendChild(foodItemDiv);
+            // Append the investmentItemDiv to the investmentDataContainer
+            investmentDataContainer.appendChild(investmentItemDiv);
         });
     }
 
-    fetchAndDisplayFoodData();
+    fetchAndDisplayinvestmentData();
 
     </script>
 </body>

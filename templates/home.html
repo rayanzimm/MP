@@ -84,6 +84,12 @@
             width: 100%;
             height: auto;
         }
+        .pieChart {
+        width: 20px;  /* Adjust the width as needed */
+        height: 20px; /* Adjust the height as needed */
+        margin-top: 20px; /* Add margin-top for spacing */
+    }
+        
     </style>
 </head>
 
@@ -103,36 +109,54 @@
         <a href="#settings">Settings</a>
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()">Logout</a>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <div class="main-content">
         <div class="header">
             <h2>TOTAL SAVINGS</h2>
             <p>$45,050</p>
+            <canvas id="pieChart"></canvas>
             <!-- Add progress bar and pie chart here -->
         </div>
+        
         <!-- Add more cards for Income, Transport, Investment, Food, etc. -->
         <div class="card-container">
-            <div class="card" onclick="redirectTo('/income')">
+            <div class="card" onclick="redirectTo('/user_income_expenses')">
                 <h2>INCOME</h2>
-                <p>$15,000</p>
+                {% if 'total_income_cost' in session %}
+                    <p>Total Income : ${{ session['total_income_cost'] }}</p>
+                {% else %}
+                    <p>Total Income : Not available</p>
+                {% endif %}
                 <!-- Add progress bar and pie chart for Income here -->
             </div>
 
-            <div class="card" onclick="redirectTo('/transport')">
+            <div class="card" onclick="redirectTo('/user_transport_expenses')">
                 <h2>TRANSPORT</h2>
-                <p>$5,000</p>
-                <!-- Add progress bar and pie chart for Transport here -->
+                {% if 'total_transport_cost' in session %}
+                    <p>Total Transport Cost: ${{ session['total_transport_cost'] }}</p>
+                {% else %}
+                    <p>Total Transport Cost: Not available</p>
+                {% endif %}
+                <!-- Add progress bar and pie chart for Food here -->
             </div>
 
-            <div class="card" onclick="redirectTo('/investment')">
+            <div class="card" onclick="redirectTo('/user_investment_expenses')">
                 <h2>INVESTMENT</h2>
-                <p>$10,000</p>
+                {% if 'total_investment_cost' in session %}
+                    <p>Total Investment Expenses: ${{ session['total_investment_cost'] }}</p> <p>Total Investment Returns: ${{ session['total_investmentReturns_cost'] }}</p>
+                {% else %}
+                    <p>Total Investment Cost: Not available</p>
+                {% endif %}
                 <!-- Add progress bar and pie chart for Investment here -->
             </div>
 
             <div class="card" onclick="redirectTo('/user_food_expenses')">
                 <h2>FOOD</h2>
-                <p>$8,000</p>
+                {% if 'total_food_cost' in session %}
+                    <p>Total Food Cost: ${{ session['total_food_cost'] }}</p>
+                {% else %}
+                    <p>Total Food Cost: Not available</p>
+                {% endif %}
                 <!-- Add progress bar and pie chart for Food here -->
             </div>
         </div>
@@ -152,6 +176,23 @@
         function redirectTo(page) {
             window.location.href = page;
         }
+        var pieData = {
+        labels: ['Label 1', 'Label 2', 'Label 3'],
+        datasets: [{
+            data: [30, 40, 30],
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+            hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+        }]
+    };
+
+    // Get the canvas element
+    var pieCanvas = document.getElementById('pieChart').getContext('2d');
+
+    // Create the pie chart
+    var myPieChart = new Chart(pieCanvas, {
+        type: 'pie',
+        data: pieData,
+    });
     </script>
 
 </body>
