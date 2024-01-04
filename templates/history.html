@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History Page</title>
+
+    <!-- Include your CSS styles here -->
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #000A2B;
+        }
+        .navbar {
+            background-color: #212946;
+            width: 200px;
+            height: 100%;
+            position: fixed;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar a {
+            display: block;
+            color: white;
+            padding: 16px;
+            text-decoration: none;
+        }
+
+        .navbar a.active {
+            background-color: #151a2c;
+            color: white;
+        }
+
+        .logout {
+            margin-top: auto;
+            color: white;
+            padding: 16px;
+        }
+
+        .image:hover {
+            background-color: #212946;
+        }
+
+
+        /* Bootstrap styles for the container, table, and buttons */
+        body {
+            background-color: #000A2B;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        h1, h2 {
+            color: #ffffff;
+            margin-left:50px;
+        }
+
+        .table {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .filter-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="image" align="left">
+            <a href="{{ url_for('home')}}">
+                <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
+            </a>
+        </div>
+        <a href="#rewards">Rewards</a>
+        <a href="#news">News</a>
+        <a href="#analysis">Analysis</a>
+        <a href="{{ url_for('profile')}}">Profile</a>
+        <a href="#history">History</a>
+        <a href="#achievements">Achievements</a>
+        <a href="#settings">Settings</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()">Logout</a>
+    </div>
+
+    <div class="filter-buttons">
+        <button onclick="filterHistory('daily')">Daily</button>
+        <button onclick="filterHistory('monthly')">Monthly</button>
+        <button onclick="filterHistory('yearly')">Yearly</button>
+    </div>
+
+    <ul class="history-list" id="historyList">
+        <!-- Your history items will be dynamically added here based on the selected filter -->
+    </ul>
+</div>
+
+
+<div class="container">
+    <button class="close-button" onclick="window.location.href='/home'">X</button>
+
+        <input class="toggle-input" id="toggle" type="checkbox">
+        <label class="toggle-label" for="toggle"></label>
+      </div>
+      
+    <h1>History</h1>
+
+    {% if user_investment_data %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>investment Name</th>
+                <th>Cost</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for investment_item in user_investment_data %}
+                <tr>
+                    <td>{{ investment_item['investmentName'] }}</td>
+                    <td>{{ investment_item['cost'] }}</td>
+                    <td>
+                        <button class="edit-btn" onclick="openModal('{{ investment_item['investmentName'] }}', '{{ investment_item['cost'] }}', '{{ investment_item['unique_index'] }}')">Edit</button>
+                    </td>
+                    <td>
+                        <button class="delete-btn" onclick="deleteinvestmentExpense('{{ investment_item['unique_index'] }}')">Delete</button>
+                    </td>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No investment expenses found for the user.</p>
+{% endif %}
+
+    
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+
+
+<!-- Include your JavaScript script for handling filtering here -->
+
+<script>
+    function filterHistory(filterType) {
+        // You can implement logic here to fetch and display history items based on the selected filter
+        // For simplicity, let's just display a message for now
+        alert('Filtering history by ' + filterType);
+    }
+</script>
+
+</body>
+</html>

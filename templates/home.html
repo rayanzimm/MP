@@ -84,11 +84,11 @@
             width: 100%;
             height: auto;
         }
-        .pieChart {
-        width: 20px;  /* Adjust the width as needed */
-        height: 20px; /* Adjust the height as needed */
+        .barChart {
+        width: 200px;  /* Adjust the width as needed */
+        height: 200px; /* Adjust the height as needed */
         margin-top: 20px; /* Add margin-top for spacing */
-    }
+         }
         
     </style>
 </head>
@@ -104,7 +104,7 @@
         <a href="#news">News</a>
         <a href="#analysis">Analysis</a>
         <a href="{{ url_for('profile')}}">Profile</a>
-        <a href="#history">History</a>
+        <a href="{{ url_for('history')}}">History</a>
         <a href="#achievements">Achievements</a>
         <a href="#settings">Settings</a>
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()">Logout</a>
@@ -114,7 +114,8 @@
         <div class="header">
             <h2>TOTAL SAVINGS</h2>
             <p>${{ total_savings }}</p>
-            <canvas id="pieChart"></canvas>
+            <canvas id="barChart"></canvas>
+
             <!-- Add progress bar and pie chart here -->
         </div>
         
@@ -185,13 +186,22 @@
         }]
     };
 
-    // Get the canvas element
-    var pieCanvas = document.getElementById('pieChart').getContext('2d');
+    var barData = {
+        labels: ['Label 1', 'Label 2', 'Label 3'],
+        datasets: [{
+            data: [30, 40, 30],
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+            hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+        }]
+    };
 
-    // Create the pie chart
-    var myPieChart = new Chart(pieCanvas, {
-        type: 'pie',
-        data: pieData,
+    // Get the canvas element
+    var barCanvas = document.getElementById('barChart').getContext('2d');
+
+    // Create the bar chart
+    var myBarChart = new Chart(barCanvas, {
+        type: 'bar',
+        data: barData,
     });
     </script>
 

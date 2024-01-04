@@ -32,7 +32,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -329,11 +329,13 @@ def food():
         food_data = food_doc.to_dict()
 
         if food_data:
-            return render_template('food.html', food_data=food_data)
+            return render_template('user_food_expenses.html', food_data=food_data)
         else:
             flash("No Food Expenses.", "warning")
             return redirect('/')
         
+from datetime import datetime
+
 @app.route('/addfood', methods=['GET', 'POST'])
 def addfood():
     if request.method == 'POST':
@@ -356,11 +358,15 @@ def addfood():
 
             unique_index = latest_index + 1
 
+            # Get current date
+            current_date = datetime.now().strftime("%Y-%m-%d")
+
             # Original data
             food_data = {
                 'user_email': user_email,
                 'foodName': foodName,
                 'cost': cost,
+                'date': current_date,  # Add the date field
                 'unique_index': unique_index
             }
 
@@ -386,7 +392,8 @@ def addfood():
         except Exception as e:
             flash(f"An error occurred during food creation: {str(e)}", "warning")
 
-    return render_template('food.html')
+    return render_template('user_food_expenses.html')
+
 
 @app.route('/user_food_expenses')
 def user_food_expenses():
@@ -544,12 +551,13 @@ def addtransport():
                 latest_index = int(transport_doc.to_dict().get('unique_index', 0))
 
             unique_index = latest_index + 1
-
+            current_date = datetime.now().strftime("%Y-%m-%d")
             # Original data
             transport_data = {
                 'user_email': user_email,
                 'transportName': transportName,
                 'cost': cost,
+                'date': current_date,  # Add the date field
                 'unique_index': unique_index
             }
 
@@ -727,12 +735,14 @@ def addincome():
                 latest_index = int(income_doc.to_dict().get('unique_index', 0))
 
             unique_index = latest_index + 1
+            current_date = datetime.now().strftime("%Y-%m-%d")
 
             # Original data
             income_data = {
                 'user_email': user_email,
                 'incomeName': incomeName,
                 'cost': cost,
+                'date': current_date,  # Add the date field
                 'unique_index': unique_index
             }
 
@@ -918,12 +928,13 @@ def addinvestment():
                 latest_index = int(investment_doc.to_dict().get('unique_index', 0))
 
             unique_index = latest_index + 1
-
+            current_date = datetime.now().strftime("%Y-%m-%d")
             # Original data
             investment_data = {
                 'user_email': user_email,
                 'investmentName': investmentName,
                 'cost': cost,
+                'date': current_date,  # Add the date field
                 'unique_index': unique_index
             }
 
@@ -978,7 +989,8 @@ def user_investment_expenses():
 
         # Add the cost to the total_food_cost
         total_investment_cost += float(investment_data.get('cost', 0))
-
+        
+    return render_template('user_investment_expenses.html',  user_investment_data=user_investment_data)
 
 @app.route('/edit_investment_expenses', methods=['GET', 'POST'])
 def edit_investment_expense():
@@ -1102,12 +1114,13 @@ def addinvestmentReturns():
                 latest_index = int(investmentReturns_doc.to_dict().get('unique_index', 0))
 
             unique_index = latest_index + 1
-
+            current_date = datetime.now().strftime("%Y-%m-%d")
             # Original data
             investmentReturns_data = {
                 'user_email': user_email,
                 'investmentReturnsName': investmentReturnsName,
                 'cost': cost,
+                'date': current_date,  # Add the date field
                 'unique_index': unique_index
             }
 
@@ -1252,7 +1265,23 @@ def delete_investment_returns(unique_index):
     # Pass the updated data to the template
     return render_template('user_investment_returns.html', user_investmentReturns_data=user_investmentReturns_data)
         
+@app.route('/history')
+def history():
+    if 'user' not in session:
+        return redirect('/')
+    
+    user_email = session['user']
+    user_ref = db.collection('users').where('email', '==', user_email).get()
 
+    # Assuming there is only one user with the given email
+    for user_doc in user_ref:
+        user_data = user_doc.to_dict()
+        if user_data:
+            return render_template('history.html', user_data=user_data)
+        else:
+            flash("User not found.", "warning")
+            return redirect('/')
+    return render_template('history.html')
 
 
 
