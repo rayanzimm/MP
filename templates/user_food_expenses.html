@@ -109,15 +109,17 @@
             </thead>
             <tbody>
                 {% for food_item in user_food_data %}
-                    <tr>
-                        <td>{{ food_item['foodName'] }}</td>
-                        <td>{{ food_item['cost'] }}</td>
-                        <td>
-                            <button class="edit-btn" onclick="openModal('{{ food_item['foodName'] }}', '{{ food_item['cost'] }}', '{{ food_item['unique_index'] }}')">Edit</button>
-                        </td>
-                        <td>
-                            <button class="delete-btn" onclick="deleteFoodExpense('{{ food_item['unique_index'] }}')">Delete</button>
-                        </td>
+                    {% if food_item['date'] == food_item['current_date'] %}
+                        <tr>
+                            <td>{{ food_item['foodName'] }}</td>
+                            <td>{{ food_item['cost'] }}</td>
+                            <td>
+                                <button class="edit-btn" onclick="openModal('{{ food_item['foodName'] }}', '{{ food_item['cost'] }}', '{{ food_item['unique_index'] }}')">Edit</button>
+                            </td>
+                            <td>
+                                <button class="delete-btn" onclick="deleteFoodExpense('{{ food_item['unique_index'] }}')">Delete</button>
+                            </td>
+                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>

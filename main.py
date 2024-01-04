@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 import os
 import requests
 import json
+import datetime
 
 
 app = Flask(__name__)
@@ -32,7 +33,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -401,15 +402,13 @@ def user_food_expenses():
         return redirect('/')
 
     user_email = session['user']
+    current_date = datetime.now().strftime("%Y-%m-%d")
 
     # Fetch the list of food expenses for the logged-in user
-    food_expenses = db.collection('food').where('user_email', '==', user_email).stream()
+    food_expenses = db.collection('food').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
     # Create a list to store the food data
     user_food_data = []
-
-    # Variable to store the total food cost
-    total_food_cost = 0
 
     # Iterate through the food expenses and extract relevant information
     for food_doc in food_expenses:
@@ -417,7 +416,9 @@ def user_food_expenses():
         user_food_data.append({
             'foodName': food_data.get('foodName', ''),
             'cost': food_data.get('cost', ''),
-            'unique_index': food_data.get('unique_index', '')
+            'unique_index': food_data.get('unique_index', ''),
+            'date': food_data.get('date', ''),
+            'current_date': current_date
         })
 
     # Render user_food_expense.html
@@ -591,15 +592,14 @@ def user_transport_expenses():
         return redirect('/')
 
     user_email = session['user']
-
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    print(current_date)
     # Fetch the list of food expenses for the logged-in user
-    transport_expenses = db.collection('transport').where('user_email', '==', user_email).stream()
+    transport_expenses = db.collection('transport').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
     # Create a list to store the food data
     user_transport_data = []
 
-    # Variable to store the total food cost
-    total_transport_cost = 0
 
     # Iterate through the food expenses and extract relevant information
     for transport_doc in transport_expenses:
@@ -607,7 +607,9 @@ def user_transport_expenses():
         user_transport_data.append({
             'transportName': transport_data.get('transportName', ''),
             'cost': transport_data.get('cost', ''),
-            'unique_index': transport_data.get('unique_index', '')
+            'unique_index': transport_data.get('unique_index', ''),
+            'date': transport_data.get('date', ''),
+            'current_date': current_date
         })
 
     # Render user_food_expense.html
@@ -776,15 +778,12 @@ def user_income_expenses():
         return redirect('/')
 
     user_email = session['user']
-
+    current_date = datetime.now().strftime("%Y-%m-%d")
     # Fetch the list of food expenses for the logged-in user
-    income_expenses = db.collection('income').where('user_email', '==', user_email).stream()
+    income_expenses = db.collection('income').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
     # Create a list to store the food data
     user_income_data = []
-
-    # Variable to store the total food cost
-    total_income_cost = 0
 
     # Iterate through the food expenses and extract relevant information
     for income_doc in income_expenses:
@@ -792,7 +791,9 @@ def user_income_expenses():
         user_income_data.append({
             'incomeName': income_data.get('incomeName', ''),
             'cost': income_data.get('cost', ''),
-            'unique_index': income_data.get('unique_index', '')
+            'unique_index': income_data.get('unique_index', ''),
+            'date': income_data.get('date', ''),
+            'current_date': current_date
         })
 
     # Render user_food_expense.html
@@ -968,15 +969,12 @@ def user_investment_expenses():
         return redirect('/')
 
     user_email = session['user']
-
+    current_date = datetime.now().strftime("%Y-%m-%d")
     # Fetch the list of food expenses for the logged-in user
-    investment_expenses = db.collection('investment').where('user_email', '==', user_email).stream()
+    investment_expenses = db.collection('investment').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
     # Create a list to store the food data
     user_investment_data = []
-
-    # Variable to store the total food cost
-    total_investment_cost = 0
 
     # Iterate through the food expenses and extract relevant information
     for investment_doc in investment_expenses:
@@ -984,11 +982,10 @@ def user_investment_expenses():
         user_investment_data.append({
             'investmentName': investment_data.get('investmentName', ''),
             'cost': investment_data.get('cost', ''),
-            'unique_index': investment_data.get('unique_index', '')
+            'unique_index': investment_data.get('unique_index', ''),
+            'date': investment_data.get('date', ''),
+            'current_date': current_date
         })
-
-        # Add the cost to the total_food_cost
-        total_investment_cost += float(investment_data.get('cost', 0))
         
     return render_template('user_investment_expenses.html',  user_investment_data=user_investment_data)
 
@@ -1154,15 +1151,12 @@ def user_investment_returns():
         return redirect('/')
 
     user_email = session['user']
-
+    current_date = datetime.now().strftime("%Y-%m-%d")
     # Fetch the list of food expenses for the logged-in user
-    investment_returns = db.collection('investmentReturns').where('user_email', '==', user_email).stream()
+    investment_returns = db.collection('investmentReturns').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
     # Create a list to store the food data
     user_investmentReturns_data = []
-
-    # Variable to store the total food cost
-    total_investmentReturns_cost = 0
 
     # Iterate through the food expenses and extract relevant information
     for investmentReturns_doc in investment_returns:
@@ -1170,7 +1164,9 @@ def user_investment_returns():
         user_investmentReturns_data.append({
             'investmentReturnsName': investmentReturns_data.get('investmentReturnsName', ''),
             'cost': investmentReturns_data.get('cost', ''),
-            'unique_index': investmentReturns_data.get('unique_index', '')
+            'unique_index': investmentReturns_data.get('unique_index', ''),
+            'date': investmentReturns_data.get('date', ''),
+            'current_date': current_date
         })
 
     # Render user_food_expense.html

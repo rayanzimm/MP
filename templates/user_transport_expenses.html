@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User transport Expenses</title>
+    <title>User Transport Expenses</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 
@@ -94,30 +94,32 @@
 
 <div class="container">
     <button class="close-button" onclick="window.location.href='/home'">X</button>
-    <button type="button" class="modal-btn" onclick="openAddModal()"">Add transport Expense</button>
+    <button type="button" class="modal-btn" onclick="openAddModal()"">Add Transport Expense</button>
 
-    <h1>User transport Expenses</h1>
+    <h1>User Transport Expenses</h1>
 
     {% if user_transport_data %}
         <table class="table">
             <thead>
                 <tr>
-                    <th>transport Name</th>
+                    <th>Transport Name</th>
                     <th>Cost</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for transport_item in user_transport_data %}
-                    <tr>
-                        <td>{{ transport_item['transportName'] }}</td>
-                        <td>{{ transport_item['cost'] }}</td>
-                        <td>
-                            <button class="edit-btn" onclick="openModal('{{ transport_item['transportName'] }}', '{{ transport_item['cost'] }}', '{{ transport_item['unique_index'] }}')">Edit</button>
-                        </td>
-                        <td>
-                            <button class="delete-btn" onclick="deletetransportExpense('{{ transport_item['unique_index'] }}')">Delete</button>
-                        </td>
+                    {% if transport_item['date'] == transport_item['current_date'] %}
+                        <tr>
+                            <td>{{ transport_item['transportName'] }}</td>
+                            <td>{{ transport_item['cost'] }}</td>
+                            <td>
+                                <button class="edit-btn" onclick="openModal('{{ transport_item['transportName'] }}', '{{ transport_item['cost'] }}', '{{ transport_item['unique_index'] }}')">Edit</button>
+                            </td>
+                            <td>
+                                <button class="delete-btn" onclick="deletetransportExpense('{{ transport_item['unique_index'] }}')">Delete</button>
+                            </td>
+                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>

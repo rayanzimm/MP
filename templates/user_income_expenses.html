@@ -109,15 +109,17 @@
             </thead>
             <tbody>
                 {% for income_item in user_income_data %}
-                    <tr>
-                        <td>{{ income_item['incomeName'] }}</td>
-                        <td>{{ income_item['cost'] }}</td>
-                        <td>
-                            <button class="edit-btn" onclick="openModal('{{ income_item['incomeName'] }}', '{{ income_item['cost'] }}', '{{ income_item['unique_index'] }}')">Edit</button>
-                        </td>
-                        <td>
-                            <button class="delete-btn" onclick="deleteIncomeExpense('{{ income_item['unique_index'] }}')">Delete</button>
-                        </td>
+                    {% if income_item['date'] == income_item['current_date'] %}
+                        <tr>
+                            <td>{{ income_item['incomeName'] }}</td>
+                            <td>{{ income_item['cost'] }}</td>
+                            <td>
+                                <button class="edit-btn" onclick="openModal('{{ income_item['incomeName'] }}', '{{ income_item['cost'] }}', '{{ income_item['unique_index'] }}')">Edit</button>
+                            </td>
+                            <td>
+                                <button class="delete-btn" onclick="deleteIncomeExpense('{{ income_item['unique_index'] }}')">Delete</button>
+                            </td>
+                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>

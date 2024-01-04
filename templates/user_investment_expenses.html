@@ -192,6 +192,7 @@
             </thead>
             <tbody>
                 {% for investment_item in user_investment_data %}
+                  {% if investment_item['date'] == investment_item['current_date'] %}
                     <tr>
                         <td>{{ investment_item['investmentName'] }}</td>
                         <td>{{ investment_item['cost'] }}</td>
@@ -201,6 +202,7 @@
                         <td>
                             <button class="delete-btn" onclick="deleteinvestmentExpense('{{ investment_item['unique_index'] }}')">Delete</button>
                         </td>
+                  {% endif %}
                 {% endfor %}
             </tbody>
         </table>
