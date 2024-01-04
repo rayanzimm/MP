@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 import os
 import requests
 import json
-import datetime
+from datetime import datetime
 
 
 app = Flask(__name__)
@@ -81,13 +81,13 @@ def home():
         return redirect('/')
     
     user_email = session['user']
-
+    current_date = datetime.now().strftime("%Y-%m-%d")
     # Fetch the total cost for each expense type
-    total_food_cost = fetch_total_cost('food', user_email)
-    total_transport_cost = fetch_total_cost('transport', user_email)
-    total_income_cost = fetch_total_cost('income', user_email)
-    total_investment_cost = fetch_total_cost('investment', user_email)
-    total_investmentReturns_cost = fetch_total_cost('investmentReturns', user_email)
+    total_food_cost = fetch_total_cost('food', user_email, current_date)
+    total_transport_cost = fetch_total_cost('transport', user_email, current_date)
+    total_income_cost = fetch_total_cost('income', user_email, current_date)
+    total_investment_cost = fetch_total_cost('investment', user_email, current_date)
+    total_investmentReturns_cost = fetch_total_cost('investmentReturns', user_email, current_date)
 
     total_expense = total_food_cost + total_transport_cost + total_investment_cost - total_investmentReturns_cost
     total_savings = total_income_cost - total_expense
@@ -101,11 +101,11 @@ def home():
                            total_savings=total_savings)
 
 
-def fetch_total_cost(expense_type, user_email):
+def fetch_total_cost(expense_type, user_email, current_date):
     total_cost = 0
 
     # Fetch the list of expenses for the given expense type and user
-    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).stream()
+    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
     # Iterate through the expenses and calculate the total cost
     for expense_doc in expense_ref:
@@ -593,7 +593,6 @@ def user_transport_expenses():
 
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
-    print(current_date)
     # Fetch the list of food expenses for the logged-in user
     transport_expenses = db.collection('transport').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
