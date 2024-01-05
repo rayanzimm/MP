@@ -121,12 +121,12 @@
         
         <!-- Add more cards for Income, Transport, Investment, Food, etc. -->
         <div class="card-container">
-            <div class="card" onclick="redirectTo('/user_income_expenses')">
-                <h2>INCOME</h2>
-                {% if 'total_income_cost' in session %}
-                    <p>Total Income : ${{ total_income_cost }}</p>
+            <div class="card" onclick="redirectTo('/user_budget')">
+                <h2>BUDGET (FOR TODAY)</h2>
+                {% if 'total_budget_cost' in session %}
+                    <p>Total Budget : ${{ total_budget_cost }}</p>
                 {% else %}
-                    <p>Total Income : Not available</p>
+                    <p>Total Budget : Not available</p>
                 {% endif %}
                 <!-- Add progress bar and pie chart for Income here -->
             </div>

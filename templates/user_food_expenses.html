@@ -65,6 +65,7 @@
             border-radius: 0.25rem;
             cursor: pointer;
         }
+        
         .delete-btn {
             color: #fff;
             background-color: #ff0000;
@@ -139,6 +140,22 @@
             <button class="edit-btn" type="submit">Update Expense</button>
         </form>
         </div>
+    </div>
+    <div class="error-message" name="errorMessage">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+
+        {% endif %}
+        {% endwith %}
     </div>
 </div>
 

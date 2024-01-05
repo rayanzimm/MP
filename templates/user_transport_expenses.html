@@ -130,7 +130,7 @@
         <div class="modal-content">
         <form method="POST" action="/edit_transport_expenses" enctype="multipart/form-data">
             <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
-            <h2>Edit transport Expense</h2>
+            <h2>Edit Transport Expense</h2>
             <label for="transportName">Transport Name:</label>
             <input type="text" id="transportName" name="transportName" required>
             <label for="cost">Cost:</label>
@@ -140,6 +140,22 @@
         </form>
         </div>
     </div>
+    <div class="error-message" name="errorMessage">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+
+        {% endif %}
+        {% endwith %}
+    </div>
 </div>
 
 
@@ -147,14 +163,14 @@
     <div class="modal-dialog" role="modal-content">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addFoodModalLabel">Add New transport Expense</h5>
+          <h5 class="modal-title" id="addFoodModalLabel">Add New Transport Expense</h5>
           <span onclick="closeAddModal()" style="float: right; cursor: pointer;">&times;</span>
         </div>
         <div class="modal-body">
           <!-- Form for adding new transport expense -->
           <form action="/addtransport" method="POST" class="submittransport" name="submittransport">
             <div class="form-group">
-              <label for="transportName">transport Name</label>
+              <label for="transportName">Transport Name</label>
               <input type='text' id='transportName' name='transportName'>
             </div>
             <div class="form-group">

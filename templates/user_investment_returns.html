@@ -26,7 +26,7 @@
             margin: 15% auto;
             padding: 20px;
             border: 1px solid #888;
-            width: 50%;
+            width: 55%;
         }
 
         /* Bootstrap styles for the container, table, and buttons */
@@ -179,7 +179,7 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>investment Returns Name</th>
+                    <th>Investment Returns Name</th>
                     <th>Cost</th>
                     <th>Action</th>
                 </tr>
@@ -208,7 +208,7 @@
         <form method="POST" action="/edit_investment_returns" enctype="multipart/form-data">
             <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
             <h2>Edit Investment Returns</h2>
-            <label for="investmentReturnsName">investment Returns Name:</label>
+            <label for="investmentReturnsName">Investment Returns Name:</label>
             <input type="text" id="investmentReturnsName" name="investmentReturnsName" required>
             <label for="cost">Cost:</label>
             <input type="text" id="cost" name="cost" required >
@@ -217,6 +217,22 @@
         </form>
         </div>
     </div>
+    <div class="error-message" name="errorMessage">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          <span>{{ message }}</span>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+          </button>
+      </div>
+      {% endfor %}
+
+      {% endif %}
+      {% endwith %}
+  </div>
 </div>
 
 
@@ -231,14 +247,14 @@
           <!-- Form for adding new income expense -->
           <form action="/addinvestmentReturns" method="POST" class="submitinvestmentReturns" name="submitinvestmentReturns">
             <div class="form-group">
-              <label for="investmentReturnsName">investment Returns Name</label>
+              <label for="investmentReturnsName">Investment Returns Name</label>
               <input type='text' id='investmentReturnsName' name='investmentReturnsName'>
             </div>
             <div class="form-group">
               <label for="newCost">Cost</label>
               <input type='text' id='cost' name='cost'>
             </div>
-            <button type="submit" class='modal-btn-submit'>Add investment Returns</button>
+            <button type="submit" class='modal-btn-submit'>Add Investment Returns</button>
           </form>
         </div>
       </div>

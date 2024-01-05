@@ -10,6 +10,7 @@ import os
 import requests
 import json
 from datetime import datetime
+from jinja2 import Environment, FileSystemLoader
 
 
 app = Flask(__name__)
@@ -33,7 +34,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -83,25 +84,25 @@ def home():
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
     # Fetch the total cost for each expense type
-    total_food_cost = fetch_total_cost('food', user_email, current_date)
-    total_transport_cost = fetch_total_cost('transport', user_email, current_date)
-    total_income_cost = fetch_total_cost('income', user_email, current_date)
-    total_investment_cost = fetch_total_cost('investment', user_email, current_date)
-    total_investmentReturns_cost = fetch_total_cost('investmentReturns', user_email, current_date)
+    total_food_cost = fetch_total_cost('Food', user_email, current_date)
+    total_transport_cost = fetch_total_cost('Transport', user_email, current_date)
+    total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
+    total_investment_cost = fetch_total_cost('Investment', user_email, current_date)
+    total_investmentReturns_cost = fetch_total_cost('Investment Returns', user_email, current_date)
 
     session['total_food_cost'] = total_food_cost
     session['total_transport_cost'] = total_transport_cost
-    session['total_income_cost'] = total_income_cost
+    session['total_budget_cost'] = total_budget_cost
     session['total_investment_cost'] = total_investment_cost
     session['total_investmentReturns_cost'] = total_investmentReturns_cost
 
     total_expense = total_food_cost + total_transport_cost + total_investment_cost - total_investmentReturns_cost
-    total_savings = total_income_cost - total_expense
+    total_savings = total_budget_cost - total_expense
 
     return render_template('home.html',
                            total_food_cost=total_food_cost,
                            total_transport_cost=total_transport_cost,
-                           total_income_cost=total_income_cost,
+                           total_budget_cost=total_budget_cost,
                            total_investment_cost=total_investment_cost,
                            total_investmentReturns_cost=total_investmentReturns_cost,
                            total_savings=total_savings)
@@ -126,34 +127,19 @@ def history():
         return redirect('/')
     
     user_email = session['user']
+    
+    all_expenses = fetch_all_expenses(user_email)
 
-    # Fetch expenses for specific types
-    investment_expenses = fetch_expenses_by_type('investment', user_email)
-    food_expenses = fetch_expenses_by_type('food', user_email)
-    income_expenses = fetch_expenses_by_type('income', user_email)
-    transport_expenses = fetch_expenses_by_type('transport', user_email)
+    # Organize expenses by date
+    all_expenses_by_date = organize_expenses_by_date(all_expenses)
 
-    # Organize expenses by date for each type
-    investment_expenses_by_date = organize_expenses_by_date(investment_expenses)
-    food_expenses_by_date = organize_expenses_by_date(food_expenses)
-    income_expenses_by_date = organize_expenses_by_date(income_expenses)
-    transport_expenses_by_date = organize_expenses_by_date(transport_expenses)
+    # Calculate total expenses for each date
+    total_by_date = calculate_total_by_date(all_expenses_by_date)
 
-    # Calculate total expenses for each category for each date
-    total_investment_by_date = calculate_total_by_date(investment_expenses_by_date)
-    total_food_by_date = calculate_total_by_date(food_expenses_by_date)
-    total_income_by_date = calculate_total_by_date(income_expenses_by_date)
-    total_transport_by_date = calculate_total_by_date(transport_expenses_by_date)
 
     return render_template('history.html',
-                           investment_expenses_by_date=investment_expenses_by_date,
-                           food_expenses_by_date=food_expenses_by_date,
-                           income_expenses_by_date=income_expenses_by_date,
-                           transport_expenses_by_date=transport_expenses_by_date,
-                           total_investment_by_date=total_investment_by_date,
-                           total_food_by_date=total_food_by_date,
-                           total_income_by_date=total_income_by_date,
-                           total_transport_by_date=total_transport_by_date)
+                           all_expenses_by_date=all_expenses_by_date,
+                           total_by_date=total_by_date)
 
 def calculate_total_by_date(expenses_by_date):
     total_by_date = {}
@@ -183,9 +169,27 @@ def fetch_expenses_by_type(expense_type, user_email):
 
     for expense_doc in expense_ref:
         expense_data = expense_doc.to_dict()
+        expense_data['category'] = expense_type
         expenses.append(expense_data)
 
     return expenses
+
+def fetch_all_expenses(user_email):
+    all_expenses = []
+
+    # Fetch expenses for all categories
+    for expense_type in ['Budget', 'Investment', 'Food', 'Transport', 'Investment Returns']:
+        expenses = fetch_expenses_by_type(expense_type, user_email)
+        all_expenses.extend(expenses)
+
+    return all_expenses
+
+def format_date(value, format='%d %B %Y'):
+    if isinstance(value, str):
+        value = datetime.strptime(value, '%Y-%m-%d')  # Convert string to datetime object
+    return value.strftime(format)
+
+app.jinja_env.filters['format_date'] = format_date
 
 
 @app.route('/logout')
@@ -391,26 +395,6 @@ def delete_profile():
 
     return render_template('delete_profile.html')
 
-@app.route('/food')
-def food():
-    if 'user' not in session:
-        return redirect('/')
-
-    user_email = session['user']
-
-
-    food_ref = db.collection('food').where('user_email', '==', user_email).stream()
-    for food_doc in food_ref:
-        food_data = food_doc.to_dict()
-
-        if food_data:
-            return render_template('user_food_expenses.html', food_data=food_data)
-        else:
-            flash("No Food Expenses.", "warning")
-            return redirect('/')
-        
-from datetime import datetime
-
 @app.route('/addfood', methods=['GET', 'POST'])
 def addfood():
     if request.method == 'POST':
@@ -423,9 +407,9 @@ def addfood():
             # Check if foodName or cost is empty
             if not foodName or not cost:
                 flash("Please fill in both food name and cost.", "warning")
-                return render_template('food.html')
+                return redirect('/user_food_expenses')
 
-            latest_food = db.collection('food').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
+            latest_food = db.collection('Food').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
             latest_index = 0
 
             for food_doc in latest_food:
@@ -455,11 +439,11 @@ def addfood():
 
             if food_id:
                 # Editing an existing food expense
-                food_ref = db.collection('food').document(food_id)
+                food_ref = db.collection('Food').document(food_id)
                 food_ref.update(food_data)
             else:
                 # Adding a new food expense
-                db.collection('food').add(food_data)
+                db.collection('Food').add(food_data)
 
             flash("Food expense saved successfully!", "success")
             return redirect('/user_food_expenses')
@@ -479,7 +463,7 @@ def user_food_expenses():
     current_date = datetime.now().strftime("%Y-%m-%d")
 
     # Fetch the list of food expenses for the logged-in user
-    food_expenses = db.collection('food').where('user_email', '==', user_email).where('date', '==', current_date).stream()
+    food_expenses = db.collection('Food').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
     # Create a list to store the food data
     user_food_data = []
@@ -511,7 +495,7 @@ def edit_food_expense():
         raise ValueError("Invalid or empty unique_index")
     
     food_unique_index = int(food_unique_index)
-    food_ref = db.collection('food').where('user_email', '==', user_email).where('unique_index', '==', food_unique_index).get()
+    food_ref = db.collection('Food').where('user_email', '==', user_email).where('unique_index', '==', food_unique_index).get()
     food_iter = iter(food_ref)
     food_doc = next(food_iter, None)
 
@@ -548,7 +532,7 @@ def delete_food_expense(unique_index):
     user_email = session['user']
     
     # Find the food expense with the given unique index
-    food_ref = db.collection('food').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
+    food_ref = db.collection('Food').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
     food_iter = iter(food_ref)
     food_doc = next(food_iter, None)
     
@@ -563,7 +547,7 @@ def delete_food_expense(unique_index):
         flash("Food expense deleted successfully!", "success")
         
         # Fetch the updated list of food expenses for the logged-in user
-        food_expenses = db.collection('food').where('user_email', '==', user_email).stream()
+        food_expenses = db.collection('Food').where('user_email', '==', user_email).stream()
         
         # Create a list to store the food data
         user_food_data = []
@@ -584,25 +568,6 @@ def delete_food_expense(unique_index):
     
     # Pass the updated data to the template
     return render_template('user_food_expenses.html', user_food_data=user_food_data)
-        
-
-@app.route('/transport')
-def transport():
-    if 'user' not in session:
-        return redirect('/')
-
-    user_email = session['user']
-
-
-    transport_ref = db.collection('transport').where('user_email', '==', user_email).stream()
-    for transport_doc in transport_ref:
-        transport_data = transport_doc.to_dict()
-
-        if transport_data:
-            return render_template('transport.html', transport_data=transport_data)
-        else:
-            flash("No Transport Expenses.", "warning")
-            return redirect('/')
 
 
 @app.route('/addtransport', methods=['GET', 'POST'])
@@ -617,9 +582,9 @@ def addtransport():
             # Check if foodName or cost is empty
             if not transportName or not cost:
                 flash("Please fill in both Transport name and cost.", "warning")
-                return render_template('transport.html')
+                return redirect('/user_transport_expenses')
 
-            latest_transport = db.collection('transport').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
+            latest_transport = db.collection('Transport').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
             latest_index = 0
 
             for transport_doc in latest_transport:
@@ -646,11 +611,11 @@ def addtransport():
 
             if transport_id:
                 # Editing an existing food expense
-                transport_ref = db.collection('transport').document(transport_id)
+                transport_ref = db.collection('Transport').document(transport_id)
                 transport_ref.update(transport_data)
             else:
                 # Adding a new food expense
-                db.collection('transport').add(transport_data)
+                db.collection('Transport').add(transport_data)
 
             flash("Transport expense saved successfully!", "success")
             return redirect('/user_transport_expenses')
@@ -658,7 +623,7 @@ def addtransport():
         except Exception as e:
             flash(f"An error occurred during transport creation: {str(e)}", "warning")
 
-    return render_template('transport.html')
+    return render_template('user_transport_expenses.html')
 
 @app.route('/user_transport_expenses')
 def user_transport_expenses():
@@ -668,7 +633,7 @@ def user_transport_expenses():
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
     # Fetch the list of food expenses for the logged-in user
-    transport_expenses = db.collection('transport').where('user_email', '==', user_email).where('date', '==', current_date).stream()
+    transport_expenses = db.collection('Transport').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
     # Create a list to store the food data
     user_transport_data = []
@@ -701,7 +666,7 @@ def edit_transport_expense():
         raise ValueError("Invalid or empty unique_index")
     
     transport_unique_index = int(transport_unique_index)
-    transport_ref = db.collection('transport').where('user_email', '==', user_email).where('unique_index', '==', transport_unique_index).get()
+    transport_ref = db.collection('Transport').where('user_email', '==', user_email).where('unique_index', '==', transport_unique_index).get()
     transport_iter = iter(transport_ref)
     transport_doc = next(transport_iter, None)
 
@@ -738,7 +703,7 @@ def delete_transport_expense(unique_index):
     user_email = session['user']
     
     # Find the food expense with the given unique index
-    transport_ref = db.collection('transport').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
+    transport_ref = db.collection('Transport').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
     transport_iter = iter(transport_ref)
     transport_doc = next(transport_iter, None)
     
@@ -752,7 +717,7 @@ def delete_transport_expense(unique_index):
         transport_doc.reference.delete()
         flash("Transport expense deleted successfully!", "success")
       
-        transport_expenses = db.collection('transport').where('user_email', '==', user_email).stream()
+        transport_expenses = db.collection('Transport').where('user_email', '==', user_email).stream()
       
         user_transport_data = []
         for transport_doc in transport_expenses:
@@ -771,51 +736,33 @@ def delete_transport_expense(unique_index):
     # Pass the updated data to the template
     return render_template('user_transport_expenses.html', user_transport_data=user_transport_data)
 
-@app.route('/income')
-def income():
-    if 'user' not in session:
-        return redirect('/')
-
-    user_email = session['user']
-
-
-    income_ref = db.collection('income').where('user_email', '==', user_email).stream()
-    for income_doc in income_ref:
-        income_data = income_doc.to_dict()
-
-        if income_data:
-            return render_template('income.html', income_data=income_data)
-        else:
-            flash("No Income Expenses.", "warning")
-            return redirect('/')
-
-@app.route('/addincome', methods=['GET', 'POST'])
-def addincome():
+@app.route('/addbudget', methods=['GET', 'POST'])
+def addbudget():
     if request.method == 'POST':
         user_email = session['user']
-        income_id = request.form.get('income_id')
-        incomeName = request.form.get('incomeName')
+        budget_id = request.form.get('budget_id')
+        budgetName = request.form.get('budgetName')
         cost = request.form.get('cost')
 
         try:
             # Check if foodName or cost is empty
-            if not incomeName or not cost:
-                flash("Please fill in both income name and cost.", "warning")
-                return render_template('income.html')
+            if not budgetName or not cost:
+                flash("Please fill in both budget name and cost.", "warning")
+                return redirect('/user_budget')
 
-            latest_income = db.collection('income').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
+            latest_budget = db.collection('Budget').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
             latest_index = 0
 
-            for income_doc in latest_income:
-                latest_index = int(income_doc.to_dict().get('unique_index', 0))
+            for budget_doc in latest_budget:
+                latest_index = int(budget_doc.to_dict().get('unique_index', 0))
 
             unique_index = latest_index + 1
             current_date = datetime.now().strftime("%Y-%m-%d")
 
             # Original data
-            income_data = {
+            budget_data = {
                 'user_email': user_email,
-                'incomeName': incomeName,
+                'budgetName': budgetName,
                 'cost': cost,
                 'date': current_date,  # Add the date field
                 'unique_index': unique_index
@@ -827,160 +774,140 @@ def addincome():
 
             # Process dynamic fields and add them to food_data
             for index, value in enumerate(dynamic_fields):
-                income_data[f'newField_{index + 1}'] = value
+                budget_data[f'newField_{index + 1}'] = value
 
-            if income_id:
+            if budget_id:
                 # Editing an existing food expense
-                income_ref = db.collection('income').document(income_id)
-                income_ref.update(income_data)
+                budget_ref = db.collection('Budget').document(budget_id)
+                budget_ref.update(budget_data)
             else:
                 # Adding a new food expense
-                db.collection('income').add(income_data)
+                db.collection('Budget').add(budget_data)
 
-            flash("Income expense saved successfully!", "success")
-            return redirect('/user_income_expenses')
+            flash("budget expense saved successfully!", "success")
+            return redirect('/user_budget')
 
         except Exception as e:
             flash(f"An error occurred during food creation: {str(e)}", "warning")
 
-    return render_template('income.html')
+    return render_template('user_budget.html')
 
-@app.route('/user_income_expenses')
-def user_income_expenses():
+@app.route('/user_budget')
+def user_budget_expenses():
     if 'user' not in session:
         return redirect('/')
 
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
     # Fetch the list of food expenses for the logged-in user
-    income_expenses = db.collection('income').where('user_email', '==', user_email).where('date', '==', current_date).stream()
+    budget_expenses = db.collection('Budget').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
     # Create a list to store the food data
-    user_income_data = []
+    user_budget_data = []
 
     # Iterate through the food expenses and extract relevant information
-    for income_doc in income_expenses:
-        income_data = income_doc.to_dict()
-        user_income_data.append({
-            'incomeName': income_data.get('incomeName', ''),
-            'cost': income_data.get('cost', ''),
-            'unique_index': income_data.get('unique_index', ''),
-            'date': income_data.get('date', ''),
+    for budget_doc in budget_expenses:
+        budget_data = budget_doc.to_dict()
+        user_budget_data.append({
+            'budgetName': budget_data.get('budgetName', ''),
+            'cost': budget_data.get('cost', ''),
+            'unique_index': budget_data.get('unique_index', ''),
+            'date': budget_data.get('date', ''),
             'current_date': current_date
         })
 
     # Render user_food_expense.html
-    return render_template('user_income_expenses.html', user_income_data=user_income_data)
+    return render_template('user_budget.html', user_budget_data=user_budget_data)
 
-@app.route('/edit_income_expenses', methods=['GET', 'POST'])
-def edit_income_expense():
+@app.route('/edit_budget', methods=['GET', 'POST'])
+def edit_budget_expense():
     # Redirect to the home page if the user is not logged in
     if 'user' not in session:
         return redirect('/')
 
     user_email = session['user']
-    income_unique_index = request.form.get('unique_index')
+    budget_unique_index = request.form.get('unique_index')
 
 
-    if not income_unique_index or not income_unique_index.strip():
+    if not budget_unique_index or not budget_unique_index.strip():
         raise ValueError("Invalid or empty unique_index")
     
-    income_unique_index = int(income_unique_index)
-    income_ref = db.collection('income').where('user_email', '==', user_email).where('unique_index', '==', income_unique_index).get()
-    income_iter = iter(income_ref)
-    income_doc = next(income_iter, None)
+    budget_unique_index = int(budget_unique_index)
+    budget_ref = db.collection('Budget').where('user_email', '==', user_email).where('unique_index', '==', budget_unique_index).get()
+    budget_iter = iter(budget_ref)
+    budget_doc = next(budget_iter, None)
 
 
-    if not income_doc:
+    if not budget_doc:
        return redirect('/')
    
-    income_data = income_doc.to_dict()
+    budget_data = budget_doc.to_dict()
     
     if request.method == 'POST':
         print(request.form)
-        new_income_name = request.form.get('incomeName')
+        new_budget_name = request.form.get('budgetName')
         new_cost = request.form.get('cost')
 
-        income_data={
+        budget_data={
             'cost': new_cost,
-            'incomeName':new_income_name
+            'budgetName':new_budget_name
         }
-        print(income_data)
-        user_income_data=[]
-        income_doc.reference.update(income_data)
-        user_income_data.append(income_data)
+        print(budget_data)
+        user_budget_data=[]
+        budget_doc.reference.update(budget_data)
+        user_budget_data.append(budget_data)
 
-        flash("income expense updated successfully!", "success")
-        return redirect('/user_income_expenses')
+        flash("budget expense updated successfully!", "success")
+        return redirect('/user_budget')
 
     
-    return render_template('user_income_expenses.html', user_income_data=user_income_data, income_data=income_data)
+    return render_template('user_budget.html', user_budget_data=user_budget_data, budget_data=budget_data)
 
-@app.route('/delete_income_expense/<int:unique_index>', methods=['GET'])
-def delete_income_expense(unique_index):
+@app.route('/delete_budget/<int:unique_index>', methods=['GET'])
+def delete_budget_expense(unique_index):
     if 'user' not in session:
         return redirect('/')
     
     user_email = session['user']
     
     # Find the food expense with the given unique index
-    income_ref = db.collection('income').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
-    income_iter = iter(income_ref)
-    income_doc = next(income_iter, None)
+    budget_ref = db.collection('Budget').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
+    budget_iter = iter(budget_ref)
+    budget_doc = next(budget_iter, None)
     
-    if not income_doc:
+    if not budget_doc:
         # Food expense not found
-        flash("income expense not found.", "warning")
-        return redirect('/user_income_expenses')
+        flash("budget expense not found.", "warning")
+        return redirect('/user_budget_expenses')
     
     try:
         # Delete the food expense from Firestore
-        income_doc.reference.delete()
-        flash("income expense deleted successfully!", "success")
+        budget_doc.reference.delete()
+        flash("budget expense deleted successfully!", "success")
         
         # Fetch the updated list of food expenses for the logged-in user
-        income_expenses = db.collection('income').where('user_email', '==', user_email).stream()
+        budget_expenses = db.collection('Budget').where('user_email', '==', user_email).stream()
         
         # Create a list to store the food data
-        user_income_data = []
+        user_budget_data = []
 
         # Iterate through the food expenses and extract relevant information
-        for income_doc in income_expenses:
-            income_data = income_doc.to_dict()
-            user_income_data.append({
-                'incomeName': income_data.get('incomeName', ''),
-                'cost': income_data.get('cost', ''),
-                'unique_index': income_data.get('unique_index', '')
+        for budget_doc in budget_expenses:
+            budget_data = budget_doc.to_dict()
+            user_budget_data.append({
+                'budgetName': budget_data.get('budgetName', ''),
+                'cost': budget_data.get('cost', ''),
+                'unique_index': budget_data.get('unique_index', '')
             })
 
     except Exception as e:
         # Handle any errors that may occur during deletion
         flash(f"An error occurred during food expense deletion: {str(e)}", "danger")
-        return redirect('/user_income_expenses')
+        return redirect('/user_budget_expenses')
     
     # Pass the updated data to the template
-    return render_template('user_income_expenses.html', user_income_data=user_income_data)
+    return render_template('user_budget.html', user_budget_data=user_budget_data)
         
-
-@app.route('/investment')
-def investment():
-    if 'user' not in session:
-        return redirect('/')
-
-    user_email = session['user']
-
-
-    investment_ref = db.collection('investment').where('user_email', '==', user_email).stream()
-    for investment_doc in investment_ref:
-        investment_data = investment_doc.to_dict()
-
-        if investment_data:
-            return render_template('investment.html', investment_data=investment_data)
-        else:
-            flash("No investment Expenses.", "warning")
-            return redirect('/')
-
-
 @app.route('/addinvestment', methods=['GET', 'POST'])
 def addinvestment():
     if request.method == 'POST':
@@ -993,9 +920,9 @@ def addinvestment():
             # Check if foodName or cost is empty
             if not investmentName or not cost:
                 flash("Please fill in both investment name and cost.", "warning")
-                return render_template('investment.html')
+                return redirect('/user_investment_expenses')
 
-            latest_investment = db.collection('investment').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
+            latest_investment = db.collection('Investment').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
             latest_index = 0
 
             for investment_doc in latest_investment:
@@ -1022,11 +949,11 @@ def addinvestment():
 
             if investment_id:
                 # Editing an existing food expense
-                investment_ref = db.collection('investment').document(investment_id)
+                investment_ref = db.collection('Investment').document(investment_id)
                 investment_ref.update(investment_data)
             else:
                 # Adding a new food expense
-                db.collection('investment').add(investment_data)
+                db.collection('Investment').add(investment_data)
 
             flash("investment expense saved successfully!", "success")
             return redirect('/user_investment_expenses')
@@ -1034,7 +961,7 @@ def addinvestment():
         except Exception as e:
             flash(f"An error occurred during investment creation: {str(e)}", "warning")
 
-    return render_template('investment.html')
+    return render_template('user_investment_expenses.html')
 
 @app.route('/user_investment_expenses')
 def user_investment_expenses():
@@ -1044,7 +971,7 @@ def user_investment_expenses():
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
     # Fetch the list of food expenses for the logged-in user
-    investment_expenses = db.collection('investment').where('user_email', '==', user_email).where('date', '==', current_date).stream()
+    investment_expenses = db.collection('Investment').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
     # Create a list to store the food data
     user_investment_data = []
@@ -1075,7 +1002,7 @@ def edit_investment_expense():
         raise ValueError("Invalid or empty unique_index")
     
     investment_unique_index = int(investment_unique_index)
-    investment_ref = db.collection('investment').where('user_email', '==', user_email).where('unique_index', '==', investment_unique_index).get()
+    investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('unique_index', '==', investment_unique_index).get()
     investment_iter = iter(investment_ref)
     investment_doc = next(investment_iter, None)
 
@@ -1112,7 +1039,7 @@ def delete_investment_expense(unique_index):
     user_email = session['user']
     
     # Find the food expense with the given unique index
-    investment_ref = db.collection('investment').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
+    investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
     investment_iter = iter(investment_ref)
     investment_doc = next(investment_iter, None)
     
@@ -1126,7 +1053,7 @@ def delete_investment_expense(unique_index):
         investment_doc.reference.delete()
         flash("investment expense deleted successfully!", "success")
       
-        investment_expenses = db.collection('investment').where('user_email', '==', user_email).stream()
+        investment_expenses = db.collection('Investment').where('user_email', '==', user_email).stream()
       
         user_investment_data = []
         for investment_doc in investment_expenses:
@@ -1145,24 +1072,6 @@ def delete_investment_expense(unique_index):
     # Pass the updated data to the template
     return render_template('user_investment_expenses.html', user_investment_data=user_investment_data)
 
-@app.route('/investmentReturns')
-def investmentReturns():
-    if 'user' not in session:
-        return redirect('/')
-
-    user_email = session['user']
-
-
-    investmentReturns_ref = db.collection('investmentReturns').where('user_email', '==', user_email).stream()
-    for investmentReturns_doc in investmentReturns_ref:
-        investmentReturns_data = investmentReturns_doc.to_dict()
-
-        if investmentReturns_data:
-            return render_template('investmentReturns.html', investmentReturns_data=investmentReturns_data)
-        else:
-            flash("No investment Returns.", "warning")
-            return redirect('/')
-
 @app.route('/addinvestmentReturns', methods=['GET', 'POST'])
 def addinvestmentReturns():
     if request.method == 'POST':
@@ -1174,10 +1083,10 @@ def addinvestmentReturns():
         try:
             # Check if foodName or cost is empty
             if not investmentReturnsName or not cost:
-                flash("Please fill in both income name and cost.", "warning")
-                return render_template('investmentReturns.html')
+                flash("Please fill in both budget name and cost.", "warning")
+                return redirect('/user_investment_returns')
 
-            latest_investmentReturns = db.collection('investmentReturns').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
+            latest_investmentReturns = db.collection('Investment Returns').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
             latest_index = 0
 
             for investmentReturns_doc in latest_investmentReturns:
@@ -1204,11 +1113,11 @@ def addinvestmentReturns():
 
             if investmentReturns_id:
                 # Editing an existing food expense
-                investmentReturns_ref = db.collection('investmentReturns').document(investmentReturns_id)
+                investmentReturns_ref = db.collection('Investment Returns').document(investmentReturns_id)
                 investmentReturns_ref.update(investmentReturns_data)
             else:
                 # Adding a new food expense
-                db.collection('investmentReturns').add(investmentReturns_data)
+                db.collection('Investment Returns').add(investmentReturns_data)
 
             flash("Investment Returns saved successfully!", "success")
             return redirect('/user_investment_returns')
@@ -1226,7 +1135,7 @@ def user_investment_returns():
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
     # Fetch the list of food expenses for the logged-in user
-    investment_returns = db.collection('investmentReturns').where('user_email', '==', user_email).where('date', '==', current_date).stream()
+    investment_returns = db.collection('Investment Returns').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
     # Create a list to store the food data
     user_investmentReturns_data = []
@@ -1259,7 +1168,7 @@ def edit_investment_returns():
         raise ValueError("Invalid or empty unique_index")
     
     investmentReturns_unique_index = int(investmentReturns_unique_index)
-    investmentReturns_ref = db.collection('investmentReturns').where('user_email', '==', user_email).where('unique_index', '==', investmentReturns_unique_index).get()
+    investmentReturns_ref = db.collection('Investment Returns').where('user_email', '==', user_email).where('unique_index', '==', investmentReturns_unique_index).get()
     investmentReturns_iter = iter(investmentReturns_ref)
     investmentReturns_doc = next(investmentReturns_iter, None)
 
@@ -1297,7 +1206,7 @@ def delete_investment_returns(unique_index):
     user_email = session['user']
     
     # Find the food expense with the given unique index
-    investmentReturns_ref = db.collection('investmentReturns').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
+    investmentReturns_ref = db.collection('Investment Returns').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
     investmentReturns_iter = iter(investmentReturns_ref)
     investmentReturns_doc = next(investmentReturns_iter, None)
     
@@ -1312,7 +1221,7 @@ def delete_investment_returns(unique_index):
         flash("investment returns deleted successfully!", "success")
         
         # Fetch the updated list of food expenses for the logged-in user
-        investment_returns = db.collection('investmentReturns').where('user_email', '==', user_email).stream()
+        investment_returns = db.collection('Investment Returns').where('user_email', '==', user_email).stream()
         
         # Create a list to store the food data
         user_investmentReturns_data = []

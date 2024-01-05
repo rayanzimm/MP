@@ -1,292 +1,314 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User investment Expenses</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Investment Expenses</title>
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
+  <style>
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
 
-        /* Modal content */
-        .modal-content {
-            background-color: #010129c1;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 50%;
-        }
+    /* Modal content */
+    .modal-content {
+      background-color: #010129c1;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 55%;
+    }
 
-        /* Bootstrap styles for the container, table, and buttons */
-        body {
-            background-color: #000A2B;
-            color: #ffffff;
-            font-family: 'Arial', sans-serif;
-        }
+    /* Bootstrap styles for the container, table, and buttons */
+    body {
+      background-color: #000A2B;
+      color: #ffffff;
+      font-family: 'Arial', sans-serif;
+    }
 
-        .container {
-            margin-top: 50px;
-        }
+    .container {
+      margin-top: 50px;
+    }
 
-        h1, h2 {
-            color: #ffffff;
-        }
+    h1,
+    h2 {
+      color: #ffffff;
+    }
 
-        .table {
-            width: 100%;
-            margin-bottom: 1rem;
-            color: #fff;
-        }
+    .table {
+      width: 100%;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
 
-        .table th,
-        .table td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #dee2e6;
-        }
+    .table th,
+    .table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #dee2e6;
+    }
 
-        .edit-btn {
-            color: #fff;
-            background-color: #007bff;
-            border-color: #007bff;
-            padding: 0.375rem 0.75rem;
-            border-radius: 0.25rem;
-            cursor: pointer;
-        }
-        .delete-btn {
-            color: #fff;
-            background-color: #ff0000;
-            border-color: #ff0000;
-            padding: 0.375rem 0.75rem;
-            border-radius: 0.25rem;
-            cursor: pointer;
-        }
+    .edit-btn {
+      color: #fff;
+      background-color: #007bff;
+      border-color: #007bff;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+    }
 
-        .edit-btn:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
+    .delete-btn {
+      color: #fff;
+      background-color: #ff0000;
+      border-color: #ff0000;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+    }
 
-        .modal-container {
-            margin-top: 50px;
-        }
-       
+    .edit-btn:hover {
+      background-color: #0056b3;
+      border-color: #0056b3;
+    }
 
-        .modal-btn-submit:hover {
-            background-color: #207290;
-            color: white;
-        }
-        /* Genel stil */
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 24px;
-  margin: 10px;
-}
+    .modal-container {
+      margin-top: 50px;
+    }
 
-/* Giriş stil */
-.toggle-switch .toggle-input {
-  display: none;
-}
 
-/* Anahtarın stilinin etrafındaki etiketin stil */
-.toggle-switch .toggle-label {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 40px;
-  height: 24px;
-  background-color: #2196F3;
-  border-radius: 34px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
+    .modal-btn-submit:hover {
+      background-color: #207290;
+      color: white;
+    }
 
-/* Anahtarın yuvarlak kısmının stil */
-.toggle-switch .toggle-label::before {
-  content: "";
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  top: 2px;
-  left: 2px;
-  background-color: #fff;
-  box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
-  transition: transform 0.3s;
-}
+    /* Genel stil */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 24px;
+      margin: 10px;
+    }
 
-/* Anahtarın etkin hale gelmesindeki stil değişiklikleri */
-.toggle-switch .toggle-input:checked + .toggle-label {
-  background-color: #4CAF50;
-}
+    /* Giriş stil */
+    .toggle-switch .toggle-input {
+      display: none;
+    }
 
-.toggle-switch .toggle-input:checked + .toggle-label::before {
-  transform: translateX(16px);
-}
+    /* Anahtarın stilinin etrafındaki etiketin stil */
+    .toggle-switch .toggle-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 40px;
+      height: 24px;
+      background-color: #2196F3;
+      border-radius: 34px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
 
-/* Light tema */
-.toggle-switch.light .toggle-label {
-  background-color: #BEBEBE;
-}
+    /* Anahtarın yuvarlak kısmının stil */
+    .toggle-switch .toggle-label::before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      background-color: #fff;
+      box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s;
+    }
 
-.toggle-switch.light .toggle-input:checked + .toggle-label {
-  background-color: #9B9B9B;
-}
+    /* Anahtarın etkin hale gelmesindeki stil değişiklikleri */
+    .toggle-switch .toggle-input:checked+.toggle-label {
+      background-color: #4CAF50;
+    }
 
-.toggle-switch.light .toggle-input:checked + .toggle-label::before {
-  transform: translateX(6px);
-}
+    .toggle-switch .toggle-input:checked+.toggle-label::before {
+      transform: translateX(16px);
+    }
 
-/* Dark tema */
-.toggle-switch.dark .toggle-label {
-  background-color: #4B4B4B;
-}
+    /* Light tema */
+    .toggle-switch.light .toggle-label {
+      background-color: #BEBEBE;
+    }
 
-.toggle-switch.dark .toggle-input:checked + .toggle-label {
-  background-color: #717171;
-}
+    .toggle-switch.light .toggle-input:checked+.toggle-label {
+      background-color: #9B9B9B;
+    }
 
-.toggle-switch.dark .toggle-input:checked + .toggle-label::before {
-  transform: translateX(16px);
-}
+    .toggle-switch.light .toggle-input:checked+.toggle-label::before {
+      transform: translateX(6px);
+    }
 
- 
-    </style>
+    /* Dark tema */
+    .toggle-switch.dark .toggle-label {
+      background-color: #4B4B4B;
+    }
+
+    .toggle-switch.dark .toggle-input:checked+.toggle-label {
+      background-color: #717171;
+    }
+
+    .toggle-switch.dark .toggle-input:checked+.toggle-label::before {
+      transform: translateX(16px);
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="container">
+  <div class="container">
     <button class="close-button" onclick="window.location.href='/home'">X</button>
-    <button type="button" class="modal-btn" onclick="openAddModal()"">Add investment Expense</button>
+    <button type="button" class="modal-btn" onclick="openAddModal()"">Add Investment Expense</button>
 
-      <div class="toggle-switch" onclick="window.location.href='/user_investment_returns'">
-        <input class="toggle-input" id="toggle" type="checkbox">
-        <label class="toggle-label" for="toggle"></label>
-      </div>
-      
+      <div class=" toggle-switch" onclick="window.location.href='/user_investment_returns'">
+      <input class="toggle-input" id="toggle" type="checkbox">
+      <label class="toggle-label" for="toggle"></label>
+  </div>
 
-    <h1>User investment Expenses</h1>
 
-    {% if user_investment_data %}
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>investment Name</th>
-                    <th>Cost</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for investment_item in user_investment_data %}
-                  {% if investment_item['date'] == investment_item['current_date'] %}
-                    <tr>
-                        <td>{{ investment_item['investmentName'] }}</td>
-                        <td>{{ investment_item['cost'] }}</td>
-                        <td>
-                            <button class="edit-btn" onclick="openModal('{{ investment_item['investmentName'] }}', '{{ investment_item['cost'] }}', '{{ investment_item['unique_index'] }}')">Edit</button>
-                        </td>
-                        <td>
-                            <button class="delete-btn" onclick="deleteinvestmentExpense('{{ investment_item['unique_index'] }}')">Delete</button>
-                        </td>
-                  {% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No investment expenses found for the user.</p>
-    {% endif %}
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-        <form method="POST" action="/edit_investment_expenses" enctype="multipart/form-data">
-            <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
-            <h2>Edit investment Expense</h2>
-            <label for="investmentName">investment Name:</label>
-            <input type="text" id="investmentName" name="investmentName" required>
-            <label for="cost">Cost:</label>
-            <input type="text" id="cost" name="cost" required >
-            <input type="hidden" name="unique_index" id="unique_index" value="">
-            <button class="edit-btn" type="submit">Update Expense</button>
-        </form>
-        </div>
+  <h1>User Investment Expenses</h1>
+
+  {% if user_investment_data %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Investment Name</th>
+        <th>Cost</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for investment_item in user_investment_data %}
+      {% if investment_item['date'] == investment_item['current_date'] %}
+      <tr>
+        <td>{{ investment_item['investmentName'] }}</td>
+        <td>{{ investment_item['cost'] }}</td>
+        <td>
+          <button class="edit-btn"
+            onclick="openModal('{{ investment_item['investmentName'] }}', '{{ investment_item['cost'] }}', '{{ investment_item['unique_index'] }}')">Edit</button>
+        </td>
+        <td>
+          <button class="delete-btn"
+            onclick="deleteinvestmentExpense('{{ investment_item['unique_index'] }}')">Delete</button>
+        </td>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No investment expenses found for the user.</p>
+  {% endif %}
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <form method="POST" action="/edit_investment_expenses" enctype="multipart/form-data">
+        <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
+        <h2>Edit Investment Expense</h2>
+        <label for="investmentName">Investment Name:</label>
+        <input type="text" id="investmentName" name="investmentName" required>
+        <label for="cost">Cost:</label>
+        <input type="text" id="cost" name="cost" required>
+        <input type="hidden" name="unique_index" id="unique_index" value="">
+        <button class="edit-btn" type="submit">Update Expense</button>
+      </form>
     </div>
-</div>
+  </div>
+  <div class="error-message" name="errorMessage">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+      <span>{{ message }}</span>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+
+    {% endif %}
+    {% endwith %}
+  </div>
+  </div>
 
 
-<div class="modal" id="addinvestmentModal" tabindex="-1" role="dialog" aria-labelledby="addinvestmentModalLabel" >
+  <div class="modal" id="addinvestmentModal" tabindex="-1" role="dialog" aria-labelledby="addinvestmentModalLabel">
     <div class="modal-dialog" role="modal-content">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addFoodModalLabel">Add New investment Expense</h5>
+          <h5 class="modal-title" id="addFoodModalLabel">Add New Investment Expense</h5>
           <span onclick="closeAddModal()" style="float: right; cursor: pointer;">&times;</span>
         </div>
         <div class="modal-body">
           <!-- Form for adding new investment expense -->
           <form action="/addinvestment" method="POST" class="submitinvestment" name="submitinvestment">
             <div class="form-group">
-              <label for="investmentName">investment Name</label>
+              <label for="investmentName">Investment Name</label>
               <input type='text' id='investmentName' name='investmentName'>
             </div>
             <div class="form-group">
               <label for="newCost">Cost</label>
               <input type='text' id='cost' name='cost'>
             </div>
-            <button type="submit" class='modal-btn-submit'>Add investment Expense</button>
+            <button type="submit" class='modal-btn-submit'>Add Investment Expense</button>
           </form>
         </div>
       </div>
     </div>
-</div>
+  </div>
 
 
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
 
 
-<script>
+  <script>
     function openModal(investmentName, cost, uniqueIndex) {
-        document.getElementById("investmentName").value = investmentName;
-        document.getElementById("cost").value = cost;
-        document.getElementById("unique_index").value = uniqueIndex;
-        document.getElementById("editModal").style.display = "block";
+      document.getElementById("investmentName").value = investmentName;
+      document.getElementById("cost").value = cost;
+      document.getElementById("unique_index").value = uniqueIndex;
+      document.getElementById("editModal").style.display = "block";
     }
     function closeModal() {
-        document.getElementById("editModal").style.display = "none";
+      document.getElementById("editModal").style.display = "none";
     }
 
 
     function openAddModal() {
-        document.getElementById("addinvestmentModal").style.display = "block"; 
+      document.getElementById("addinvestmentModal").style.display = "block";
     }
     function closeAddModal() {
-        document.getElementById("addinvestmentModal").style.display = "none";
+      document.getElementById("addinvestmentModal").style.display = "none";
     }
     function deleteinvestmentExpense(uniqueIndex) {
-        // Use JavaScript to confirm the deletion (you can customize the confirmation dialog)
-        if (confirm("Are you sure you want to delete this item?")) {
-            // Redirect to the delete_food_expense route with the unique_index parameter
-            window.location.href = "/delete_investment_expense/" + uniqueIndex;
-        }
+      // Use JavaScript to confirm the deletion (you can customize the confirmation dialog)
+      if (confirm("Are you sure you want to delete this item?")) {
+        // Redirect to the delete_food_expense route with the unique_index parameter
+        window.location.href = "/delete_investment_expense/" + uniqueIndex;
+      }
     }
 
-</script>
+  </script>
 
 
 
 </body>
+
 </html>
