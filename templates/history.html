@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>History Page</title>
-
-    <!-- Include your CSS styles here -->
+    <title>Expense History</title>
 
     <style>
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background-color: #000A2B;
+            color: white;
         }
+
         .navbar {
             background-color: #212946;
             width: 200px;
@@ -45,137 +45,138 @@
             background-color: #212946;
         }
 
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
 
-        /* Bootstrap styles for the container, table, and buttons */
-        body {
-            background-color: #000A2B;
+        .header {
             color: #ffffff;
-            font-family: 'Arial', sans-serif;
+            font-size: 24px;
+            margin-bottom: 10px;
         }
 
-        .container {
-            margin-top: 50px;
+        h2, h3 {
+            color: #1EAE98;
         }
 
-        h1, h2 {
-            color: #ffffff;
-            margin-left:50px;
-        }
-
-        .table {
+        table {
             width: 100%;
-            margin-bottom: 1rem;
-            color: #fff;
+            border-collapse: collapse;
+            margin-top: 10px;
         }
 
-        .table th,
-        .table td {
-            padding: 0.75rem;
+        th, td {
+            border: 1px solid #1EAE98;
+            padding: 8px;
             text-align: left;
-            border-bottom: 1px solid #dee2e6;
         }
 
-        .filter-buttons {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
+        th {
+            background-color: #1EAE98;
+            color: white;
         }
 
-        .history-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .history-item {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="image" align="left">
-            <a href="{{ url_for('home')}}">
-                <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
-            </a>
-        </div>
-        <a href="#rewards">Rewards</a>
-        <a href="#news">News</a>
-        <a href="#analysis">Analysis</a>
-        <a href="{{ url_for('profile')}}">Profile</a>
-        <a href="#history">History</a>
-        <a href="#achievements">Achievements</a>
-        <a href="#settings">Settings</a>
-        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()">Logout</a>
+    <div class="navbar"></div>
+    <div class="main-content">
+        <!-- Investment Expenses -->
+        <h2>Investment Expenses</h2>
+        {% for date, expenses in investment_expenses_by_date.items() %}
+            <h3>{{ date }}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Cost</th>
+                        <!-- Add other investment expense details as needed -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                        <tr>
+                            <td>Investment</td>
+                            <td>{{ expense['cost'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p>Total Investment for {{ date }}: {{ total_investment_by_date[date] }}</p>
+        {% endfor %}
+
+        <!-- Food Expenses -->
+        <h2>Food Expenses</h2>
+        {% for date, expenses in food_expenses_by_date.items() %}
+            <h3>{{ date }}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Cost</th>
+                        <!-- Add other food expense details as needed -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                        <tr>
+                            <td>Food</td>
+                            <td>{{ expense['cost'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p>Total Food for {{ date }}: {{ total_food_by_date[date] }}</p>
+        {% endfor %}
+
+        <!-- Income Expenses -->
+        <h2>Income Expenses</h2>
+        {% for date, expenses in income_expenses_by_date.items() %}
+            <h3>{{ date }}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Cost</th>
+                        <!-- Add other income expense details as needed -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                        <tr>
+                            <td>Income</td>
+                            <td>{{ expense['cost'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p>Total Income for {{ date }}: {{ total_income_by_date[date] }}</p>
+        {% endfor %}
+
+        <!-- Transport Expenses -->
+        <h2>Transport Expenses</h2>
+        {% for date, expenses in transport_expenses_by_date.items() %}
+            <h3>{{ date }}</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Cost</th>
+                        <!-- Add other transport expense details as needed -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                        <tr>
+                            <td>Transport</td>
+                            <td>{{ expense['cost'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p>Total Transport for {{ date }}: {{ total_transport_by_date[date] }}</p>
+        {% endfor %}
     </div>
-
-    <div class="filter-buttons">
-        <button onclick="filterHistory('daily')">Daily</button>
-        <button onclick="filterHistory('monthly')">Monthly</button>
-        <button onclick="filterHistory('yearly')">Yearly</button>
-    </div>
-
-    <ul class="history-list" id="historyList">
-        <!-- Your history items will be dynamically added here based on the selected filter -->
-    </ul>
-</div>
-
-
-<div class="container">
-    <button class="close-button" onclick="window.location.href='/home'">X</button>
-
-        <input class="toggle-input" id="toggle" type="checkbox">
-        <label class="toggle-label" for="toggle"></label>
-      </div>
-      
-    <h1>History</h1>
-
-    {% if user_investment_data %}
-    <table class="table">
-        <thead>
-            <tr>
-                <th>investment Name</th>
-                <th>Cost</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for investment_item in user_investment_data %}
-                <tr>
-                    <td>{{ investment_item['investmentName'] }}</td>
-                    <td>{{ investment_item['cost'] }}</td>
-                    <td>
-                        <button class="edit-btn" onclick="openModal('{{ investment_item['investmentName'] }}', '{{ investment_item['cost'] }}', '{{ investment_item['unique_index'] }}')">Edit</button>
-                    </td>
-                    <td>
-                        <button class="delete-btn" onclick="deleteinvestmentExpense('{{ investment_item['unique_index'] }}')">Delete</button>
-                    </td>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <p>No investment expenses found for the user.</p>
-{% endif %}
-
-    
-
-
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-
-
-
-<!-- Include your JavaScript script for handling filtering here -->
-
-<script>
-    function filterHistory(filterType) {
-        // You can implement logic here to fetch and display history items based on the selected filter
-        // For simplicity, let's just display a message for now
-        alert('Filtering history by ' + filterType);
-    }
-</script>
-
 </body>
 </html>

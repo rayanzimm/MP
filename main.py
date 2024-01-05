@@ -33,7 +33,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -89,6 +89,12 @@ def home():
     total_investment_cost = fetch_total_cost('investment', user_email, current_date)
     total_investmentReturns_cost = fetch_total_cost('investmentReturns', user_email, current_date)
 
+    session['total_food_cost'] = total_food_cost
+    session['total_transport_cost'] = total_transport_cost
+    session['total_income_cost'] = total_income_cost
+    session['total_investment_cost'] = total_investment_cost
+    session['total_investmentReturns_cost'] = total_investmentReturns_cost
+
     total_expense = total_food_cost + total_transport_cost + total_investment_cost - total_investmentReturns_cost
     total_savings = total_income_cost - total_expense
 
@@ -113,6 +119,74 @@ def fetch_total_cost(expense_type, user_email, current_date):
         total_cost += float(expense_data.get('cost', 0))
 
     return total_cost
+
+@app.route('/history')
+def history():
+    if 'user' not in session:
+        return redirect('/')
+    
+    user_email = session['user']
+
+    # Fetch expenses for specific types
+    investment_expenses = fetch_expenses_by_type('investment', user_email)
+    food_expenses = fetch_expenses_by_type('food', user_email)
+    income_expenses = fetch_expenses_by_type('income', user_email)
+    transport_expenses = fetch_expenses_by_type('transport', user_email)
+
+    # Organize expenses by date for each type
+    investment_expenses_by_date = organize_expenses_by_date(investment_expenses)
+    food_expenses_by_date = organize_expenses_by_date(food_expenses)
+    income_expenses_by_date = organize_expenses_by_date(income_expenses)
+    transport_expenses_by_date = organize_expenses_by_date(transport_expenses)
+
+    # Calculate total expenses for each category for each date
+    total_investment_by_date = calculate_total_by_date(investment_expenses_by_date)
+    total_food_by_date = calculate_total_by_date(food_expenses_by_date)
+    total_income_by_date = calculate_total_by_date(income_expenses_by_date)
+    total_transport_by_date = calculate_total_by_date(transport_expenses_by_date)
+
+    return render_template('history.html',
+                           investment_expenses_by_date=investment_expenses_by_date,
+                           food_expenses_by_date=food_expenses_by_date,
+                           income_expenses_by_date=income_expenses_by_date,
+                           transport_expenses_by_date=transport_expenses_by_date,
+                           total_investment_by_date=total_investment_by_date,
+                           total_food_by_date=total_food_by_date,
+                           total_income_by_date=total_income_by_date,
+                           total_transport_by_date=total_transport_by_date)
+
+def calculate_total_by_date(expenses_by_date):
+    total_by_date = {}
+
+    for date, expenses in expenses_by_date.items():
+        total_cost = sum(float(expense['cost']) for expense in expenses)
+        total_by_date[date] = total_cost
+
+    return total_by_date
+
+def organize_expenses_by_date(expenses):
+    expenses_by_date = {}
+
+    for expense in expenses:
+        date = expense.get('date')
+        if date not in expenses_by_date:
+            expenses_by_date[date] = []
+
+        expenses_by_date[date].append(expense)
+
+    return expenses_by_date
+
+def fetch_expenses_by_type(expense_type, user_email):
+    expenses = []
+
+    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).stream()
+
+    for expense_doc in expense_ref:
+        expense_data = expense_doc.to_dict()
+        expenses.append(expense_data)
+
+    return expenses
+
 
 @app.route('/logout')
 def logout():
@@ -1260,23 +1334,6 @@ def delete_investment_returns(unique_index):
     # Pass the updated data to the template
     return render_template('user_investment_returns.html', user_investmentReturns_data=user_investmentReturns_data)
         
-@app.route('/history')
-def history():
-    if 'user' not in session:
-        return redirect('/')
-    
-    user_email = session['user']
-    user_ref = db.collection('users').where('email', '==', user_email).get()
-
-    # Assuming there is only one user with the given email
-    for user_doc in user_ref:
-        user_data = user_doc.to_dict()
-        if user_data:
-            return render_template('history.html', user_data=user_data)
-        else:
-            flash("User not found.", "warning")
-            return redirect('/')
-    return render_template('history.html')
 
 
 
