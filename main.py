@@ -34,7 +34,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -211,10 +211,10 @@ def register():
         # Check if a file is included in the request
         if 'photo' in request.form:
             # Use the default profile picture path if not provided in the form
-            photo_path = request.form.get('photo', "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/defaultprofile.jpg")
+            photo_path = request.form.get('photo', "static\assets\img\defaultprofile.jpg")
         else:
             # Default profile picture path
-            photo_path = "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/defaultprofile.jpg"
+            photo_path = "static\assets\img\defaultprofile.jpg"
 
         try:
             user = auth.create_user_with_email_and_password(email, password)
@@ -289,7 +289,7 @@ def update_profile():
             if new_photo.filename != '' and allowed_file(new_photo.filename):
                 # Save the uploaded photo to the upload folder
                 filename = secure_filename(new_photo.filename)
-                full_path = "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/" + filename
+                full_path = "static/assets/img/" + filename
                 new_photo.save(full_path)
                 flash("New photo uploaded successfully!", "success")
 
