@@ -67,7 +67,8 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: calc(50% - 20px); /* 50% width with 20px gap between cards */
+            width: calc(50% - 20px);
+            /* 50% width with 20px gap between cards */
             margin-bottom: 20px;
         }
 
@@ -84,13 +85,32 @@
             width: 100%;
             height: auto;
         }
+
         .barChart {
-        width: 200px;  /* Adjust the width as needed */
-        height: 200px; /* Adjust the height as needed */
-        margin-top: 20px; /* Add margin-top for spacing */
-         }
-        
+            width: 200px;
+            /* Adjust the width as needed */
+            height: 200px;
+            /* Adjust the height as needed */
+            margin-top: 20px;
+            /* Add margin-top for spacing */
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
     </style>
+
+
 </head>
 
 <body>
@@ -112,21 +132,25 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <div class="main-content">
         <div class="header">
-            <h2>TOTAL SAVINGS</h2>
-            <p>${{ total_savings }}</p>
-            <canvas id="barChart"></canvas>
-
-            <!-- Add progress bar and pie chart here -->
+            
         </div>
-        
+
+
+
+        <h2>TOTAL SAVINGS</h2>
+        <p>${{ total_savings }}</p>
+        <!--canvas id="barChart"></canvas-->
+
+
+
         <!-- Add more cards for Income, Transport, Investment, Food, etc. -->
         <div class="card-container">
             <div class="card" onclick="redirectTo('/user_budget')">
                 <h2>BUDGET (FOR TODAY)</h2>
                 {% if 'total_budget_cost' in session %}
-                    <p>Total Budget : ${{ total_budget_cost }}</p>
+                <p>Total Budget : ${{ total_budget_cost }}</p>
                 {% else %}
-                    <p>Total Budget : Not available</p>
+                <p>Total Budget : Not available</p>
                 {% endif %}
                 <!-- Add progress bar and pie chart for Income here -->
             </div>
@@ -134,9 +158,9 @@
             <div class="card" onclick="redirectTo('/user_transport_expenses')">
                 <h2>TRANSPORT</h2>
                 {% if 'total_transport_cost' in session %}
-                    <p>Total Transport Cost: ${{ total_transport_cost }}</p>
+                <p>Total Transport Cost: ${{ total_transport_cost }}</p>
                 {% else %}
-                    <p>Total Transport Cost: Not available</p>
+                <p>Total Transport Cost: Not available</p>
                 {% endif %}
                 <!-- Add progress bar and pie chart for Food here -->
             </div>
@@ -144,9 +168,10 @@
             <div class="card" onclick="redirectTo('/user_investment_expenses')">
                 <h2>INVESTMENT</h2>
                 {% if 'total_investment_cost' in session %}
-                    <p>Total Investment Expenses: ${{ total_investment_cost }}</p> <p>Total Investment Returns: ${{ total_investmentReturns_cost }}</p>
+                <p>Total Investment Expenses: ${{ total_investment_cost }}</p>
+                <p>Total Investment Returns: ${{ total_investmentReturns_cost }}</p>
                 {% else %}
-                    <p>Total Investment Cost: Not available</p>
+                <p>Total Investment Cost: Not available</p>
                 {% endif %}
                 <!-- Add progress bar and pie chart for Investment here -->
             </div>
@@ -154,9 +179,9 @@
             <div class="card" onclick="redirectTo('/user_food_expenses')">
                 <h2>FOOD</h2>
                 {% if 'total_food_cost' in session %}
-                    <p>Total Food Cost: ${{ total_food_cost }}</p>
+                <p>Total Food Cost: ${{ total_food_cost }}</p>
                 {% else %}
-                    <p>Total Food Cost: Not available</p>
+                <p>Total Food Cost: Not available</p>
                 {% endif %}
                 <!-- Add progress bar and pie chart for Food here -->
             </div>
@@ -165,6 +190,7 @@
     </div>
 
     <script>
+        console.log("Script is running");
         function confirmLogout() {
             var result = confirm("Are you sure you want to log out?");
             if (result) {
@@ -178,31 +204,32 @@
             window.location.href = page;
         }
         var pieData = {
-        labels: ['Label 1', 'Label 2', 'Label 3'],
-        datasets: [{
-            data: [30, 40, 30],
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-            hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-        }]
-    };
+            labels: ['Label 1', 'Label 2', 'Label 3'],
+            datasets: [{
+                data: [30, 40, 30],
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+            }]
+        };
 
-    var barData = {
-        labels: ['Label 1', 'Label 2', 'Label 3'],
-        datasets: [{
-            data: [30, 40, 30],
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-            hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-        }]
-    };
+        var barData = {
+            labels: ['Label 1', 'Label 2', 'Label 3'],
+            datasets: [{
+                data: [30, 40, 30],
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+            }]
+        };
 
-    // Get the canvas element
-    var barCanvas = document.getElementById('barChart').getContext('2d');
+        // Get the canvas element
+        var barCanvas = document.getElementById('barChart').getContext('2d');
 
-    // Create the bar chart
-    var myBarChart = new Chart(barCanvas, {
-        type: 'bar',
-        data: barData,
-    });
+        // Create the bar chart
+        var myBarChart = new Chart(barCanvas, {
+            type: 'bar',
+            data: barData,
+        });
+
     </script>
 
 </body>
