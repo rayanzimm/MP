@@ -34,7 +34,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -209,53 +209,34 @@ def register():
         mobile = request.form.get('mobile')
 
         # Check if a file is included in the request
-        if 'photo' in request.files:
-            photo = request.files['photo']
-            if photo.filename != '' and allowed_file(photo.filename):
-                # Save the uploaded photo with an absolute path
-                filename = secure_filename(photo.filename)
-                full_path = "static/assets/img/" + filename
-                photo.save(full_path)
-                flash("Photo uploaded successfully!", "success")
+        if 'photo' in request.form:
+            # Use the default profile picture path if not provided in the form
+            photo_path = request.form.get('photo', "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/defaultprofile.jpg")
+        else:
+            # Default profile picture path
+            photo_path = "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/defaultprofile.jpg"
 
-                try:
-                    user = auth.create_user_with_email_and_password(email, password)
+        try:
+            user = auth.create_user_with_email_and_password(email, password)
 
-                    # Store additional user information in Firestore, including the file path
-                    user_data = {
-                        'email': email,
-                        'firstName': firstName,
-                        'lastName': lastName,
-                        'dob': dob,
-                        'address': address,
-                        'mobile': mobile,
-                        'photo_path': "static/assets/img/" + filename
-                    }
-                    db.collection('users').add(user_data)
+            # Store additional user information in Firestore, including the file path
+            user_data = {
+                'email': email,
+                'firstName': firstName,
+                'lastName': lastName,
+                'dob': dob,
+                'address': address,
+                'mobile': mobile,
+                'photo_path': photo_path
+            }
+            db.collection('users').add(user_data)
 
-                    session['user'] = email
-                    flash("Registration successful!", "success")
-                    return render_template('login.html')  # Redirect to the login page after successful registration
+            session['user'] = email
+            flash("Registration successful!", "success")
+            return render_template('login.html')  # Redirect to the login page after successful registration
 
-                except Exception as e:
-                    flash(f"An error occurred during user creation: {str(e)}", "warning")
-            else:
-                flash("Invalid file format. Please upload a valid image.", "warning")
-
-        # Validate firstName and lastName are valid strings
-        if not all(map(str.isalpha, [firstName, lastName])):
-            flash("Please enter a valid name.", "warning")
-
-        # Validate the password length
-        elif len(password) < 6:
-            flash("Minimum characters for the password are 6.", "warning")
-
-        # Validate mobile contains only numbers
-        elif not mobile.isdigit() or len(mobile) != 8:
-            flash("Please enter a valid phone number.", "warning")
-
-        elif dob == "":
-            flash("Please enter a valid date of birth.", "warning")
+        except Exception as e:
+            flash(f"An error occurred during user creation: {str(e)}", "warning")
 
     return render_template('register.html')
 
@@ -285,10 +266,10 @@ def update_profile():
 
     user_email = session['user']
     user_ref = db.collection('users').where('email', '==', user_email).stream()
-    
+
     # Assuming there is only one user with the given email
     user_doc = next(user_ref, None)
-    
+
     if not user_doc:
         # Handle the case where the user is not found
         return redirect('/')
@@ -308,26 +289,15 @@ def update_profile():
             if new_photo.filename != '' and allowed_file(new_photo.filename):
                 # Save the uploaded photo to the upload folder
                 filename = secure_filename(new_photo.filename)
-                full_path = "static/assets/img/" + filename
+                full_path = "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/" + filename
                 new_photo.save(full_path)
                 flash("New photo uploaded successfully!", "success")
-            else:
-                flash("Invalid file format. Please upload a valid image.", "warning")
 
-        # Update user details in Firestore, including the new file path if a new photo is uploaded
-        update_data = {
-            'address': new_address,
-            'mobile': new_mobile,
-            'firstName': new_firstName,
-            'lastName': new_lastName,
-            'dob': new_dob
-        }
-
-        if 'new_photo' in request.files:
-            update_data['photo_path'] = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                # Update user details in Firestore, including the new file path for the uploaded photo
+                user_data['photo_path'] = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
         # Update user details in Firestore
-        user_doc.reference.update(update_data)
+        user_doc.reference.update(user_data)
         flash("Profile updated successfully!", "success")
         return redirect('/profile')
 
