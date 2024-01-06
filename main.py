@@ -9,10 +9,11 @@ from werkzeug.utils import secure_filename
 import os
 import requests
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from jinja2 import Environment, FileSystemLoader
 from flask_mail import Mail, Message
 from apscheduler.schedulers.background import BackgroundScheduler
+import pytz
 
 app = Flask(__name__)
 UPLOAD_FOLDER = r'static\assets\img'
@@ -35,7 +36,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -79,6 +80,7 @@ scheduler = BackgroundScheduler()
 def send_daily_reminder():
     try:
         user_email = get_user_email_for_daily_reminder()
+        print(user_email)
 
         if user_email:
             with app.app_context():
@@ -96,20 +98,20 @@ def send_daily_reminder():
         print(f"Error sending email: {str(e)}")
 
 
-scheduler.add_job(send_daily_reminder, 'cron', hour=0, minute=9, second=0)
+scheduler.add_job(send_daily_reminder, 'cron', hour=0, minute=44, second=0)
 scheduler.start()
 
 # Function to retrieve the user's email for the daily reminder
 def get_user_email_for_daily_reminder():
     try:
+        user_email = session['user']
         # Fetch any user's email from the database
-        user_ref = db.collection('users').limit(1).stream()
+        user_ref = db.collection('users').where('email', '==', user_email).limit(1).stream()
 
         for user_doc in user_ref:
             user_data = user_doc.to_dict()
             return user_data.get('email')
 
-        return None
     except Exception as e:
         # Handle any exceptions during database query
         print(f"Error fetching user email: {str(e)}")
@@ -122,7 +124,45 @@ def allowed_file(filename):
 @app.route('/', methods=['POST', 'GET'])
 def index():
     if 'user' in session:
+        user_email = session['user']
+        user_ref = db.collection('users').where('email', '==', user_email).limit(1).get()
+        
+        if not user_ref:
+            flash("User not found.", "danger")
+            return redirect('/')
+        
+        user_doc = user_ref[0]
+        user_data = user_doc.to_dict()
+        singapore_timezone = pytz.timezone('Asia/Singapore')
+        current_datetime = datetime.now(singapore_timezone)
+        current_date = current_datetime.strftime("%Y-%m-%d")
+
+        # Update the 'lastLogin' field to today's date
+
+        if user_data['lastLogin'] != current_datetime and current_datetime.hour >= 6:
+            if current_datetime > user_data.get('nextRewardTime', datetime.min):
+                if current_datetime.weekday() == 0:
+                    user_data['lastLogin'] = current_datetime
+                    user_data['loginDays'] = 1
+                    coins_rewarded = reward_coins(user_email, user_data['loginDays'])
+                    
+                    flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
+                    user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
+                else:
+                    user_data['lastLogin'] = current_datetime
+                    user_data['loginDays'] += 1
+                    coins_rewarded = reward_coins(user_email, user_data['loginDays'])
+                    user_data['coins'] += coins_rewarded
+                    flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
+                    user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
+        else:
+            user_data['lastLogin'] = current_datetime
+            
+        # Save the updated user document back to Firestore
+        db.collection('users').document(user_doc.id).update(user_data)
+        
         return render_template('home.html')
+    
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -133,6 +173,17 @@ def index():
         except:
             flash("Invalid email or password.", "warning")
     return render_template('login.html')
+
+def reward_coins(user_email, login_days):
+    try:
+    # Example: Reward 10 coins for the first day, and 5 additional coins for each subsequent day
+        coins_to_reward = 10 + (login_days - 1) * 5
+        
+        return coins_to_reward
+            
+    except Exception as e:
+        flash(f"Error updating coins: {str(e)}", "danger")
+
 
 @app.route('/home')
 def home():
@@ -285,7 +336,11 @@ def register():
                 'dob': dob,
                 'address': address,
                 'mobile': mobile,
-                'photo_path': photo_path
+                'photo_path': photo_path,
+                'lastLogin': '',
+                'loginDays': 0,
+                'coins': 0,
+                'nextRewardTime': datetime.min
             }
             db.collection('users').add(user_data)
 
@@ -347,7 +402,7 @@ def update_profile():
             if new_photo.filename != '' and allowed_file(new_photo.filename):
                 # Save the uploaded photo to the upload folder
                 filename = secure_filename(new_photo.filename)
-                full_path = "C:/Poly module/Year 3/MP/Website Code/MP/static/assets/img/" + filename
+                full_path = "static/assets/img/" + filename
                 new_photo.save(full_path)
                 flash("New photo uploaded successfully!", "success")
 
