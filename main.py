@@ -132,12 +132,45 @@ app.secret_key = 'secret'
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+from flask import render_template
+
+@app.route('/progress')
+def progress():
+    if 'user' not in session:
+        return redirect('/')
+    
+    email = session['user']
+    user_ref = db.collection('users').where('email', '==', email).limit(1).get()
+
+    if not user_ref:
+        flash("User not found.", "danger")
+        return redirect('/')
+        
+    user_doc = user_ref[0]
+    user_data = user_doc.to_dict()
+    
+    # Retrieve loginDays from user_data
+    login_days = user_data.get('loginDays', 1)
+
+    # Define the maximum number of steps (assuming 7 steps for the progress bar)
+    max_steps = 7
+
+    # Calculate the progress width based on loginDays
+    progress_width = (login_days / max_steps) * 100
+
+    # Create a list of steps for the progress bar
+    steps = [{"step_number": i + 1, "active": i < login_days} for i in range(max_steps)]
+
+    return render_template('progress_bar.html', loginDays=login_days, progressWidth=progress_width, steps=steps)
+        
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
     if 'user' in session:
         user_email = session['user']
         user_ref = db.collection('users').where('email', '==', user_email).limit(1).get()
-        
+        current_date = datetime.now().strftime("%Y-%m-%d")
+
         if not user_ref:
             flash("User not found.", "danger")
             return redirect('/')
@@ -145,8 +178,23 @@ def index():
         user_doc = user_ref[0]
         user_data = user_doc.to_dict()
         update_login_rewards(user_email, user_data, user_doc)
+        coins=user_data.get('coins', 0)
+        total_food_cost = fetch_total_cost('Food', user_email, current_date)
+        total_transport_cost = fetch_total_cost('Transport', user_email, current_date)
+        total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
+        total_investment_cost = fetch_total_cost('Investment', user_email, current_date)
+        total_investmentReturns_cost = fetch_total_cost('Investment Returns', user_email, current_date)
+
+        total_expense = total_food_cost + total_transport_cost + total_investment_cost - total_investmentReturns_cost
+        total_savings = total_budget_cost - total_expense
+
         
-        return render_template('home.html', email=user_email)
+        return render_template('home.html', email=user_email, coins=coins, total_food_cost=total_food_cost,
+                           total_transport_cost=total_transport_cost,
+                           total_budget_cost=total_budget_cost,
+                           total_investment_cost=total_investment_cost,
+                           total_investmentReturns_cost=total_investmentReturns_cost,
+                           total_savings=total_savings)
     
     if request.method == 'POST':
         email = request.form.get('email')
@@ -163,8 +211,10 @@ def index():
             user_doc = user_ref[0]
             user_data = user_doc.to_dict()
             update_login_rewards(email, user_data, user_doc)
+            coins=user_data.get('coins', 0)
+            print(coins)
 
-            return render_template('home.html', email=email)
+            return render_template('home.html', email=email, coins=coins)
         except:
             flash("Invalid email or password.", "warning")
     return render_template('login.html')
@@ -209,12 +259,37 @@ def reward_coins(user_email, login_days):
     except Exception as e:
         flash(f"Error updating coins: {str(e)}", "danger")
 
+def fetch_total_cost(expense_type, user_email, current_date):
+    total_cost = 0
+
+    # Fetch the list of expenses for the given expense type and user
+    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).where('date', '==', current_date).stream()
+
+    # Iterate through the expenses and calculate the total cost
+    for expense_doc in expense_ref:
+        expense_data = expense_doc.to_dict()
+        total_cost += float(expense_data.get('cost', 0))
+
+    return total_cost
 
 @app.route('/home')
 def home():
     if 'user' not in session:
         return redirect('/')
     
+    email = session['user']
+
+    user_ref = db.collection('users').where('email', '==', email).limit(1).get()
+
+    if not user_ref:
+            flash("User not found.", "danger")
+            return redirect('/')
+            
+    user_doc = user_ref[0]
+    user_data = user_doc.to_dict()
+    
+    coins=user_data.get('coins', 0)
+
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
     # Fetch the total cost for each expense type
@@ -223,12 +298,6 @@ def home():
     total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
     total_investment_cost = fetch_total_cost('Investment', user_email, current_date)
     total_investmentReturns_cost = fetch_total_cost('Investment Returns', user_email, current_date)
-
-    session['total_food_cost'] = total_food_cost
-    session['total_transport_cost'] = total_transport_cost
-    session['total_budget_cost'] = total_budget_cost
-    session['total_investment_cost'] = total_investment_cost
-    session['total_investmentReturns_cost'] = total_investmentReturns_cost
 
     total_expense = total_food_cost + total_transport_cost + total_investment_cost - total_investmentReturns_cost
     total_savings = total_budget_cost - total_expense
@@ -239,7 +308,8 @@ def home():
                            total_budget_cost=total_budget_cost,
                            total_investment_cost=total_investment_cost,
                            total_investmentReturns_cost=total_investmentReturns_cost,
-                           total_savings=total_savings)
+                           total_savings=total_savings,
+                           coins=coins)
 
 
 def fetch_total_cost(expense_type, user_email, current_date):

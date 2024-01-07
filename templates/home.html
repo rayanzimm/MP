@@ -54,6 +54,10 @@
             color: #ffffff;
             font-size: 24px;
             margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* Optional: Center the content vertically */
         }
 
         .card-container {
@@ -108,6 +112,36 @@
             background-color: rgba(0, 0, 0, 0.4);
             padding-top: 60px;
         }
+
+        .coins-container {
+            display: flex;
+            justify-content: flex-end;
+            /* Adjust the alignment as needed */
+            margin-bottom: 20px;
+            /* Adjust the margin as needed */
+        }
+
+        .coins-pill {
+            background-color: #212946;
+            /* Green color, you can change it */
+            color: white;
+            border-radius: 20px;
+            /* Adjust the border-radius to create a pill shape */
+            text-align: center;
+            /* Adjust the padding as needed */
+            font-size: 16px;
+            /* Adjust the font size as needed */
+            margin-right: 20px;
+            /* Adjust the margin as needed */
+            height: 35px;
+            width: 100px;
+        }
+
+        .coins-text {
+            margin-top: 5px;
+            color: white;
+            height: 20px;
+        }
     </style>
 
 
@@ -132,13 +166,20 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <div class="main-content">
         <div class="header">
-            
+            <div>
+                <h2>TOTAL SAVINGS</h2>
+                <p>${{ total_savings }}</p>
+            </div>
+            <div class="coins-container">
+                <div class="coins-pill">
+                    <p class="coins-text">{{ coins }}</p>
+                </div>
+            </div>
         </div>
 
 
 
-        <h2>TOTAL SAVINGS</h2>
-        <p>${{ total_savings }}</p>
+
         <!--canvas id="barChart"></canvas-->
 
 
@@ -206,7 +247,8 @@
     </div>
 
     <script>
-         var userEmail = "{{ email }}";
+
+        var userEmail = "{{ email }}";
 
         // Store the email in localStorage
         localStorage.setItem('userEmail', userEmail);
