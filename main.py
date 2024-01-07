@@ -36,7 +36,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -69,24 +69,23 @@ app.config['MAIL_SERVER'] = 'smtp.office365.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'chickentester123@outlook.com'  # Replace with your Outlook email address
-app.config['MAIL_PASSWORD'] = 'chickenman123'  # Replace with your Outlook email password
-app.config['MAIL_DEFAULT_SENDER'] = 'chickentester123@outlook.com'  # Replace with your Outlook email address
+app.config['MAIL_USERNAME'] = 'finsaver@outlook.com'  # Replace with your Outlook email address
+app.config['MAIL_PASSWORD'] = 'fintech2024'  # Replace with your Outlook email password
+app.config['MAIL_DEFAULT_SENDER'] = 'finsaver@outlook.com'  # Replace with your Outlook email address
 # Initialize Flask-Mail
 mail = Mail(app)
 
 scheduler = BackgroundScheduler()
 
-def send_daily_reminder():
+def send_daily_reminder(user_email):
     try:
-        user_email = get_user_email_for_daily_reminder()
         print(user_email)
 
         if user_email:
             with app.app_context():
                 msg = Message('Daily Expense Reminder', recipients=[user_email])
-                msg.body = 'Don\'t forget to upload your daily expenses today!'
-                msg.html = '<p>Don\'t forget to upload your daily expenses today!</p>'
+                msg.body = 'Don\'t forget to upload your daily Budget & Expenses'
+                msg.html = '<p>Don\'t forget to upload your daily Budget & Expenses</p>'
 
                 mail.send(msg)
 
@@ -98,8 +97,21 @@ def send_daily_reminder():
         print(f"Error sending email: {str(e)}")
 
 
-scheduler.add_job(send_daily_reminder, 'cron', hour=0, minute=44, second=0)
-scheduler.start()
+
+
+@app.route('/store_user_email', methods=['POST'])
+def store_user_email():
+    try:
+        data = request.get_json()
+        user_email = data.get('email')
+
+        # Now you can use user_email in your send_daily_reminder function
+        send_daily_reminder(user_email)
+
+        return "Email received and processed successfully"
+
+    except Exception as e:
+        return f"Error storing email: {str(e)}"
 
 # Function to retrieve the user's email for the daily reminder
 def get_user_email_for_daily_reminder():
@@ -116,6 +128,21 @@ def get_user_email_for_daily_reminder():
         # Handle any exceptions during database query
         print(f"Error fetching user email: {str(e)}")
         return None
+
+
+# Function to retrieve the user's email for the daily reminder
+        # Fetch any user's email from the database
+        #user_ref = db.collection('users').limit(1).stream()
+
+        #for user_doc in user_ref:
+            #Wuser_data = user_doc.to_dict()
+           # return user_data.get('email')
+
+        #return None
+    #except Exception as e:
+        # Handle any exceptions during database query
+        #print(f"Error fetching user email: {str(e)}")
+        #return None
 
 
 def allowed_file(filename):
@@ -169,7 +196,7 @@ def index():
         try:
             user = auth.sign_in_with_email_and_password(email, password)
             session['user'] = email
-            return redirect('/home')
+            return render_template('home.html', email=email)
         except:
             flash("Invalid email or password.", "warning")
     return render_template('login.html')
