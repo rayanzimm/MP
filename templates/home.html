@@ -13,6 +13,7 @@
             font-family: 'Roboto', sans-serif;
             background-color: #000A2B;
         }
+
         .navbar {
             background-color: #212946;
             width: 200px;
@@ -22,29 +23,35 @@
             display: flex;
             flex-direction: column;
         }
+
         .navbar a {
             display: block;
             color: white;
             padding: 16px;
             text-decoration: none;
         }
+
         .navbar a i {
-        margin-right: 8px;
+            margin-right: 8px;
         }
+
         .navbar a.active {
             background-color: #151a2c;
             color: white;
         }
+
         .logout {
             margin-top: auto;
             color: white;
             padding: 16px;
         }
+
         .image:hover {
             background-color: #212946;
         }
+
         .main-content {
-            margin-left: 250px;
+            margin-left: 225px;
             padding: 20px;
         }
 
@@ -57,11 +64,13 @@
             align-items: center;
             /* Optional: Center the content vertically */
         }
+
         .card-container {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
         }
+
         .card {
             background-color: #34495e;
             border-radius: 10px;
@@ -108,36 +117,130 @@
             background-color: rgba(0, 0, 0, 0.4);
             padding-top: 60px;
         }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .progress {
+            height: 20px;
+            margin-bottom: 30px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            width: 98.5%;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #4caf50;
+            /* Green color */
+            text-align: center;
+            line-height: 20px;
+            color: #fff;
+            
+            /* Text color */
+        }
+
+        /* Button styles */
+        .savings-button {
+            padding: 10px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            height: 40px;
+            width: 120px;
+            font-size: 10px;
+            margin-right: auto;
+        }
+
+        /* Form styles */
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
         .coins-container {
-        display: flex;
-        align-items: center; /* Align items vertically in the center */
-        justify-content: flex-end;
-        margin-bottom: 20px;
-    }
+            display: flex;
+            align-items: center;
+            /* Align items vertically in the center */
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
 
-    .coins-pill {
-        display: flex;
-        align-items: center; /* Align items vertically in the center */
-        background-color: #212946;
-        color: white;
-        border-radius: 20px;
-        text-align: center;
-        padding: 8px 15px; /* Adjust padding for better appearance */
-        font-size: 16px;
-        margin-right: 20px;
-        height: 35px;
-        width: auto; /* Allow width to be flexible */
-    }
+        .coins-pill {
+            display: flex;
+            align-items: center;
+            /* Align items vertically in the center */
+            background-color: #212946;
+            color: white;
+            border-radius: 20px;
+            text-align: center;
+            padding: 8px 15px;
+            /* Adjust padding for better appearance */
+            font-size: 16px;
+            margin-right: 20px;
+            height: 35px;
+            width: auto;
+            /* Allow width to be flexible */
+        }
 
-    .coins-pill i {
-        margin-right: 5px; /* Add spacing between icon and text */
-    }
+        .coins-pill i {
+            margin-right: 5px;
+            /* Add spacing between icon and text */
+        }
 
-    .coins-text {
-        color: white;
-        height: 20px;
-        margin: 0; /* Remove default margin for better alignment */
-    }
+        .coins-text {
+            color: white;
+            height: 20px;
+            margin: 0;
+            /* Remove default margin for better alignment */
+        }
+
+        .savings-button {
+            margin-right: 700px;
+        }
+
     </style>
 
 
@@ -157,23 +260,34 @@
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
         <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
         <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
-        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i>
+            Logout</a>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <div class="main-content">
+
         <div class="header">
             <div>
-                <h2>TOTAL SAVINGS</h2>
-                <p>${{ total_savings }}</p>
+                <h2>Savings Goal </h2>
+                <p>${{ total_savings }}/${{ savings_goal }}</p>
+                <!-- Progress bar -->
             </div>
+            
+            <button type="button" class="savings-button" onclick="openModal()">
+                Update Savings Goal
+            </button>
+
             <div class="coins-container">
                 <div class="coins-pill">
                     <i class="fas fa-coins"></i>
                     <p class="coins-text">{{ coins }}</p>
                 </div>
             </div>
-</div>
-
+        </div>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: {{ progress_percentage }}%;"
+                aria-valuenow="{{ progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
 
 
 
@@ -224,22 +338,22 @@
                 <!-- Add progress bar and pie chart for Food here -->
             </div>
         </div>
-        <div class="error-message" name="errorMessage">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
 
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                <span>{{ message }}</span>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+        <!-- Modal -->
+        <div id="savingsModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>Update Savings Goal</h2>
+                <!-- Form for updating savings goal -->
+                <form action="/update_savings_goal" method="post" id="savingsForm">
+                    <label for="savings_goal">New Savings Goal:</label>
+                    <input type="text" id="savings_goal" name="savings_goal" required>
+                    <button type="submit">Update</button>
+                </form>
             </div>
-            {% endfor %}
-
-            {% endif %}
-            {% endwith %}
         </div>
+
+        
         <!-- Add more cards for other categories as needed -->
     </div>
 
@@ -300,7 +414,23 @@
             data: barData,
         });
 
+        function openModal() {
+            document.getElementById('savingsModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('savingsModal').style.display = 'none';
+        }
+
+        // Close the modal if the user clicks outside of it
+        window.onclick = function (event) {
+            if (event.target === document.getElementById('savingsModal')) {
+                closeModal();
+            }
+        };
+
     </script>
+
 
 </body>
 

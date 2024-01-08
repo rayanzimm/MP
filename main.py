@@ -36,7 +36,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -231,7 +231,7 @@ def update_login_rewards(user_email, user_data, user_doc):
                 user_data['lastLogin'] = current_datetime
                 user_data['loginDays'] = 1
                 coins_rewarded = reward_coins(user_email, user_data['loginDays'])
-
+                user_data['coins'] += coins_rewarded
                 flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
                 user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
             else:
@@ -289,6 +289,7 @@ def home():
     user_data = user_doc.to_dict()
     
     coins=user_data.get('coins', 0)
+    savings_goal = float(user_data.get('savingsGoal', 0))
 
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
@@ -300,7 +301,9 @@ def home():
     total_investmentReturns_cost = fetch_total_cost('Investment Returns', user_email, current_date)
 
     total_expense = total_food_cost + total_transport_cost + total_investment_cost - total_investmentReturns_cost
-    total_savings = total_budget_cost - total_expense
+    total_savings = float(total_budget_cost - total_expense)
+
+    progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
 
     return render_template('home.html',
                            total_food_cost=total_food_cost,
@@ -309,7 +312,9 @@ def home():
                            total_investment_cost=total_investment_cost,
                            total_investmentReturns_cost=total_investmentReturns_cost,
                            total_savings=total_savings,
-                           coins=coins)
+                           coins=coins,
+                           savings_goal=savings_goal,
+                           progress_percentage=progress_percentage)
 
 
 def fetch_total_cost(expense_type, user_email, current_date):
@@ -324,6 +329,42 @@ def fetch_total_cost(expense_type, user_email, current_date):
         total_cost += float(expense_data.get('cost', 0))
 
     return total_cost
+
+@app.route('/update_savings_goal', methods=['POST'])
+def update_savings_goal():
+    if 'user' not in session:
+        return redirect('/')
+
+    user_email = session['user']
+    
+
+    try:
+        # Fetch the user document from Firestore
+        user_ref = db.collection('users').where('email', '==', user_email).limit(1).get()
+
+        if not user_ref:
+            flash("User not found.", "danger")
+            return redirect('/')
+
+        user_doc = user_ref[0]
+        user_data = user_doc.to_dict()
+
+        # Update the 'savingsGoal' field
+        if request.method == 'POST':
+            new_savings_goal = request.form.get('savings_goal')
+        
+        user_data = {
+            'savingsGoal': new_savings_goal
+        }
+        # Update user details in Firestore
+        user_doc.reference.update(user_data)
+        flash("Savings goal set successfully!", "success")
+        
+
+    except Exception as e:
+        flash(f"Error updating savings goal: {str(e)}", "danger")
+
+    return redirect('/home')
 
 @app.route('/history')
 def history():
@@ -435,7 +476,8 @@ def register():
                 'lastLogin': '',
                 'loginDays': 0,
                 'coins': 0,
-                'nextRewardTime': datetime.min
+                'nextRewardTime': datetime.min,
+                'savingsGoal': 0
             }
             db.collection('users').add(user_data)
 
@@ -492,6 +534,16 @@ def update_profile():
         new_dob = request.form.get('new_dob')
 
         # Check if a file is included in the request
+        
+        
+        user_data={
+            'address': new_address,
+            'mobile': new_mobile,
+            'firstName': new_firstName,
+            'lastName': new_lastName,
+            'dob': new_dob
+        }
+
         if 'new_photo' in request.files:
             new_photo = request.files['new_photo']
             if new_photo.filename != '' and allowed_file(new_photo.filename):
@@ -503,7 +555,6 @@ def update_profile():
 
                 # Update user details in Firestore, including the new file path for the uploaded photo
                 user_data['photo_path'] = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-
         # Update user details in Firestore
         user_doc.reference.update(user_data)
         flash("Profile updated successfully!", "success")
