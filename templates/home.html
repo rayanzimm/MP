@@ -3,16 +3,16 @@
 
 <head>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             background-color: #000A2B;
         }
-
         .navbar {
             background-color: #212946;
             width: 200px;
@@ -22,29 +22,27 @@
             display: flex;
             flex-direction: column;
         }
-
         .navbar a {
             display: block;
             color: white;
             padding: 16px;
             text-decoration: none;
         }
-
+        .navbar a i {
+        margin-right: 8px;
+        }
         .navbar a.active {
             background-color: #151a2c;
             color: white;
         }
-
         .logout {
             margin-top: auto;
             color: white;
             padding: 16px;
         }
-
         .image:hover {
             background-color: #212946;
         }
-
         .main-content {
             margin-left: 250px;
             padding: 20px;
@@ -59,15 +57,13 @@
             align-items: center;
             /* Optional: Center the content vertically */
         }
-
         .card-container {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
         }
-
         .card {
-            background-color: #ffffff;
+            background-color: #34495e;
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -77,12 +73,12 @@
         }
 
         .card h2 {
-            color: #2c3e50;
+            color: #ffffff;
             margin-top: 0;
         }
 
         .card p {
-            color: #7f8c8d;
+            color: #b8c7cb;
         }
 
         .chart-container {
@@ -112,36 +108,36 @@
             background-color: rgba(0, 0, 0, 0.4);
             padding-top: 60px;
         }
-
         .coins-container {
-            display: flex;
-            justify-content: flex-end;
-            /* Adjust the alignment as needed */
-            margin-bottom: 20px;
-            /* Adjust the margin as needed */
-        }
+        display: flex;
+        align-items: center; /* Align items vertically in the center */
+        justify-content: flex-end;
+        margin-bottom: 20px;
+    }
 
-        .coins-pill {
-            background-color: #212946;
-            /* Green color, you can change it */
-            color: white;
-            border-radius: 20px;
-            /* Adjust the border-radius to create a pill shape */
-            text-align: center;
-            /* Adjust the padding as needed */
-            font-size: 16px;
-            /* Adjust the font size as needed */
-            margin-right: 20px;
-            /* Adjust the margin as needed */
-            height: 35px;
-            width: 100px;
-        }
+    .coins-pill {
+        display: flex;
+        align-items: center; /* Align items vertically in the center */
+        background-color: #212946;
+        color: white;
+        border-radius: 20px;
+        text-align: center;
+        padding: 8px 15px; /* Adjust padding for better appearance */
+        font-size: 16px;
+        margin-right: 20px;
+        height: 35px;
+        width: auto; /* Allow width to be flexible */
+    }
 
-        .coins-text {
-            margin-top: 5px;
-            color: white;
-            height: 20px;
-        }
+    .coins-pill i {
+        margin-right: 5px; /* Add spacing between icon and text */
+    }
+
+    .coins-text {
+        color: white;
+        height: 20px;
+        margin: 0; /* Remove default margin for better alignment */
+    }
     </style>
 
 
@@ -154,14 +150,14 @@
                 <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
             </a>
         </div>
-        <a href="#rewards">Rewards</a>
-        <a href="{{  url_for('news') }}">News</a>
-        <a href="#analysis">Analysis</a>
-        <a href="{{ url_for('profile')}}">Profile</a>
-        <a href="{{ url_for('history')}}">History</a>
-        <a href="#achievements">Achievements</a>
-        <a href="#settings">Settings</a>
-        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()">Logout</a>
+        <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
+        <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
+        <a href="{{ url_for('analysis') }}"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
+        <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
+        <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
+        <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <div class="main-content">
@@ -172,10 +168,11 @@
             </div>
             <div class="coins-container">
                 <div class="coins-pill">
+                    <i class="fas fa-coins"></i>
                     <p class="coins-text">{{ coins }}</p>
                 </div>
             </div>
-        </div>
+</div>
 
 
 

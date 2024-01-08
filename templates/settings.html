@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings Page</title>
+<style>
+    
+    body {
+    font-family: 'Arial', sans-serif;
+    background-color: #000A2B;
+    color: white;
+  }
+  .navbar {
+            background-color: #212946;
+            width: 200px;
+            height: 100%;
+            position: fixed;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar a {
+            display: block;
+            color: white;
+            padding: 16px;
+            text-decoration: none;
+        }
+        .navbar a i {
+        margin-right: 8px;
+        }
+        .navbar a.active {
+            background-color: #151a2c;
+            color: white;
+        }
+        .logout {
+            margin-top: auto;
+            color: white;
+            padding: 16px;
+        }
+        .image:hover {
+            background-color: #212946;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+ 
+  .section {
+    
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .section h2 {
+    color: rgb(255, 255, 255);
+    margin-bottom: 10px;
+  }
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+  }
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  input:checked + .slider {
+    background-color: #2196F3;
+  }
+  input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+  }
+  input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+  .slider.round {
+    border-radius: 30px;
+  }
+  .slider.round:before {
+    border-radius: 50%;
+  }
+  .delete-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="image" align="left">
+            <a href="{{ url_for('home')}}">
+                <img src="{{ url_for('static', filename='/assets/img/finsaver1.png') }}">
+            </a>
+        </div>
+        <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
+        <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
+        <a href="{{ url_for('analysis') }}"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
+        <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
+        <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
+        <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</div>
+<div class="main-content">
+        <div class="section">
+          <h2>NOTIFICATIONS</h2>
+          <label>Receive emails on new articles or changes within the website
+            <div class="toggle-switch">
+              <input type="checkbox" checked>
+              <span class="slider round"></span>
+            </div>
+          </label>
+        </div>
+        <div class="section">
+          <label>Receive SMS messages on new articles or changes within the website
+            <div class="toggle-switch">
+              <input type="checkbox">
+              <span class="slider round"></span>
+            </div>
+          </label>
+        </div>
+        <div class="section">
+          <h2>SETTING A</h2>
+          <p>blah blah blah</p>
+        </div>
+        <div class="section">
+          <h2>SETTING B</h2>
+          <p>blah blah blah</p>
+        </div>
+        <div class="section">
+          <h2>DELETE ACCOUNT</h2>
+          <button class="delete-button">Delete</button>
+        </div>
+      </div> 
+</body>
+</html>

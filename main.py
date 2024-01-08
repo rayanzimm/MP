@@ -36,7 +36,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -58,7 +58,7 @@ app.secret_key = 'secret'
 #         model="gpt-3.5-turbo",
 #     )
 #     print(chat_completion)
-# openai("why is the sky blue?")
+# openai("read the current statistics of the user and provide a detailed monthly analysis for the user. Provide certain reccomendations for the user such as what stocks will suit their risk profile and what they can do to reach their goal")
 
 
 # Function to send daily reminder email
@@ -1422,6 +1422,13 @@ def delete_investment_returns(unique_index):
     return render_template('user_investment_returns.html', user_investmentReturns_data=user_investmentReturns_data)
         
 
+@app.route('/analysis')
+def analysis():
+    return render_template('analysis.html')
+
+@app.route('/settings')
+def settings():
+    return render_template('settings.html')
 
 
 @app.route('/news', methods=['GET', 'POST'])

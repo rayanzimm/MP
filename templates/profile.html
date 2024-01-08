@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <title>User Profile</title>
     <style>
         body {
@@ -28,19 +29,30 @@
             display: flex;
             flex-direction: column;
         }
-
         .navbar a {
             display: block;
             color: white;
             padding: 16px;
             text-decoration: none;
         }
-
-        
-
+        .navbar a i {
+        margin-right: 8px;
+        }
         .navbar a.active {
             background-color: #151a2c;
             color: white;
+        }
+        .logout {
+            margin-top: auto;
+            color: white;
+            padding: 16px;
+        }
+        .image:hover {
+            background-color: #212946;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
         }
 
         .content-wrapper {
@@ -144,14 +156,14 @@
                 <img src="{{ url_for('static', filename='/assets/img/finsaver1.png') }}">
             </a>
         </div>
-        <a href="#rewards">Rewards</a>
-        <a href="{{  url_for('news') }}">News</a>
-        <a href="#analysis">Analysis</a>
-        <a href="{{ url_for('profile')}}">Profile</a>
-        <a href="{{ url_for('history')}}">History</a>
-        <a href="#achievements">Achievements</a>
-        <a href="#settings">Settings</a>
-        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()">Logout</a>
+        <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
+        <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
+        <a href="{{ url_for('analysis') }}"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
+        <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
+        <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
+        <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 
     <div class="content-wrapper">
