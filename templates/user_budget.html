@@ -96,6 +96,10 @@
     <button class="close-button" onclick="window.location.href='/home'">X</button>
     <button type="button" class="modal-btn" onclick="openAddModal()"">Add Budget Data</button>
 
+    <form action="/copy_previous_budget" method="POST">
+        <button type="submit" class="btn btn-primary">Copy Previous Day's Budget</button>
+    </form>
+
     <h1>User Budget</h1>
 
     {% if user_budget_data %}

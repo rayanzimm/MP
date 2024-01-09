@@ -14,7 +14,8 @@ from jinja2 import Environment, FileSystemLoader
 from flask_mail import Mail, Message
 from apscheduler.schedulers.background import BackgroundScheduler
 import pytz
-
+from datetime import datetime, timedelta
+import random
 app = Flask(__name__)
 UPLOAD_FOLDER = r'static\assets\img'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -36,7 +37,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -185,6 +186,8 @@ def index():
         total_investment_cost = fetch_total_cost('Investment', user_email, current_date)
         total_investmentReturns_cost = fetch_total_cost('Investment Returns', user_email, current_date)
 
+
+
         total_expense = total_food_cost + total_transport_cost + total_investment_cost - total_investmentReturns_cost
         total_savings = total_budget_cost - total_expense
 
@@ -299,6 +302,12 @@ def home():
     total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
     total_investment_cost = fetch_total_cost('Investment', user_email, current_date)
     total_investmentReturns_cost = fetch_total_cost('Investment Returns', user_email, current_date)
+    session['total_food_cost'] = total_food_cost
+    session['total_transport_cost'] = total_transport_cost
+    session['total_budget_cost'] = total_budget_cost
+    session['total_investment_cost'] = total_investment_cost
+    session['total_investmentReturns_cost'] = total_investmentReturns_cost
+
 
     total_expense = total_food_cost + total_transport_cost + total_investment_cost - total_investmentReturns_cost
     total_savings = float(total_budget_cost - total_expense)
@@ -964,6 +973,48 @@ def delete_transport_expense(unique_index):
     
     # Pass the updated data to the template
     return render_template('user_transport_expenses.html', user_transport_data=user_transport_data)
+
+
+@app.route('/copy_previous_budget', methods=['POST'])
+def copy_previous_budget():
+    if 'user' not in session:
+        return redirect('/')
+
+    user_email = session['user']
+    current_date = datetime.now().strftime("%Y-%m-%d")
+
+    # Fetch all the budget expenses for the logged-in user on the previous date
+    previous_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    previous_budget_expenses = db.collection('Budget').where('user_email', '==', user_email).where('date', '==', previous_date).stream()
+
+    try:
+        # Copy all the budget data from the previous date to today's date
+        for budget_doc in previous_budget_expenses:
+            budget_data = budget_doc.to_dict()
+
+            # Generate a new unique index for the copied entry
+            new_unique_index = get_new_unique_index()
+
+            # Update the budget data with the new date and unique index
+            budget_data['date'] = current_date
+            budget_data['unique_index'] = new_unique_index
+
+            # Add the copied budget data to today's date
+            db.collection('Budget').add(budget_data)
+
+        flash("All budget data copied successfully from the previous day!", "success")
+    except Exception as e:
+        flash(f"An error occurred during budget data copying: {str(e)}", "warning")
+
+    return redirect('/user_budget')
+
+def get_new_unique_index():
+    # You can implement your logic here to generate a new unique index
+    # This can be a random number, a counter, or any other mechanism
+    # Ensure that the generated index is unique within the collection
+    # For simplicity, let's use a random number between 1 and 1000 in this example
+    return random.randint(1, 1000)
+
 
 @app.route('/addbudget', methods=['GET', 'POST'])
 def addbudget():
