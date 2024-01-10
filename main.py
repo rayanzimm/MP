@@ -1,4 +1,4 @@
-from flask import Flask, session, render_template, request, redirect, flash, url_for
+from flask import Flask, session, render_template, request, redirect, flash, url_for , make_response, send_file
 from google.cloud.firestore_v1.base_query import FieldFilter
 import pyrebase
 import firebase_admin
@@ -16,6 +16,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import pytz
 from datetime import datetime, timedelta
 import random
+from openai import OpenAI
+import openai
+from fpdf import FPDF
+
 app = Flask(__name__)
 UPLOAD_FOLDER = r'static\assets\img'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -37,29 +41,12 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
 app.secret_key = 'secret'
 
-# def openai(prompt):
-
-#     client = OpenAI(
-#         # This is the default and can be omitted
-#         api_key= "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"
-#     )
-#     chat_completion = client.chat.completions.create(
-#         messages=[
-#             {
-#                 "role": "user",
-#                 "content": prompt
-#             }
-#         ],
-#         model="gpt-3.5-turbo",
-#     )
-#     print(chat_completion)
-# openai("read the current statistics of the user and provide a detailed monthly analysis for the user. Provide certain reccomendations for the user such as what stocks will suit their risk profile and what they can do to reach their goal")
 
 
 # Function to send daily reminder email
@@ -1523,14 +1510,131 @@ def delete_investment_returns(unique_index):
     # Pass the updated data to the template
     return render_template('user_investment_returns.html', user_investmentReturns_data=user_investmentReturns_data)
         
-
 @app.route('/analysis')
 def analysis():
-    return render_template('analysis.html')
+    user_email = session['user']
+    current_date = datetime.now().strftime("%Y-%m-%d")
+
+    total_food_cost = fetch_total_cost('Food', user_email, current_date)
+    total_transport_cost = fetch_total_cost('Transport', user_email, current_date)
+    total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
+    total_investment_cost = fetch_total_cost('Investment', user_email, current_date)
+    total_investmentReturns_cost = fetch_total_cost('Investment Returns', user_email, current_date)
+
+    # Calculate total expense including food, transport, and investment costs
+    total_expense = total_food_cost + total_transport_cost + total_investment_cost
+    total_savings = float(total_budget_cost - total_expense)
+
+    # Store values in session
+    session['total_food_cost'] = total_food_cost
+    session['total_transport_cost'] = total_transport_cost
+    session['total_budget_cost'] = total_budget_cost
+    session['total_investment_cost'] = total_investment_cost
+    session['total_investmentReturns_cost'] = total_investmentReturns_cost
+
+    return render_template('analysis.html',
+                           total_food_cost=total_food_cost,
+                           total_transport_cost=total_transport_cost,
+                           total_budget_cost=total_budget_cost,
+                           total_investment_cost=total_investment_cost,
+                           total_investmentReturns_cost=total_investmentReturns_cost,
+                           total_expense=total_expense,  # Include total_expense in the template
+                           total_savings=total_savings)
+def fetch_total_cost(expense_type, user_email, current_date):
+    total_cost = 0
+
+    # Fetch the list of expenses for the given expense type and user
+    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).where('date', '==', current_date).stream()
+
+    # Iterate through the expenses and calculate the total cost
+    for expense_doc in expense_ref:
+        expense_data = expense_doc.to_dict()
+        total_cost += float(expense_data.get('cost', 0))
+
+    return total_cost
+
+# @app.route('/analysis', methods=['GET', 'POST'])
+# def analysis():
+#     if request.method == 'POST':
+#         # Get user inputs from the form
+#         budget = float(request.form['budget'])
+#         food_expense = float(request.form['food_expense'])
+#         transport_expense = float(request.form['transport_expense'])
+
+#         # Generate a prompt for OpenAI based on user inputs
+#         prompt = f"Given a budget of {budget}, food expense of {food_expense}, and transport expense of {transport_expense}, analyze the impact on savings."
+
+#         # Use OpenAI API to get analysis
+#         analysis_result = openai_analysis(prompt)
+
+#         return render_template('analysis.html', prompt=prompt, analysis_result=analysis_result)
+
+#     return render_template('analysis.html', prompt="something")
+
+def openai_analysis(prompt):
+    try:
+                # Call OpenAI API to generate analysis
+        response = openai.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            model="gpt-3.5-turbo",
+        )
+        print (response)
+
+
+        # # Extract the generated text from OpenAI's response
+        analysis_result = response.choices[0].message.content
+
+        return analysis_result
+
+    except Exception as e:
+        # Handle any errors that may occur during API call
+        return f"Error: {str(e)}"
+    
+@app.route('/download_pdf', methods=['POST'])
+def download_pdf():
+    # Retrieve the data needed for the PDF
+    recommendations = request.form.get('recommendations')
+
+    # Generate PDF
+    pdf = FPDF('P', 'mm', 'Letter')
+    pdf.add_page()
+    pdf.set_font('helvetica', size=12)
+    pdf.cell(40, 10, "Monthly Analysis Report")
+    pdf.cell(80, 10, recommendations)
+
+    # Construct the path to the user's downloads folder
+    downloads_folder = os.path.expanduser("~" + os.sep + "Downloads")
+    pdf_path = os.path.join(downloads_folder, 'finsaver_analysis.pdf')
+
+    # Save the PDF to the downloads folder
+    pdf.output(pdf_path)
+
+    # Return the PDF file directly
+    return send_file(pdf_path, as_attachment=True, download_name='finsaver_analysis.pdf')
+
 
 @app.route('/settings')
 def settings():
     return render_template('settings.html')
+
+@app.route("/graph")
+def graph():
+    # Generate the figure **without using pyplot**.
+    fig = Figure()
+    ax = fig.subplots()
+    ax.plot([1, 2])
+    # Save it to a temporary buffer.
+    buf = BytesIO()
+    fig.savefig(buf, format="png")
+    # Embed the result in the html output.
+    data = base64.b64encode(buf.getbuffer()).decode("ascii")
+
+    return render_template('home.html', image = "data:image/png;base64," + data)
 
 
 @app.route('/news', methods=['GET', 'POST'])

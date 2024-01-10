@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Analysis</title>
-<style>
-  body {
-    font-family: 'Arial', sans-serif;
-    background-color: #000A2B;
-    color: white;
-  }
-  .navbar {
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #000A2B;
+            color: white;
+        }
+        .navbar {
             background-color: #212946;
             width: 200px;
             height: 100%;
@@ -28,7 +32,7 @@
             text-decoration: none;
         }
         .navbar a i {
-        margin-right: 8px;
+            margin-right: 8px;
         }
         .navbar a.active {
             background-color: #151a2c;
@@ -46,86 +50,98 @@
             margin-left: 250px;
             padding: 20px;
         }
-  .dashboard {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    padding: 20px;
-  }
-  .card {
-    background: #34495e;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    width: calc(33% - 20px);
-  }
-  .card h2 {
-    font-size: 1.5em;
-  }
-  .card p {
-    font-size: 1.2em;
-  }
-  .full-width {
-    width: 97.5%;
-  }
-  .button {
-    display: block;
-    width: max-content;
-    padding: 10px 20px;
-    margin: 20px auto;
-    background: #1abc9c;
-    color: white;
-    text-align: center;
-    text-decoration: none;
-    border-radius: 5px;
-  }
-  /* The Modal (background) */
-.modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+        }
+        .card {
+            background: #34495e;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            width: calc(33% - 20px);
+        }
+        .card h2 {
+            font-size: 1.5em;
+        }
+        .card p {
+            font-size: 1.2em;
+        }
+        .full-width {
+            width: 97.5%;
+        }
+        .button {
+            display: block;
+            width: max-content;
+            padding: 10px 20px;
+            margin: 20px auto;
+            background: #1abc9c;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
 
-/* Modal Content */
-.modal-content {
-  background-color: #34495e;
-  margin: 15% auto; /* 15% from the top and centered */
-  padding: 30px;
-  width: 80%; /* Could be more or less, depending on screen size */
-}
+        /* Modal Content */
+        .modal-content {
+            background-color: #34495e;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 30px;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
 
-/* The Close Button */
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
 
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-
-
-
-</style>
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            padding: 20px; /* Add padding for spacing */
+        }
+        .date-indicator {
+            background-color: #212946;
+            padding: 10px;
+            border-radius: 5px;
+            /* Adjust margin for spacing */
+        }
+        #current-date {
+            margin: 0;
+        }
+    </style>
 </head>
+
+</div>
 <body>
     <div class="navbar">
         <div class="image" align="left">
             <a href="{{ url_for('home')}}">
-                <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
+                <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}" class="image">
             </a>
         </div>
         <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
@@ -136,133 +152,148 @@
         <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
         <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
-</div>
-<div class="main-content">
-    <div class="dashboard">
-        <div class="card">
-    <h2>Balance</h2>
-    <p>$50,000.00</p>
-    <!-- Chart placeholder -->
     </div>
-        <div class="card">
-    <h2>Savings</h2>
-    <p>$2,500.00</p>
-    <!-- Chart placeholder -->
-     </div>
-        <div class="card">
-    <h2>Expenses</h2>
-    <p>$6,500.00</p>
-    <!-- Chart placeholder -->
-    </div>
-         <div class="card full-width">
-    <h2>Financial Statistics</h2>
-    <!-- Chart placeholder -->
-  </div>
-  <a href="#" class="button">View Analysis Report</a>
-</div>
-<div>
-
-<div id="analysisModal" class="modal">
-    <!-- Modal content -->    <div class="modal-content">
-      <div class="modal-header">
-        <span class="close">&times;</span>
-        <h2>Analysis Report</h2>
-      </div>
-      <div class="modal-body">
-        <label for="monthSelect">Nov 2023</label>
-        <select id="monthSelect">
-          <option value="nov-2023">Monthly Analysis Report</option>
-          <!-- Add more options here -->
-        </select>
-        <button id="viewReport">View</button>
-      </div>
-    </div>
-  </div>
-  <div id="detailedAnalysisModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span class="close">&times;</span>
-        <h2>Analysis Report</h2>
-      </div>
-      <div class="modal-body">
-        <div class="report-header">
-          <h3>Nov 2023</h3>
-          <button id="downloadReport">Download</button>
+    <div class="top-bar">
+        <div class="date-indicator">
+            <p id="current-date"></p>
         </div>
-        <div class="report-section">
-          <div class="report-chart">
-            <!-- Insert Monthly Income Chart here -->
-          </div>
-          <div class="report-chart">
-            <!-- Insert Monthly Savings Chart here -->
-          </div>
-          <div class="report-chart">
-            <!-- Insert Monthly Expenses Chart here -->
-          </div>
-        </div>
-        <p>This Month, your Monthly Expenses are 12.8% Higher than the monthly Average of $5,662. Resulting in a decrease of 8.32% in your monthly Saving. This is due to the high expenses of transport which are 40% of your monthly expenses.</p>
-        <div class="recommendations">
-          <h4>Recommendations Based On Your Risk Profile:</h4>
-          <ul>
-            <li>1) S&P 500 ETFs - Low Risk with 7% annual returns</li>
-            <li>2) APPLE Stock - Low-Medium Risk with 10% annual returns</li>
-            <li>3) Abbott laboratories stock - Low Risk with 5% annual returns</li>
-            <li>4) Google Stock Medium Risk with 20%</li>
-          </ul>
-        </div>
-      </div>
     </div>
-  </div>
+    <div class="main-content">
+        <div class="dashboard">
+            <div class="card">
+                <h2>Budget</h2>
+                <p>${{ total_budget_cost }}</p>
 
+                <!-- Chart placeholder -->
+            </div>
+            <div class="card">
+                <h2>Earnings</h2>
+                <p>$ {{ total_investmentReturns_cost }}</p>
+                <!-- Chart placeholder -->
+            </div>
+            <div class="card">
+                <h2>Expenses</h2>
+                <p>$ {{ total_expense }}</p>
+                
+            </div>
+            
+            <div class="card full-width">
+                <h2>Financial Statistics</h2>
+                <!-- Chart placeholder -->
+            </div>
+            <a href="#" class="button">View Analysis Report</a>
+        </div>
+    </div>
 
-<script>
-  // Get the modal
-var modal = document.getElementById("analysisModal");
+    <div id="analysisModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2>Analysis Report</h2>
+            </div>
+            <div class="modal-body">
+                <label for="monthSelect">Nov 2023</label>
+                <select id="monthSelect">
+                    <option value="nov-2023">Monthly Analysis Report</option>
+                    <!-- Add more options here -->
+                </select>
+                <button id="viewReport" onclick="window.location.href='/analysis'">View</button>
 
-// Get the button that opens the modal
-var btn = document.querySelector(".button");
+                <!-- Form for Savings Analysis -->
+                <form action="/analysis" method="post" class="modal-form">
+                    <button type="submit">Analyze</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-// Get the <span> element that closes the modal
-var span = document.getElementsByClassName("close")[0];
+    <div id="detailedAnalysisModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2>Analysis Report</h2>
+            </div>
+            <div class="modal-body">
+                <div class="report-header">
+                    <h3>Nov 2023</h3>
+                    <form action="{{ url_for('download_pdf') }}" method="post">
+                      <input type="hidden" name="recommendations" value="{{ prompt }}">
+                      <button type="submit">Download PDF</button>
+                  </form>
+                </div>
+                {% if prompt %}
+                    <h2>Analysis Prompt:</h2>
+                    <p>{{ prompt }}</p>
+                {% endif %}
+                {% if analysis_result %}
+                    <h2>Analysis Result:</h2>
+                    <p>{{ analysis_result }}</p>
+                 {% endif %}
+                </div>
+                
+                <div class="recommendations">
+                    
 
-// When the user clicks the button, open the modal 
-btn.onclick = function() {
-  modal.style.display = "block";
-}
+                </div>
+            </div>
+        </div>
+    </div>
 
-// When the user clicks on <span> (x), close the modal
-span.onclick = function() {
-  modal.style.display = "none";
-}
+    <script>
+        var modal = document.getElementById("analysisModal");
 
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-  if (event.target == modal) {
-    modal.style.display = "none";
-  }
-}
+        var btn = document.querySelector(".button");
 
-var modal = document.getElementById("analysisModal");
-var viewReportButton = document.getElementById("viewReport");
-var detailedAnalysisModal = document.getElementById("detailedAnalysisModal");
-var span = document.getElementsByClassName("close")[0];
+        var span = document.getElementsByClassName("close")[0];
 
-viewReportButton.onclick = function () {
-    modal.style.display = "none";
-    detailedAnalysisModal.style.display = "flex"; // Use display: flex to make the modal appear correctly
-}
+        btn.onclick = function() {
+            modal.style.display = "block";
+        }
 
-span.onclick = function () {
-    detailedAnalysisModal.style.display = "none";
-}
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
 
-window.onclick = function (event) {
-    if (event.target == detailedAnalysisModal) {
-        detailedAnalysisModal.style.display = "none";
-    }
-}
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
 
-</script>
+        var viewReportButton = document.getElementById("viewReport");
+        var detailedAnalysisModal = document.getElementById("detailedAnalysisModal");
+        var spanDetailed = document.getElementsByClassName("close")[1];
 
+        viewReportButton.onclick = function () {
+            modal.style.display = "none";
+            detailedAnalysisModal.style.display = "flex"; 
+        }
+
+        spanDetailed.onclick = function () {
+            detailedAnalysisModal.style.display = "none";
+        }
+
+        window.onclick = function (event) {
+            if (event.target == detailedAnalysisModal) {
+                detailedAnalysisModal.style.display = "none";
+            }
+        }
+        $(document).ready(function () {
+        function updateCurrentDate() {
+            var currentDate = new Date();
+            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            var formattedDate = currentDate.toLocaleDateString('en-US', options);
+            $('#current-date').text(formattedDate);
+        }
+
+        // Update the current date on page load
+        updateCurrentDate();
+
+        // Optionally, update the current date periodically (e.g., every minute)
+        setInterval(updateCurrentDate, 60000);
+    });
+        
+    </script>
 </body>
 </html>
