@@ -235,22 +235,31 @@
             <div class="modal-body">
                 <form method="post" action="/analysis">
                     <label for="budget">Budget: $ </label>
-                    <input type="text" name="budget" value="{{ total_budget_cost }}" required>
-            
-                    <label for="invesment_expense">Investment Expense: $</label>
-                    <input type="text" name="invesment_expense" value="{{ total_investment_cost }}" required>
-                
+                    <input type="text" name="budget" value="{{ total_budget_cost }}" readonly required>
+                    
+                    <label for="investment_expense">Investment Expense: $</label>
+                    <input type="text" name="investment_expense" value="{{ total_investment_cost }}" readonly required>
+                    
                     <label for="food_expense">Food Expense: $</label>
-                    <input type="text" name="food_expense" value="{{ total_food_cost }}" required>
-                
+                    <input type="text" name="food_expense" value="{{ total_food_cost }}" readonly required>
+                    
                     <label for="transport_expense">Transport Expense: $</label>
-                    <input type="text" name="transport_expense" value="{{ total_transport_cost }}" required>
+                    <input type="text" name="transport_expense" value="{{ total_transport_cost }}" readonly required>
+                    
                     <button type="submit" class="button">Analyze</button>
                 </form>
             </div>
         </div>
                
     <script>
+        function confirmLogout() {
+            var result = confirm("Are you sure you want to log out?");
+            if (result) {
+                window.location.href = '/logout';  // Redirect to /logout if the user clicks "OK"
+            } else {
+                // Do nothing or handle the "Cancel" action
+            }
+        }
         var modal = document.getElementById("analysisModal");
         var detailedModal = document.getElementById("detailedAnalysisModal");
         var btn = document.querySelector(".button");

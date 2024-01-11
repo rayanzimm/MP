@@ -49,10 +49,9 @@ app.secret_key = 'secret'
 
 
 
-# Function to send daily reminder email
 
-# Flask-Mail configurations
-# Outlook SMTP server details
+
+
 # app.config['MAIL_SERVER'] = 'smtp.office365.com'
 # app.config['MAIL_PORT'] = 587
 # app.config['MAIL_USE_TLS'] = True
@@ -101,7 +100,7 @@ app.secret_key = 'secret'
 #     except Exception as e:
 #         return f"Error storing email: {str(e)}"
 
-# Function to retrieve the user's email for the daily reminder
+
 # def get_user_email_for_daily_reminder():
 #     try:
 #         user_email = session['user']
@@ -1510,7 +1509,7 @@ def delete_investment_returns(unique_index):
     # Pass the updated data to the template
     return render_template('user_investment_returns.html', user_investmentReturns_data=user_investmentReturns_data)
         
-openai.api_key = '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'
+openai.api_key = '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'
 @app.route('/analysis')
 def total_budget_expense():
     user_email = session['user']
@@ -1541,19 +1540,6 @@ def total_budget_expense():
                            total_expense=total_expense,
                            total_savings=total_savings)
 
-def fetch_total_cost_analysis(expense_type, user_email):
-    total_cost = 0
-
-    # Fetch the list of expenses for the given expense type and user
-    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).stream()
-
-    # Iterate through the expenses and calculate the total cost
-    for expense_doc in expense_ref:
-        expense_data = expense_doc.to_dict()
-        total_cost += float(expense_data.get('cost', 0))
-
-    return total_cost
-
 
 
 @app.route('/analysis', methods=['GET', 'POST'])
@@ -1564,20 +1550,14 @@ def analysis():
         food_expense = float(request.form['food_expense'])
         transport_expense = float(request.form['transport_expense'])
 
-        # Generate a prompt for OpenAI based on user inputs
         prompt = f"Given a budget of {budget}, food expense of {food_expense}, and transport expense of {transport_expense}, analyze the impact on savings."
-
-        # Use OpenAI API to get analysis
         analysis_result = openai_analysis(prompt)
 
         return redirect(url_for('prompt', analysis_result=analysis_result))
-
-
     return render_template('analysis.html', prompt="something")
 
 def openai_analysis(prompt):
     try:
-                # Call OpenAI API to generate analysis
         response = openai.chat.completions.create(
             messages=[
                 {
@@ -1588,68 +1568,21 @@ def openai_analysis(prompt):
             model="gpt-3.5-turbo",
         )
         print (response)
-
-
-        # # Extract the generated text from OpenAI's response
         analysis_result = response.choices[0].message.content
-
         return analysis_result
 
     except Exception as e:
-        # Handle any errors that may occur during API call
         return f"Error: {str(e)}"
 
 def fetch_total_cost_analysis(expense_type, user_email):
     total_cost = 0
-
-    # Fetch the list of expenses for the given expense type and user
     expense_ref = db.collection(expense_type).where('user_email', '==', user_email).stream()
 
-    # Iterate through the expenses and calculate the total cost
     for expense_doc in expense_ref:
         expense_data = expense_doc.to_dict()
         total_cost += float(expense_data.get('cost', 0))
 
     return total_cost
-
-def fetch_total_cost_analysis(expense_type, user_email):
-    total_cost = 0
-
-    # Fetch the list of expenses for the given expense type and user
-    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).stream()
-
-    # Iterate through the expenses and calculate the total cost
-    for expense_doc in expense_ref:
-        expense_data = expense_doc.to_dict()
-        total_cost += float(expense_data.get('cost', 0))
-
-    return total_cost
-
-
-
-def openai_analysis(prompt):
-    try:
-                # Call OpenAI API to generate analysis
-        response = openai.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ],
-            model="gpt-3.5-turbo",
-        )
-        print (response)
-
-
-        # # Extract the generated text from OpenAI's response
-        analysis_result = response.choices[0].message.content
-
-        return analysis_result
-
-    except Exception as e:
-        # Handle any errors that may occur during API call
-        return f"Error: {str(e)}"
     
 @app.route('/prompt')
 def prompt():
@@ -1660,23 +1593,23 @@ def prompt():
 @app.route('/download_pdf', methods=['POST'])
 def download_pdf():
     # Retrieve the data needed for the PDF
-    recommendations = request.form.get('recommendations')
+    prompt = request.form.get('prompt')
+    analysis_result = request.form.get('analysis_result')
 
-    # Generate PDF
+    # Create a PDF instance
     pdf = FPDF('P', 'mm', 'Letter')
     pdf.add_page()
     pdf.set_font('helvetica', size=12)
-    pdf.cell(40, 10, "Monthly Analysis Report")
-    pdf.cell(80, 10, recommendations)
+    pdf.cell(0, 10, f"Analysis Report:")
+    pdf.cell(0, 10, f"Prompt: {prompt}", ln=True)
+    pdf.cell(0, 10, f"Analysis Result: {analysis_result}", ln=True)
 
-    # Construct the path to the user's downloads folder
+    
     downloads_folder = os.path.expanduser("~" + os.sep + "Downloads")
     pdf_path = os.path.join(downloads_folder, 'finsaver_analysis.pdf')
 
-    # Save the PDF to the downloads folder
     pdf.output(pdf_path)
 
-    # Return the PDF file directly
     return send_file(pdf_path, as_attachment=True, download_name='finsaver_analysis.pdf')
 
 

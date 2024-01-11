@@ -47,27 +47,55 @@
     .main-content {
         margin-left: 250px;
     }
-/* Add these styles to your existing stylesheet or style section */
-
-h2 {
-    color: #ffffff; /* Adjust the color as needed */
-    font-size: 24px;
-    margin-left: 200px;
-}
-
-p {
-    color: #ffffff; /* Adjust the color as needed */
-    font-size: 18px;
-
-}
-.result-form {
-        max-width: 1000px;
-        margin: 20px auto;
-        padding: 50px;
-        background-color: #34495e;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    h2 {
+        color: #000000; /* Adjust the color as needed */
+        font-size: 24px;
+        padding: 20px;
     }
+
+    p {
+        color: #000000; /* Adjust the color as needed */
+        font-size: 18px;
+
+    }
+    .download-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .download-button:hover {
+            background-color: #45a049;
+        }
+        .result-form {
+                max-width: 1000px;
+                margin: 20px auto;
+                margin-left: 450px;
+                padding: 50px;
+                background-color: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            button[type="submit"] {
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-top: 10px;
+                margin-left: 1300px;
+            }
+
+            button[type="submit"]:hover {
+                background-color: #45a049;
+            }
 
 
 </style>
@@ -88,6 +116,10 @@ p {
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
     <h2>Analysis:</h2>
+    <form action="{{ url_for('download_pdf') }}" method="post">
+        <input type="hidden" name="recommendations" value="{{ prompt }}">
+        <button type="submit">Download PDF</button>
+    </form>
     <div class="result-form">
         {% if prompt %}
             <div class="form-group">
@@ -103,6 +135,7 @@ p {
             </div>
         {% endif %}
     </div>
+    
        
     <script>
         function submitForm() {
@@ -120,9 +153,5 @@ p {
             });
         }
     </script>
-
-    <!-- Add any additional content, charts, or visualizations as needed -->
-
-    <!-- Add your scripts, footer, or other closing tags here -->
 </body>
 </html>
