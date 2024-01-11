@@ -41,7 +41,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -1509,7 +1509,7 @@ def delete_investment_returns(unique_index):
     # Pass the updated data to the template
     return render_template('user_investment_returns.html', user_investmentReturns_data=user_investmentReturns_data)
         
-openai.api_key = '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'
+openai.api_key = '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'
 @app.route('/analysis')
 def total_budget_expense():
     user_email = session['user']
@@ -1553,7 +1553,10 @@ def analysis():
         prompt = f"Given a budget of {budget}, food expense of {food_expense}, and transport expense of {transport_expense}, analyze the impact on savings."
         analysis_result = openai_analysis(prompt)
 
-        return redirect(url_for('prompt', analysis_result=analysis_result))
+        # Store the analysis result in the session
+        session['analysis_result'] = analysis_result
+
+        return redirect(url_for('prompt'))
     return render_template('analysis.html', prompt="something")
 
 def openai_analysis(prompt):
@@ -1586,33 +1589,38 @@ def fetch_total_cost_analysis(expense_type, user_email):
     
 @app.route('/prompt')
 def prompt():
-    analysis_result = request.args.get('analysis_result', '')
+    analysis_result = session.get('analysis_result', '')
     return render_template('prompt.html', analysis_result=analysis_result)
+
 
     
 @app.route('/download_pdf', methods=['POST'])
 def download_pdf():
-    # Retrieve the data needed for the PDF
-    prompt = request.form.get('prompt')
-    analysis_result = request.form.get('analysis_result')
+    # Retrieve the analysis result from the session
+    analysis_result = session.get('analysis_result', '')
 
-    # Create a PDF instance
+    # Retrieve the data needed for the PDF
+    recommendations = request.form.get('recommendations')
+
     pdf = FPDF('P', 'mm', 'Letter')
     pdf.add_page()
     pdf.set_font('helvetica', size=12)
-    pdf.cell(0, 10, f"Analysis Report:")
-    pdf.cell(0, 10, f"Prompt: {prompt}", ln=True)
-    pdf.cell(0, 10, f"Analysis Result: {analysis_result}", ln=True)
-
+    pdf.cell(40, 10, "Monthly Analysis Report")
     
+    # Add the analysis result to the PDF
+    pdf.cell(80, 10, analysis_result)
+    
+    # Add other content if needed
+    pdf.cell(80, 10, recommendations)
+
+    # Construct the path to the user's downloads folder
     downloads_folder = os.path.expanduser("~" + os.sep + "Downloads")
     pdf_path = os.path.join(downloads_folder, 'finsaver_analysis.pdf')
 
+    # Save the PDF to the downloads folder
     pdf.output(pdf_path)
 
     return send_file(pdf_path, as_attachment=True, download_name='finsaver_analysis.pdf')
-
-
 @app.route('/settings')
 def settings():
     return render_template('settings.html')
