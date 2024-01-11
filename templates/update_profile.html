@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <title>Update Profile</title>
     <style>
         body {
@@ -71,12 +72,24 @@
             background-color: #207290;
             /* Darker teal color */
         }
+        .close-button {
+            color: #ECF0F1; /* Light text color */
+            
+            text-decoration: none;
+            text-align: center;
+        }
+
     </style>
 </head>
 
 <body>
     <div class="profile-container">
+    <a href="{{ url_for('profile') }}" class="close-button">
+        <i class="fas fa-times"></i> <!-- Font Awesome "x" icon -->
+
         <h2>Update Profile</h2>
+</a>
+
         <form method="POST" action="/update_profile" enctype="multipart/form-data">
 
             <label for="new_photo">Upload New Photo:</label>

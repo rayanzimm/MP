@@ -1510,16 +1510,16 @@ def delete_investment_returns(unique_index):
     # Pass the updated data to the template
     return render_template('user_investment_returns.html', user_investmentReturns_data=user_investmentReturns_data)
         
+openai.api_key = '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'
 @app.route('/analysis')
-def analysis():
+def total_budget_expense():
     user_email = session['user']
-    current_date = datetime.now().strftime("%Y-%m-%d")
 
-    total_food_cost = fetch_total_cost('Food', user_email, current_date)
-    total_transport_cost = fetch_total_cost('Transport', user_email, current_date)
-    total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
-    total_investment_cost = fetch_total_cost('Investment', user_email, current_date)
-    total_investmentReturns_cost = fetch_total_cost('Investment Returns', user_email, current_date)
+    total_food_cost = fetch_total_cost_analysis('Food', user_email)
+    total_transport_cost = fetch_total_cost_analysis('Transport', user_email)
+    total_budget_cost = fetch_total_cost_analysis('Budget', user_email)
+    total_investment_cost = fetch_total_cost_analysis('Investment', user_email)
+    total_investmentReturns_cost = fetch_total_cost_analysis('Investment Returns', user_email)
 
     # Calculate total expense including food, transport, and investment costs
     total_expense = total_food_cost + total_transport_cost + total_investment_cost
@@ -1538,13 +1538,14 @@ def analysis():
                            total_budget_cost=total_budget_cost,
                            total_investment_cost=total_investment_cost,
                            total_investmentReturns_cost=total_investmentReturns_cost,
-                           total_expense=total_expense,  # Include total_expense in the template
+                           total_expense=total_expense,
                            total_savings=total_savings)
-def fetch_total_cost(expense_type, user_email, current_date):
+
+def fetch_total_cost_analysis(expense_type, user_email):
     total_cost = 0
 
     # Fetch the list of expenses for the given expense type and user
-    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).where('date', '==', current_date).stream()
+    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).stream()
 
     # Iterate through the expenses and calculate the total cost
     for expense_doc in expense_ref:
@@ -1553,23 +1554,26 @@ def fetch_total_cost(expense_type, user_email, current_date):
 
     return total_cost
 
-# @app.route('/analysis', methods=['GET', 'POST'])
-# def analysis():
-#     if request.method == 'POST':
-#         # Get user inputs from the form
-#         budget = float(request.form['budget'])
-#         food_expense = float(request.form['food_expense'])
-#         transport_expense = float(request.form['transport_expense'])
 
-#         # Generate a prompt for OpenAI based on user inputs
-#         prompt = f"Given a budget of {budget}, food expense of {food_expense}, and transport expense of {transport_expense}, analyze the impact on savings."
 
-#         # Use OpenAI API to get analysis
-#         analysis_result = openai_analysis(prompt)
+@app.route('/analysis', methods=['GET', 'POST'])
+def analysis():
+    if request.method == 'POST':
+        # Get user inputs from the form
+        budget = float(request.form['budget'])
+        food_expense = float(request.form['food_expense'])
+        transport_expense = float(request.form['transport_expense'])
 
-#         return render_template('analysis.html', prompt=prompt, analysis_result=analysis_result)
+        # Generate a prompt for OpenAI based on user inputs
+        prompt = f"Given a budget of {budget}, food expense of {food_expense}, and transport expense of {transport_expense}, analyze the impact on savings."
 
-#     return render_template('analysis.html', prompt="something")
+        # Use OpenAI API to get analysis
+        analysis_result = openai_analysis(prompt)
+
+        return redirect(url_for('prompt', analysis_result=analysis_result))
+
+
+    return render_template('analysis.html', prompt="something")
 
 def openai_analysis(prompt):
     try:
@@ -1594,6 +1598,64 @@ def openai_analysis(prompt):
     except Exception as e:
         # Handle any errors that may occur during API call
         return f"Error: {str(e)}"
+
+def fetch_total_cost_analysis(expense_type, user_email):
+    total_cost = 0
+
+    # Fetch the list of expenses for the given expense type and user
+    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).stream()
+
+    # Iterate through the expenses and calculate the total cost
+    for expense_doc in expense_ref:
+        expense_data = expense_doc.to_dict()
+        total_cost += float(expense_data.get('cost', 0))
+
+    return total_cost
+
+def fetch_total_cost_analysis(expense_type, user_email):
+    total_cost = 0
+
+    # Fetch the list of expenses for the given expense type and user
+    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).stream()
+
+    # Iterate through the expenses and calculate the total cost
+    for expense_doc in expense_ref:
+        expense_data = expense_doc.to_dict()
+        total_cost += float(expense_data.get('cost', 0))
+
+    return total_cost
+
+
+
+def openai_analysis(prompt):
+    try:
+                # Call OpenAI API to generate analysis
+        response = openai.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            model="gpt-3.5-turbo",
+        )
+        print (response)
+
+
+        # # Extract the generated text from OpenAI's response
+        analysis_result = response.choices[0].message.content
+
+        return analysis_result
+
+    except Exception as e:
+        # Handle any errors that may occur during API call
+        return f"Error: {str(e)}"
+    
+@app.route('/prompt')
+def prompt():
+    analysis_result = request.args.get('analysis_result', '')
+    return render_template('prompt.html', analysis_result=analysis_result)
+
     
 @app.route('/download_pdf', methods=['POST'])
 def download_pdf():

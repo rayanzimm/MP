@@ -3,10 +3,7 @@
 <head>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analysis</title>
@@ -48,7 +45,6 @@
         }
         .main-content {
             margin-left: 250px;
-            padding: 20px;
         }
         .dashboard {
             display: flex;
@@ -76,34 +72,41 @@
             display: block;
             width: max-content;
             padding: 10px 20px;
-            margin: 20px auto;
+            margin: auto; /* Center the button horizontally */
+            margin-top: 50px; /* Move the button to the bottom */
             background: #1abc9c;
             color: white;
             text-align: center;
             text-decoration: none;
             border-radius: 5px;
         }
-        /* The Modal (background) */
+
         .modal {
             display: none; /* Hidden by default */
             position: fixed; /* Stay in place */
             z-index: 1; /* Sit on top */
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
+            margin-top: 70px;
+            margin-left: 480px;
+            width: 50%; /* Full width */
+            height: 70%; /* Full height */
             overflow: auto; /* Enable scroll if needed */
-            background-color: rgb(0,0,0); /* Fallback color */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            background-color: rgb(0, 0, 0); /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
         }
 
         /* Modal Content */
         .modal-content {
             background-color: #34495e;
-            margin: 15% auto; /* 15% from the top and centered */
+            margin: 0; /* No margin */
             padding: 30px;
-            width: 80%; /* Could be more or less, depending on screen size */
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            border-radius: 8px;
         }
+
 
         /* The Close Button */
         .close {
@@ -119,19 +122,50 @@
             text-decoration: none;
             cursor: pointer;
         }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 30%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            color: black;
+        }
+
+        button {
+            background-color: #4ca0af;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #5d8bf7;
+        }    
         .top-bar {
             display: flex;
             justify-content: flex-end;
             padding: 20px; /* Add padding for spacing */
         }
+
         .date-indicator {
             background-color: #212946;
             padding: 10px;
+            margin-right: 30px;
             border-radius: 5px;
             /* Adjust margin for spacing */
         }
+
         #current-date {
             margin: 0;
+            color: #ffffff; /* Set text color to white */
         }
     </style>
 </head>
@@ -153,35 +187,41 @@
         <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
-    <div class="top-bar">
-        <div class="date-indicator">
-            <p id="current-date"></p>
-        </div>
+
     </div>
     <div class="main-content">
+        <div class="top-bar">
+            <div class="date-indicator">
+                <p id="current-date"></p>
+            </div>
+        </div>
         <div class="dashboard">
             <div class="card">
                 <h2>Budget</h2>
-                <p>${{ total_budget_cost }}</p>
+                <p>Total budget Cost: ${{ total_budget_cost }}</p>
 
                 <!-- Chart placeholder -->
             </div>
             <div class="card">
                 <h2>Earnings</h2>
-                <p>$ {{ total_investmentReturns_cost }}</p>
+                <p>Investment: $ {{ total_investmentReturns_cost }}</p>
                 <!-- Chart placeholder -->
             </div>
             <div class="card">
                 <h2>Expenses</h2>
-                <p>$ {{ total_expense }}</p>
-                
+                <p>Total : $ {{ total_expense }}</p>
+                <p>Invesment: $ {{ total_investment_cost }}</p>
+                <p>Transport: $ {{ total_transport_cost }}</p>
+                <p>Food:      $ {{ total_food_cost }}</p>
+
             </div>
-            
             <div class="card full-width">
                 <h2>Financial Statistics</h2>
                 <!-- Chart placeholder -->
             </div>
             <a href="#" class="button">View Analysis Report</a>
+            <!-- Form for Savings Analysis -->
+
         </div>
     </div>
 
@@ -193,107 +233,70 @@
                 <h2>Analysis Report</h2>
             </div>
             <div class="modal-body">
-                <label for="monthSelect">Nov 2023</label>
-                <select id="monthSelect">
-                    <option value="nov-2023">Monthly Analysis Report</option>
-                    <!-- Add more options here -->
-                </select>
-                <button id="viewReport" onclick="window.location.href='/analysis'">View</button>
-
-                <!-- Form for Savings Analysis -->
-                <form action="/analysis" method="post" class="modal-form">
-                    <button type="submit">Analyze</button>
+                <form method="post" action="/analysis">
+                    <label for="budget">Budget: $ </label>
+                    <input type="text" name="budget" value="{{ total_budget_cost }}" required>
+            
+                    <label for="invesment_expense">Investment Expense: $</label>
+                    <input type="text" name="invesment_expense" value="{{ total_investment_cost }}" required>
+                
+                    <label for="food_expense">Food Expense: $</label>
+                    <input type="text" name="food_expense" value="{{ total_food_cost }}" required>
+                
+                    <label for="transport_expense">Transport Expense: $</label>
+                    <input type="text" name="transport_expense" value="{{ total_transport_cost }}" required>
+                    <button type="submit" class="button">Analyze</button>
                 </form>
             </div>
         </div>
-    </div>
-
-    <div id="detailedAnalysisModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="close">&times;</span>
-                <h2>Analysis Report</h2>
-            </div>
-            <div class="modal-body">
-                <div class="report-header">
-                    <h3>Nov 2023</h3>
-                    <form action="{{ url_for('download_pdf') }}" method="post">
-                      <input type="hidden" name="recommendations" value="{{ prompt }}">
-                      <button type="submit">Download PDF</button>
-                  </form>
-                </div>
-                {% if prompt %}
-                    <h2>Analysis Prompt:</h2>
-                    <p>{{ prompt }}</p>
-                {% endif %}
-                {% if analysis_result %}
-                    <h2>Analysis Result:</h2>
-                    <p>{{ analysis_result }}</p>
-                 {% endif %}
-                </div>
-                
-                <div class="recommendations">
-                    
-
-                </div>
-            </div>
-        </div>
-    </div>
-
+               
     <script>
         var modal = document.getElementById("analysisModal");
-
+        var detailedModal = document.getElementById("detailedAnalysisModal");
         var btn = document.querySelector(".button");
-
         var span = document.getElementsByClassName("close")[0];
-
-        btn.onclick = function() {
+    
+        btn.onclick = function () {
             modal.style.display = "block";
         }
-
-        span.onclick = function() {
+    
+        span.onclick = function () {
             modal.style.display = "none";
         }
-
-        window.onclick = function(event) {
+    
+        window.onclick = function (event) {
             if (event.target == modal) {
                 modal.style.display = "none";
             }
         }
 
-        var viewReportButton = document.getElementById("viewReport");
-        var detailedAnalysisModal = document.getElementById("detailedAnalysisModal");
-        var spanDetailed = document.getElementsByClassName("close")[1];
-
-        viewReportButton.onclick = function () {
-            modal.style.display = "none";
-            detailedAnalysisModal.style.display = "flex"; 
+        function submitForm() {
+            $.ajax({
+                type: "POST",
+                url: "/analysis",
+                data: $("#expenseForm").serialize(), // Serialize form data
+                success: function(response) {
+                    // Handle the response as needed
+                    console.log(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
         }
-
-        spanDetailed.onclick = function () {
-            detailedAnalysisModal.style.display = "none";
-        }
-
-        window.onclick = function (event) {
-            if (event.target == detailedAnalysisModal) {
-                detailedAnalysisModal.style.display = "none";
-            }
-        }
-        $(document).ready(function () {
-        function updateCurrentDate() {
+        function updateDate() {
             var currentDate = new Date();
-            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            var formattedDate = currentDate.toLocaleDateString('en-US', options);
-            $('#current-date').text(formattedDate);
+            var dateElement = document.getElementById("current-date");
+            dateElement.innerHTML = currentDate.toDateString();
         }
 
-        // Update the current date on page load
-        updateCurrentDate();
+        // Call the function to update the date when the page loads
+        updateDate();
 
-        // Optionally, update the current date periodically (e.g., every minute)
-        setInterval(updateCurrentDate, 60000);
-    });
+        // You can also update the date at regular intervals if needed
+        setInterval(updateDate, 1000); // Update every 1000 milliseconds (1 second)
         
     </script>
+    
 </body>
 </html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>Expense Analysis</title>
+</head>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #000A2B;
+        color: white;
+    }
+    .navbar {
+        background-color: #212946;
+        width: 200px;
+        height: 100%;
+        position: fixed;
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+    }
+    .navbar a {
+        display: block;
+        color: white;
+        padding: 16px;
+        text-decoration: none;
+    }
+    .navbar a i {
+        margin-right: 8px;
+    }
+    .navbar a.active {
+        background-color: #151a2c;
+        color: white;
+    }
+    .logout {
+        margin-top: auto;
+        color: white;
+        padding: 16px;
+    }
+    .image:hover {
+        background-color: #212946;
+    }
+    .main-content {
+        margin-left: 250px;
+    }
+/* Add these styles to your existing stylesheet or style section */
+
+h2 {
+    color: #ffffff; /* Adjust the color as needed */
+    font-size: 24px;
+    margin-left: 200px;
+}
+
+p {
+    color: #ffffff; /* Adjust the color as needed */
+    font-size: 18px;
+
+}
+.result-form {
+        max-width: 1000px;
+        margin: 20px auto;
+        padding: 50px;
+        background-color: #34495e;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+
+</style>
+<body>
+    <div class="navbar">
+        <div class="image" align="left">
+            <a href="{{ url_for('home')}}">
+                <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}" class="image">
+            </a>
+        </div>
+        <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
+        <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
+        <a href="{{ url_for('analysis') }}"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
+        <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
+        <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
+        <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+    <h2>Analysis:</h2>
+    <div class="result-form">
+        {% if prompt %}
+            <div class="form-group">
+                
+                <p>{{ prompt }}</p>
+            </div>
+        {% endif %}
+    
+        {% if analysis_result %}
+            <div class="form-group">
+                <h2>Analysis Result:</h2>
+                <p>{{ analysis_result }}</p>
+            </div>
+        {% endif %}
+    </div>
+       
+    <script>
+        function submitForm() {
+            $.ajax({
+                type: "POST",
+                url: "/analysis",
+                data: $("#expenseForm").serialize(), // Serialize form data
+                success: function(response) {
+                    // Handle the response as needed
+                    console.log(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+    </script>
+
+    <!-- Add any additional content, charts, or visualizations as needed -->
+
+    <!-- Add your scripts, footer, or other closing tags here -->
+</body>
+</html>

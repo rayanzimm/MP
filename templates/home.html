@@ -4,6 +4,10 @@
 <head>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
@@ -119,10 +123,11 @@
         }
 
         .modal-content {
+            text-decoration: #ffffff;
             background-color: #34495e;
             margin: 5% auto;
             padding: 20px;
-            width: 80%;
+            width: 50%;
             
         }
 
@@ -170,7 +175,7 @@
             cursor: pointer;
             height: 40px;
             width: 120px;
-            font-size: 10px;
+            font-size: 15px;
             margin-right: auto;
         }
 
@@ -199,6 +204,7 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
 
         .coins-container {
             display: flex;
@@ -240,6 +246,20 @@
         .savings-button {
             margin-right: 700px;
         }
+        .date-indicator {
+         
+            border-radius: 5px;
+            margin-right: 20px; /* Add margin to separate from other elements */
+            margin-bottom: 20px; /* Add margin to position it properly */
+            display: flex; /* Use flexbox to align items horizontally */
+            align-items: center; /* Align items vertically in the center */
+        }
+
+        .date-indicator p {
+            margin: 0; /* Remove default margin for better appearance */
+            color: #ffffff; /* Set text color */
+        }
+
 
     </style>
 
@@ -260,13 +280,14 @@
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
         <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
         <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
-        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i>
-            Logout</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <div class="main-content">
+        
 
         <div class="header">
+            
             <div>
                 <h2>Savings Goal </h2>
                 <p>${{ total_savings }}/${{ savings_goal }}</p>
@@ -274,7 +295,7 @@
             </div>
             
             <button type="button" class="savings-button" onclick="openModal()">
-                Update Savings Goal
+                Update Goal
             </button>
 
             <div class="coins-container">
@@ -288,9 +309,10 @@
             <div class="progress-bar" role="progressbar" style="width: {{ progress_percentage }}%;"
                 aria-valuenow="{{ progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
-
-
-
+            <div class="date-indicator">
+                <p id="current-date"></p>
+            </div>
+        
         <!--canvas id="barChart"></canvas-->
 
 
@@ -343,8 +365,6 @@
         <div id="savingsModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeModal()">&times;</span>
-                <h2>Update Savings Goal</h2>
-                <!-- Form for updating savings goal -->
                 <form action="/update_savings_goal" method="post" id="savingsForm">
                     <label for="savings_goal">New Savings Goal:</label>
                     <input type="text" id="savings_goal" name="savings_goal" required>
@@ -359,76 +379,57 @@
 
     <script>
 
-        var userEmail = "{{ email }}";
+        
+    var userEmail = "{{ email }}";
 
-        // Store the email in localStorage
-        localStorage.setItem('userEmail', userEmail);
+// Store the email in localStorage
+localStorage.setItem('userEmail', userEmail);
 
-        var user_email = localStorage.getItem('userEmail');
+var user_email = localStorage.getItem('userEmail');
 
-        fetch('/store_user_email', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email: user_email }),
-        });
+fetch('/store_user_email', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email: user_email }),
+});
 
-        console.log("Script is running");
-        function confirmLogout() {
-            var result = confirm("Are you sure you want to log out?");
-            if (result) {
-                window.location.href = '/logout';  // Redirect to /logout if the user clicks "OK"
-            } else {
-                // Do nothing or handle the "Cancel" action
-            }
-        }
+console.log("Script is running");
 
-        function redirectTo(page) {
-            window.location.href = page;
-        }
-        var pieData = {
-            labels: ['Label 1', 'Label 2', 'Label 3'],
-            datasets: [{
-                data: [30, 40, 30],
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-                hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-            }]
-        };
+function confirmLogout() {
+    var result = confirm("Are you sure you want to log out?");
+    if (result) {
+        window.location.href = '/logout';  // Redirect to /logout if the user clicks "OK"
+    } else {
+        // Do nothing or handle the "Cancel" action
+    }
+}
 
-        var barData = {
-            labels: ['Label 1', 'Label 2', 'Label 3'],
-            datasets: [{
-                data: [30, 40, 30],
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-                hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-            }]
-        };
+function redirectTo(page) {
+    window.location.href = page;
+}
 
-        // Get the canvas element
-        var barCanvas = document.getElementById('barChart').getContext('2d');
+function openModal() {
+    document.getElementById('savingsModal').style.display = 'block';
+}
 
-        // Create the bar chart
-        var myBarChart = new Chart(barCanvas, {
-            type: 'bar',
-            data: barData,
-        });
+function closeModal() {
+    document.getElementById('savingsModal').style.display = 'none';
+}
 
-        function openModal() {
-            document.getElementById('savingsModal').style.display = 'block';
-        }
+function updateCurrentDate() {
+    var currentDate = new Date();
+    var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    var formattedDate = currentDate.toLocaleDateString('en-US', options);
+    document.getElementById('current-date').innerText = formattedDate;
+}
 
-        function closeModal() {
-            document.getElementById('savingsModal').style.display = 'none';
-        }
+// Update the current date on page load
+updateCurrentDate();
 
-        // Close the modal if the user clicks outside of it
-        window.onclick = function (event) {
-            if (event.target === document.getElementById('savingsModal')) {
-                closeModal();
-            }
-        };
-
+// Optionally, update the current date periodically (e.g., every minute)
+setInterval(updateCurrentDate, 60000);
     </script>
 
 
