@@ -42,7 +42,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -303,7 +303,7 @@ def home():
     for investment_doc in investment_ref:
         investment_data = investment_doc.to_dict()
         ticker = investment_data.get('ticker')
-        quantity = int(investment_data.get('quantity'))
+        quantity = (investment_data.get('quantity'))
         if ticker and quantity:
 
             # Fetch the latest prices for each ticker
@@ -1714,13 +1714,22 @@ def download_pdf():
     pdf = FPDF('P', 'mm', 'Letter')
     pdf.add_page()
     pdf.set_font('helvetica', size=12)
-    pdf.cell(40, 10, "Monthly Analysis Report")
+    pdf.set_font('helvetica', size=12)
+
+    # Add title
+    pdf.cell(0, 10, "Monthly Analysis Report", ln=True, align='C')
+    pdf.ln(5)  # Add a little space after the title
+
+    # Add analysis result with a border
+    pdf.set_fill_color(200, 220, 255)  # Light blue background
+    pdf.cell(0, 10, "Analysis Result:", ln=True, align='L', fill=True)
+    pdf.multi_cell(0, 10, analysis_result, align='L')
+    pdf.ln(5)  # Add a little space after the analysis result
     
-    # Add the analysis result to the PDF
-    pdf.cell(80, 10, analysis_result)
-    
-    # Add other content if needed
-    pdf.cell(80, 10, recommendations)
+    pdf.set_fill_color(255, 240, 200)  # Light yellow background
+    pdf.cell(0, 10, "Recommendations:", ln=True, align='L', fill=True)
+    pdf.multi_cell(0, 10, recommendations, align='L')
+
 
     # Construct the path to the user's downloads folder
     downloads_folder = os.path.expanduser("~" + os.sep + "Downloads")

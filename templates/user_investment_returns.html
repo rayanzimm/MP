@@ -41,6 +41,7 @@
         }
 
         h1, h2 {
+          margin-top: 20px;
             color: #ffffff;
         }
 
@@ -111,7 +112,6 @@
   cursor: pointer;
   transition: background-color 0.3s;
 }
-
 .toggle-switch .toggle-label::before {
   content: "";
   position: absolute;
@@ -120,44 +120,45 @@
   border-radius: 50%;
   top: 2px;
   left: 2px;
-  background-color: #fff;
-  box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
+  background-color: #000; /* Inverted color */
+  box-shadow: 0px 2px 5px 0px rgba(255, 255, 255, 0.3); /* Inverted color */
   transition: transform 0.3s;
 }
 
 .toggle-switch .toggle-input:checked + .toggle-label {
-  background-color: #4CAF50;
+  background-color: #C70039; /* Inverted color */
 }
 
 .toggle-switch .toggle-input:checked + .toggle-label::before {
-  transform: translateX(16px);
+  transform: translateX(-16px); /* Inverted direction */
 }
 
 /* Light theme */
 .toggle-switch.light .toggle-label {
-  background-color: #BEBEBE;
+  background-color: #4B4B4B; /* Inverted color */
 }
 
 .toggle-switch.light .toggle-input:checked + .toggle-label {
-  background-color: #9B9B9B;
+  background-color: #717171; /* Inverted color */
 }
 
 .toggle-switch.light .toggle-input:checked + .toggle-label::before {
-  transform: translateX(6px);
+  transform: translateX(-6px); /* Inverted direction */
 }
 
 /* Dark theme */
 .toggle-switch.dark .toggle-label {
-  background-color: #4B4B4B;
+  background-color: #BEBEBE; /* Inverted color */
 }
 
 .toggle-switch.dark .toggle-input:checked + .toggle-label {
-  background-color: #717171;
+  background-color: #9B9B9B; /* Inverted color */
 }
 
 .toggle-switch.dark .toggle-input:checked + .toggle-label::before {
-  transform: translateX(16px);
+  transform: translateX(-16px); /* Inverted direction */
 }
+
 
 
 

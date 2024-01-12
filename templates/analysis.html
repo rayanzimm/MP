@@ -3,6 +3,7 @@
 <head>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -217,8 +218,10 @@
             </div>
             <div class="card full-width">
                 <h2>Financial Statistics</h2>
-                <!-- Chart placeholder -->
+                <canvas id="expensesChart" width="300" height="50"></canvas>
             </div>
+            
+
             <a href="#" class="button">View Analysis Report</a>
             <!-- Form for Savings Analysis -->
 
@@ -245,7 +248,6 @@
                     
                     <label for="transport_expense">Transport Expense: $</label>
                     <input type="text" name="transport_expense" value="{{ total_transport_cost }}" readonly required>
-                    
                     <button type="submit" class="button">Analyze</button>
                 </form>
             </div>
@@ -261,7 +263,6 @@
             }
         }
         var modal = document.getElementById("analysisModal");
-        var detailedModal = document.getElementById("detailedAnalysisModal");
         var btn = document.querySelector(".button");
         var span = document.getElementsByClassName("close")[0];
     
@@ -304,7 +305,65 @@
 
         // You can also update the date at regular intervals if needed
         setInterval(updateDate, 1000); // Update every 1000 milliseconds (1 second)
-        
+        function createBarChart(canvasId, label, data) {
+        var ctx = document.getElementById(canvasId).getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: label,
+                datasets: [{
+                    label: 'Amount',
+                    data: data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    function createBarChart(canvasId, label, data) {
+        var ctx = document.getElementById(canvasId).getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: label,
+                datasets: [{
+                    label: 'Amount',
+                    data: data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    function createCharts() {
+        var expensesLabel = ['Total', 'Investment', 'Transport', 'Food'];
+        var expensesData = [
+            parseFloat("{{ total_expense }}"),
+            parseFloat("{{ total_investment_cost }}"),
+            parseFloat("{{ total_transport_cost }}"),
+            parseFloat("{{ total_food_cost }}")
+        ];
+
+        createBarChart('expensesChart', expensesLabel, expensesData);
+    }
+    createCharts();
     </script>
     
 </body>
