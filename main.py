@@ -278,7 +278,7 @@ def home():
     user_doc = user_ref[0]
     user_data = user_doc.to_dict()
     current_date = datetime.now().strftime("%Y-%m-%d")
-    update_login_rewards(user_email, user_data, user_doc)
+    update_login_rewards(email, user_data, user_doc)
     coins=user_data.get('coins', 0)
     savings_goal = float(user_data.get('savingsGoal', 0))
 
@@ -324,13 +324,11 @@ def home():
                     conversion_data = conversion_response.json()
                     exchange_rate = float(conversion_data['Realtime Currency Exchange Rate']['5. Exchange Rate'])
                     closingPrice = float(closingUSDPrice) * exchange_rate
-                    print(closingPrice)
 
                     total_value = quantity * closingPrice
 
                     # Update the total value for the investment
                     total_values[ticker] += total_value
-                    print(total_values)
         
         current_closing_price = investment_data.get('closingPrice', 0)
         initial_total_closing_prices[ticker] += current_closing_price
@@ -338,11 +336,8 @@ def home():
     total_investment_value = sum(total_values.values())
     initial_total_closing_price = sum(initial_total_closing_prices.values())
     value_variance = (total_investment_value - initial_total_closing_price)
-    print(total_investment_value)
-    print(initial_total_closing_price)
-    print(value_variance)
 
-    total_expense = total_food_cost + total_transport_cost + value_variance
+    total_expense = total_food_cost + total_transport_cost - value_variance
     total_savings = float(total_budget_cost - total_expense)
 
     progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
