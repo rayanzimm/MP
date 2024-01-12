@@ -342,8 +342,7 @@
             <div class="card" onclick="redirectTo('/user_investment_expenses')">
                 <h2>INVESTMENT</h2>
                 {% if 'total_investment_cost' in session %}
-                <p>Total Investment Expenses: ${{ total_investment_cost }}</p>
-                <p>Total Investment Returns: ${{ total_investmentReturns_cost }}</p>
+                <p>Total Investment Value: ${{ total_investment_value }} ${{ value_variance }}</p>
                 {% else %}
                 <p>Total Investment Cost: Not available</p>
                 {% endif %}

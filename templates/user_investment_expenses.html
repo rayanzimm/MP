@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Investment Expenses</title>
+  <title>User Investments</title>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 
@@ -169,6 +169,15 @@
     .toggle-switch.dark .toggle-input:checked+.toggle-label::before {
       transform: translateX(16px);
     }
+
+    .header {
+      display: flex;
+      /* Use flexbox to enable horizontal alignment */
+      justify-content: space-between;
+      /* Distribute space between items */
+      align-items: center;
+      /* Align items vertically at the center */
+    }
   </style>
 </head>
 
@@ -176,22 +185,24 @@
 
   <div class="container">
     <button class="close-button" onclick="window.location.href='/home'">X</button>
-    <button type="button" class="modal-btn" onclick="openAddModal()"">Add Investment Expense</button>
+    <button type="button" class="modal-btn" onclick="openAddModal()"">Add Investments</button>
 
       <div class=" toggle-switch" onclick="window.location.href='/user_investment_returns'">
       <input class="toggle-input" id="toggle" type="checkbox">
       <label class="toggle-label" for="toggle"></label>
   </div>
 
-
-  <h1>User Investment Expenses</h1>
+  <div class="header">
+    <h1>User Investments</h1>
+    <h6>Last Refreshed: {{ user_investment_data['lastRefreshed'] }}</h6>
+  </div>
 
   {% if user_investment_data %}
   <table class="table">
     <thead>
       <tr>
-        <th>Investment Name</th>
-        <th>Cost</th>
+        <th>Ticker</th>
+        <th>Price</th>
         <th>Action</th>
       </tr>
     </thead>
@@ -199,11 +210,11 @@
       {% for investment_item in user_investment_data %}
       {% if investment_item['date'] == investment_item['current_date'] %}
       <tr>
-        <td>{{ investment_item['investmentName'] }}</td>
-        <td>{{ investment_item['cost'] }}</td>
+        <td>{{ investment_item['ticker'] }}</td>
+        <td>{{ investment_item['closingPrice'] }}</td>
         <td>
           <button class="edit-btn"
-            onclick="openModal('{{ investment_item['investmentName'] }}', '{{ investment_item['cost'] }}', '{{ investment_item['unique_index'] }}')">Edit</button>
+            onclick="openModal('{{ investment_item['ticker'] }}', '{{ investment_item['quantity'] }}', '{{ investment_item['unique_index'] }}')">Edit</button>
         </td>
         <td>
           <button class="delete-btn"
@@ -220,11 +231,11 @@
     <div class="modal-content">
       <form method="POST" action="/edit_investment_expenses" enctype="multipart/form-data">
         <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
-        <h2>Edit Investment Expense</h2>
-        <label for="investmentName">Investment Name:</label>
-        <input type="text" id="investmentName" name="investmentName" required>
-        <label for="cost">Cost:</label>
-        <input type="text" id="cost" name="cost" required>
+        <h2>Edit Investment</h2>
+        <label for="ticker">Ticker:</label>
+        <input type="text" id="ticker" name="ticker" required>
+        <label for="quantity">Quantity:</label>
+        <input type="text" id="quantity" name="quantity" required>
         <input type="hidden" name="unique_index" id="unique_index" value="">
         <button class="edit-btn" type="submit">Update Expense</button>
       </form>
@@ -253,19 +264,19 @@
     <div class="modal-dialog" role="modal-content">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addFoodModalLabel">Add New Investment Expense</h5>
+          <h5 class="modal-title" id="addFoodModalLabel">Add New Investment</h5>
           <span onclick="closeAddModal()" style="float: right; cursor: pointer;">&times;</span>
         </div>
         <div class="modal-body">
           <!-- Form for adding new investment expense -->
           <form action="/addinvestment" method="POST" class="submitinvestment" name="submitinvestment">
             <div class="form-group">
-              <label for="investmentName">Investment Name</label>
-              <input type='text' id='investmentName' name='investmentName'>
+              <label for="ticker">Ticker</label>
+              <input type='text' id='ticker' name='ticker'>
             </div>
             <div class="form-group">
-              <label for="newCost">Cost</label>
-              <input type='text' id='cost' name='cost'>
+              <label for="quantity">Quantity</label>
+              <input type='text' id='quantity' name='quantity'>
             </div>
             <button type="submit" class='modal-btn-submit'>Add Investment Expense</button>
           </form>
@@ -282,9 +293,9 @@
 
 
   <script>
-    function openModal(investmentName, cost, uniqueIndex) {
-      document.getElementById("investmentName").value = investmentName;
-      document.getElementById("cost").value = cost;
+    function openModal(ticker, quantity, uniqueIndex) {
+      document.getElementById("ticker").value = ticker;
+      document.getElementById("quantity").value = quantity;
       document.getElementById("unique_index").value = uniqueIndex;
       document.getElementById("editModal").style.display = "block";
     }

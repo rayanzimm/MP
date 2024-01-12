@@ -19,6 +19,7 @@ import random
 from openai import OpenAI
 import openai
 from fpdf import FPDF
+from collections import defaultdict
 
 app = Flask(__name__)
 UPLOAD_FOLDER = r'static\assets\img'
@@ -41,7 +42,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -276,7 +277,8 @@ def home():
             
     user_doc = user_ref[0]
     user_data = user_doc.to_dict()
-    
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    update_login_rewards(user_email, user_data, user_doc)
     coins=user_data.get('coins', 0)
     savings_goal = float(user_data.get('savingsGoal', 0))
 
@@ -286,16 +288,61 @@ def home():
     total_food_cost = fetch_total_cost('Food', user_email, current_date)
     total_transport_cost = fetch_total_cost('Transport', user_email, current_date)
     total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
-    total_investment_cost = fetch_total_cost('Investment', user_email, current_date)
-    total_investmentReturns_cost = fetch_total_cost('Investment Returns', user_email, current_date)
     session['total_food_cost'] = total_food_cost
     session['total_transport_cost'] = total_transport_cost
     session['total_budget_cost'] = total_budget_cost
-    session['total_investment_cost'] = total_investment_cost
-    session['total_investmentReturns_cost'] = total_investmentReturns_cost
+    
+    # Fetch all investment records for the user
+    investment_ref = db.collection('Investment').where('user_email', '==', user_email).stream()
 
+    # Dictionary to store the latest prices for each ticker
+    total_values = defaultdict(float)
+    initial_total_closing_prices = defaultdict(float)
+    api = 'QW29Q45GXY6XOPFX'
 
-    total_expense = total_food_cost + total_transport_cost + total_investment_cost - total_investmentReturns_cost
+    for investment_doc in investment_ref:
+        investment_data = investment_doc.to_dict()
+        ticker = investment_data.get('ticker')
+        quantity = int(investment_data.get('quantity'))
+        if ticker and quantity:
+
+            # Fetch the latest prices for each ticker
+            url = f'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={ticker}&interval=1min&apikey={api}'
+            response = requests.get(url)
+            stockData = response.json()
+
+            if 'Time Series (1min)' in stockData:
+                print("hello")
+                lastRefreshed = stockData["Meta Data"]["3. Last Refreshed"]
+                latestPrices = stockData["Time Series (1min)"][lastRefreshed]
+                closingUSDPrice = latestPrices["4. close"]
+                
+                if closingUSDPrice:
+                    # Convert to SGD if necessary
+                    conversion_url = f"https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=SGD&apikey={api}"
+                    conversion_response = requests.get(conversion_url)
+                    conversion_data = conversion_response.json()
+                    exchange_rate = float(conversion_data['Realtime Currency Exchange Rate']['5. Exchange Rate'])
+                    closingPrice = float(closingUSDPrice) * exchange_rate
+                    print(closingPrice)
+
+                    total_value = quantity * closingPrice
+
+                    # Update the total value for the investment
+                    total_values[ticker] += total_value
+                    print(total_values)
+        
+        current_closing_price = investment_data.get('closingPrice', 0)
+        initial_total_closing_prices[ticker] += current_closing_price
+    # Calculate the total closingPrice for all tickers
+    total_investment_value = sum(total_values.values())
+    initial_total_closing_price = sum(initial_total_closing_prices.values())
+    value_variance = (total_investment_value - initial_total_closing_price)
+    print(total_investment_value)
+    print(initial_total_closing_price)
+    print(value_variance)
+
+    total_expense = total_food_cost + total_transport_cost + value_variance
     total_savings = float(total_budget_cost - total_expense)
 
     progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
@@ -304,12 +351,13 @@ def home():
                            total_food_cost=total_food_cost,
                            total_transport_cost=total_transport_cost,
                            total_budget_cost=total_budget_cost,
-                           total_investment_cost=total_investment_cost,
-                           total_investmentReturns_cost=total_investmentReturns_cost,
                            total_savings=total_savings,
                            coins=coins,
                            savings_goal=savings_goal,
-                           progress_percentage=progress_percentage)
+                           progress_percentage=progress_percentage,
+                           total_investment_value=total_investment_value,
+                           value_variance=value_variance,
+                           )
 
 
 def fetch_total_cost(expense_type, user_email, current_date):
@@ -324,6 +372,36 @@ def fetch_total_cost(expense_type, user_email, current_date):
         total_cost += float(expense_data.get('cost', 0))
 
     return total_cost
+
+def update_login_rewards(user_email, user_data, user_doc):
+    singapore_timezone = pytz.timezone('Asia/Singapore')
+    current_datetime = datetime.now(singapore_timezone)
+    current_date = current_datetime.strftime("%Y-%m-%d")
+
+    # Update the 'lastLogin' field to today's date
+    if user_data['lastLogin'] != current_datetime and current_datetime.hour >= 6:
+        if current_datetime > user_data.get('nextRewardTime', datetime.min):
+            if current_datetime.weekday() == 0:
+                user_data['lastLogin'] = current_datetime
+                user_data['loginDays'] = 1
+                coins_rewarded = reward_coins(user_email, user_data['loginDays'])
+                user_data['coins'] += coins_rewarded
+                flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
+                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
+            else:
+                user_data['lastLogin'] = current_datetime
+                user_data['loginDays'] += 1
+                coins_rewarded = reward_coins(user_email, user_data['loginDays'])
+                user_data['coins'] += coins_rewarded
+                flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
+                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
+        else:
+            user_data['lastLogin'] = current_datetime
+    else:
+        user_data['lastLogin'] = current_datetime
+
+    # Save the updated user document back to Firestore
+    db.collection('users').document(user_doc.id).update(user_data)
 
 @app.route('/update_savings_goal', methods=['POST'])
 def update_savings_goal():
@@ -1176,15 +1254,40 @@ def delete_budget_expense(unique_index):
         
 @app.route('/addinvestment', methods=['GET', 'POST'])
 def addinvestment():
+    
     if request.method == 'POST':
+        api = 'QW29Q45GXY6XOPFX'
+        base_url = 'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY'
         user_email = session['user']
         investment_id = request.form.get('investment_id')
-        investmentName = request.form.get('investmentName')
-        cost = request.form.get('cost')
+        ticker = request.form.get('ticker')
+        quantity = int(request.form.get('quantity'))
+        url = f'{base_url}&symbol={ticker}&interval=1min&apikey={api}'
+        
+        payload = {}
+        headers = {}
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+
+        stockData = json.loads(response.text)
+        response = requests.get(url)
+        data = response.json()
+
+        if ('Meta Data' in stockData):
+            lastRefreshed = stockData["Meta Data"]["3. Last Refreshed"]
+            latestPrices = stockData["Time Series (1min)"][lastRefreshed]
+            closingUSDPrice = latestPrices["4. close"]
+
+            conversion_url = f"https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=SGD&apikey={api}"
+            conversion_response = requests.get(conversion_url)
+            conversion_data = json.loads(conversion_response.text)
+            exchange_rate = float(conversion_data['Realtime Currency Exchange Rate']['5. Exchange Rate'])
+            closingPrice = float(closingUSDPrice) * exchange_rate
+            totalClosingPrice = round(float(closingPrice) * quantity, 2)
 
         try:
             # Check if foodName or cost is empty
-            if not investmentName or not cost:
+            if not ticker or not quantity:
                 flash("Please fill in both investment name and cost.", "warning")
                 return redirect('/user_investment_expenses')
 
@@ -1199,10 +1302,12 @@ def addinvestment():
             # Original data
             investment_data = {
                 'user_email': user_email,
-                'investmentName': investmentName,
-                'cost': cost,
+                'ticker': ticker,
+                'quantity': quantity,
                 'date': current_date,  # Add the date field
-                'unique_index': unique_index
+                'unique_index': unique_index,
+                'closingPrice': totalClosingPrice,
+                'lastRefreshed': lastRefreshed
             }
 
             # Get dynamic fields
@@ -1227,7 +1332,7 @@ def addinvestment():
         except Exception as e:
             flash(f"An error occurred during investment creation: {str(e)}", "warning")
 
-    return render_template('user_investment_expenses.html')
+    return render_template('user_investment_expenses.html', lastRefreshed=lastRefreshed)
 
 @app.route('/user_investment_expenses')
 def user_investment_expenses():
@@ -1237,7 +1342,7 @@ def user_investment_expenses():
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
     # Fetch the list of food expenses for the logged-in user
-    investment_expenses = db.collection('Investment').where('user_email', '==', user_email).where('date', '==', current_date).stream()
+    investment_expenses = db.collection('Investment').where('user_email', '==', user_email).stream()
 
     # Create a list to store the food data
     user_investment_data = []
@@ -1246,11 +1351,13 @@ def user_investment_expenses():
     for investment_doc in investment_expenses:
         investment_data = investment_doc.to_dict()
         user_investment_data.append({
-            'investmentName': investment_data.get('investmentName', ''),
-            'cost': investment_data.get('cost', ''),
+            'ticker': investment_data.get('ticker', ''),
+            'quantity': investment_data.get('quantity', ''),
             'unique_index': investment_data.get('unique_index', ''),
             'date': investment_data.get('date', ''),
-            'current_date': current_date
+            'current_date': current_date,
+            'closingPrice': investment_data.get('closingPrice', ''),
+            'lastRefreshed': investment_data.get('lastRefreshed', '')
         })
         
     return render_template('user_investment_expenses.html',  user_investment_data=user_investment_data)
@@ -1279,12 +1386,14 @@ def edit_investment_expense():
     
     if request.method == 'POST':
         print(request.form)
-        new_investment_name = request.form.get('investmentName')
-        new_cost = request.form.get('cost')
+        new_ticker = request.form.get('ticker')
+        new_quantity = int(request.form.get('quantity'))
+        new_closing_price = round(float(investment_data.get('closingPrice')) * new_quantity)
 
         investment_data={
-            'cost': new_cost,
-            'investmentName':new_investment_name
+            'closingPrice': new_closing_price,
+            'quantity': new_quantity,
+            'ticker':new_ticker
         }
         print(investment_data)
         user_investment_data=[]
@@ -1303,6 +1412,7 @@ def delete_investment_expense(unique_index):
         return redirect('/')
     
     user_email = session['user']
+    current_date = datetime.now().strftime("%Y-%m-%d")
     
     # Find the food expense with the given unique index
     investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
@@ -1325,9 +1435,13 @@ def delete_investment_expense(unique_index):
         for investment_doc in investment_expenses:
             investment_data = investment_doc.to_dict()
             user_investment_data.append({
-                'investmentName': investment_data.get('investmentName', ''),
-                'cost': investment_data.get('cost', ''),
-                'unique_index': investment_data.get('unique_index', '')
+                'ticker': investment_data.get('ticker', ''),
+                'quantity': investment_data.get('quantity', ''),
+                'unique_index': investment_data.get('unique_index', ''),
+                'date': investment_data.get('date', ''),
+                'current_date': current_date,
+                'closingPrice': investment_data.get('closingPrice', ''),
+                'lastRefreshed': investment_data.get('lastRefreshed', '')
             })
 
     except Exception as e:
