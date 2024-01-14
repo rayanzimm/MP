@@ -20,7 +20,15 @@ from openai import OpenAI
 import openai
 from fpdf import FPDF
 from collections import defaultdict
-
+from fpdf import FPDF
+from collections import defaultdict
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+import base64
+from io import BytesIO
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+from flask import send_file
 app = Flask(__name__)
 UPLOAD_FOLDER = r'static\assets\img'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -42,7 +50,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -1618,7 +1626,7 @@ def delete_investment_returns(unique_index):
     # Pass the updated data to the template
     return render_template('user_investment_returns.html', user_investmentReturns_data=user_investmentReturns_data)
         
-openai.api_key = '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'
+openai.api_key = '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'
 @app.route('/analysis')
 def total_budget_expense():
     user_email = session['user']
@@ -1701,8 +1709,6 @@ def prompt():
     analysis_result = session.get('analysis_result', '')
     return render_template('prompt.html', analysis_result=analysis_result)
 
-
-    
 @app.route('/download_pdf', methods=['POST'])
 def download_pdf():
     # Retrieve the analysis result from the session
@@ -1711,9 +1717,9 @@ def download_pdf():
     # Retrieve the data needed for the PDF
     recommendations = request.form.get('recommendations')
 
+    # Create a PDF document
     pdf = FPDF('P', 'mm', 'Letter')
     pdf.add_page()
-    pdf.set_font('helvetica', size=12)
     pdf.set_font('helvetica', size=12)
 
     # Add title
@@ -1726,10 +1732,14 @@ def download_pdf():
     pdf.multi_cell(0, 10, analysis_result, align='L')
     pdf.ln(5)  # Add a little space after the analysis result
     
+    # Add recommendations with a border
     pdf.set_fill_color(255, 240, 200)  # Light yellow background
     pdf.cell(0, 10, "Recommendations:", ln=True, align='L', fill=True)
     pdf.multi_cell(0, 10, recommendations, align='L')
+    pdf.ln(10)  # Add space after recommendations
 
+    # Add the graph to the PDF
+    add_graph_to_pdf(pdf)
 
     # Construct the path to the user's downloads folder
     downloads_folder = os.path.expanduser("~" + os.sep + "Downloads")
@@ -1739,24 +1749,78 @@ def download_pdf():
     pdf.output(pdf_path)
 
     return send_file(pdf_path, as_attachment=True, download_name='finsaver_analysis.pdf')
+
+def add_graph_to_pdf(pdf):
+    # Fetch analysis data from session
+    total_food_cost = session.get('total_food_cost', 0)
+    total_transport_cost = session.get('total_transport_cost', 0)
+    total_budget_cost = session.get('total_budget_cost', 0)
+    total_investment_cost = session.get('total_investment_cost', 0)
+    total_savings = session.get('total_savings', 0)
+
+    # Create a new figure
+    fig, ax = plt.subplots()
+    bars = ax.bar(['Food', 'Transport', 'Budget', 'Investment', 'Savings'],
+                  [total_food_cost, total_transport_cost, total_budget_cost, total_investment_cost, total_savings],
+                  color=['blue', 'green', 'orange', 'purple', 'red'])
+
+    # Add labels and title
+    ax.set_xlabel('Categories')
+    ax.set_ylabel('Amount')
+    ax.set_title('Expense Analysis')
+
+    # Add values on top of the bars
+    for bar in bars:
+        yval = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width() / 2, yval, round(yval, 2), ha='center', va='bottom')
+
+    # Save the plot to the PDF
+    graph_path = os.path.join(os.path.expanduser("~" + os.sep + "Downloads"), 'expense_analysis_graph.png')
+    fig.savefig(graph_path, format='png')
+    
+    # Add the saved graph to the PDF
+    pdf.image(graph_path, x=10, y=pdf.get_y(), w=150)
+    
+    # Close the plot
+    plt.close()
+
 @app.route('/settings')
 def settings():
     return render_template('settings.html')
 
 @app.route("/graph")
 def graph():
-    # Generate the figure **without using pyplot**.
-    fig = Figure()
-    ax = fig.subplots()
-    ax.plot([1, 2])
-    # Save it to a temporary buffer.
+    # Fetch analysis data from session
+    total_food_cost = session.get('total_food_cost', 0)
+    total_transport_cost = session.get('total_transport_cost', 0)
+    total_budget_cost = session.get('total_budget_cost', 0)
+    total_investment_cost = session.get('total_investment_cost', 0)
+    total_savings = session.get('total_savings', 0)
+
+    # Create a bar graph
+    categories = ['Food', 'Transport', 'Budget', 'Investment', 'Savings']
+    values = [total_food_cost, total_transport_cost, total_budget_cost, total_investment_cost, total_savings]
+
+    fig, ax = plt.subplots()
+    bars = ax.bar(categories, values, color=['blue', 'green', 'orange', 'purple', 'red'])
+
+    # Add labels and title
+    ax.set_xlabel('Categories')
+    ax.set_ylabel('Amount')
+    ax.set_title('Expense Analysis')
+
+    # Add values on top of the bars
+    for bar in bars:
+        yval = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 2), ha='center', va='bottom')
+
+    # Save the plot to a temporary buffer
     buf = BytesIO()
-    fig.savefig(buf, format="png")
-    # Embed the result in the html output.
+    plt.savefig(buf, format="png")
+    # Embed the result in the html output
     data = base64.b64encode(buf.getbuffer()).decode("ascii")
 
-    return render_template('home.html', image = "data:image/png;base64," + data)
-
+    return render_template('home.html', image="data:image/png;base64," + data)
 
 @app.route('/news', methods=['GET', 'POST'])
 def news():

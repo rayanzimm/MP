@@ -201,7 +201,8 @@
                 <h2>Budget</h2>
                 <p>Total budget Cost: ${{ total_budget_cost }}</p>
 
-                <!-- Chart placeholder -->
+                  <!-- Add the canvas for the chart -->
+            <canvas id="budgetChart" width="400" height="200"></canvas>
             </div>
             <div class="card">
                 <h2>Earnings</h2>
@@ -218,7 +219,7 @@
             </div>
             <div class="card full-width">
                 <h2>Financial Statistics</h2>
-                <canvas id="expensesChart" width="300" height="50"></canvas>
+              
             </div>
             
 
@@ -254,6 +255,7 @@
         </div>
                
     <script>
+       
         function confirmLogout() {
             var result = confirm("Are you sure you want to log out?");
             if (result) {
@@ -295,11 +297,13 @@
             });
         }
         function updateDate() {
-            var currentDate = new Date();
-            var dateElement = document.getElementById("current-date");
-            dateElement.innerHTML = currentDate.toDateString();
-        }
+        var currentDate = new Date();
+        var dateElement = document.getElementById("current-date");
+        dateElement.innerHTML = currentDate.toDateString();
 
+        // Call createBarChart with the appropriate data
+        createBarChart('budgetChart', ['Budget'], [{{ total_budget_cost }}]);
+    }
         // Call the function to update the date when the page loads
         updateDate();
 
@@ -327,43 +331,11 @@
                 }
             }
         });
+        
+        
     }
 
-    function createBarChart(canvasId, label, data) {
-        var ctx = document.getElementById(canvasId).getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: label,
-                datasets: [{
-                    label: 'Amount',
-                    data: data,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    }
-    function createCharts() {
-        var expensesLabel = ['Total', 'Investment', 'Transport', 'Food'];
-        var expensesData = [
-            parseFloat("{{ total_expense }}"),
-            parseFloat("{{ total_investment_cost }}"),
-            parseFloat("{{ total_transport_cost }}"),
-            parseFloat("{{ total_food_cost }}")
-        ];
-
-        createBarChart('expensesChart', expensesLabel, expensesData);
-    }
-    createCharts();
+   
     </script>
     
 </body>
