@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -14,6 +15,7 @@
             background-color: #000A2B;
             color: white;
         }
+
         .navbar {
             background-color: #212946;
             width: 200px;
@@ -23,36 +25,44 @@
             display: flex;
             flex-direction: column;
         }
+
         .navbar a {
             display: block;
             color: white;
             padding: 16px;
             text-decoration: none;
         }
+
         .navbar a i {
             margin-right: 8px;
         }
+
         .navbar a.active {
             background-color: #151a2c;
             color: white;
         }
+
         .logout {
             margin-top: auto;
             color: white;
             padding: 16px;
         }
+
         .image:hover {
             background-color: #212946;
         }
+
         .main-content {
             margin-left: 250px;
         }
+
         .dashboard {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
             padding: 20px;
         }
+
         .card {
             background: #34495e;
             padding: 20px;
@@ -60,21 +70,25 @@
             border-radius: 10px;
             width: calc(33% - 20px);
         }
+
         .card h2 {
             font-size: 1.5em;
         }
+
         .card p {
             font-size: 1.2em;
         }
+
         .full-width {
             width: 97.5%;
         }
+
         .button {
             display: block;
             width: max-content;
             padding: 10px 20px;
-            margin: auto; /* Center the button horizontally */
-            margin-top: 50px; /* Move the button to the bottom */
+            margin: auto;
+            margin-top: 50px;
             background: #1abc9c;
             color: white;
             text-align: center;
@@ -83,24 +97,23 @@
         }
 
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1; /* Sit on top */
+            display: none;
+            position: fixed;
+            z-index: 1;
             left: 0;
             top: 0;
             margin-top: 70px;
             margin-left: 480px;
-            width: 50%; /* Full width */
-            height: 70%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgb(0, 0, 0); /* Fallback color */
-            background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+            width: 50%;
+            height: 70%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
         }
 
-        /* Modal Content */
         .modal-content {
             background-color: #34495e;
-            margin: 0; /* No margin */
+            margin: 0;
             padding: 30px;
             width: 100%;
             height: 100%;
@@ -108,8 +121,6 @@
             border-radius: 8px;
         }
 
-
-        /* The Close Button */
         .close {
             color: #aaa;
             float: right;
@@ -129,6 +140,7 @@
             margin-bottom: 5px;
             font-weight: bold;
         }
+
         input {
             width: 30%;
             padding: 8px;
@@ -147,13 +159,15 @@
             cursor: pointer;
             font-size: 16px;
         }
+
         button:hover {
             background-color: #5d8bf7;
-        }    
+        }
+
         .top-bar {
             display: flex;
             justify-content: flex-end;
-            padding: 20px; /* Add padding for spacing */
+            padding: 20px;
         }
 
         .date-indicator {
@@ -161,17 +175,15 @@
             padding: 10px;
             margin-right: 30px;
             border-radius: 5px;
-            /* Adjust margin for spacing */
         }
 
         #current-date {
             margin: 0;
-            color: #ffffff; /* Set text color to white */
+            color: #ffffff;
         }
     </style>
 </head>
 
-</div>
 <body>
     <div class="navbar">
         <div class="image" align="left">
@@ -186,10 +198,10 @@
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
         <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
         <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
-        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i>
+            Logout</a>
     </div>
 
-    </div>
     <div class="main-content">
         <div class="top-bar">
             <div class="date-indicator">
@@ -200,9 +212,7 @@
             <div class="card">
                 <h2>Budget</h2>
                 <p>Total budget Cost: ${{ total_budget_cost }}</p>
-
-                  <!-- Add the canvas for the chart -->
-            <canvas id="budgetChart" width="400" height="200"></canvas>
+                <!-- Chart placeholder -->
             </div>
             <div class="card">
                 <h2>Earnings</h2>
@@ -212,20 +222,17 @@
             <div class="card">
                 <h2>Expenses</h2>
                 <p>Total : $ {{ total_expense }}</p>
-                <p>Invesment: $ {{ total_investment_cost }}</p>
+                <p>Investment: $ {{ total_investment_cost }}</p>
                 <p>Transport: $ {{ total_transport_cost }}</p>
-                <p>Food:      $ {{ total_food_cost }}</p>
-
+                <p>Food: $ {{ total_food_cost }}</p>
+                <canvas id="expensesPieChart" width="5" height="5"></canvas>
             </div>
             <div class="card full-width">
                 <h2>Financial Statistics</h2>
-              
+                <canvas id="expensesChart" width="300" height="50"></canvas>
             </div>
-            
-
             <a href="#" class="button">View Analysis Report</a>
             <!-- Form for Savings Analysis -->
-
         </div>
     </div>
 
@@ -240,26 +247,26 @@
                 <form method="post" action="/analysis">
                     <label for="budget">Budget: $ </label>
                     <input type="text" name="budget" value="{{ total_budget_cost }}" readonly required>
-                    
+
                     <label for="investment_expense">Investment Expense: $</label>
                     <input type="text" name="investment_expense" value="{{ total_investment_cost }}" readonly required>
-                    
+
                     <label for="food_expense">Food Expense: $</label>
                     <input type="text" name="food_expense" value="{{ total_food_cost }}" readonly required>
-                    
+
                     <label for="transport_expense">Transport Expense: $</label>
                     <input type="text" name="transport_expense" value="{{ total_transport_cost }}" readonly required>
                     <button type="submit" class="button">Analyze</button>
                 </form>
             </div>
         </div>
-               
+    </div>
+
     <script>
-       
         function confirmLogout() {
             var result = confirm("Are you sure you want to log out?");
             if (result) {
-                window.location.href = '/logout';  // Redirect to /logout if the user clicks "OK"
+                window.location.href = '/logout'; // Redirect to /logout if the user clicks "OK"
             } else {
                 // Do nothing or handle the "Cancel" action
             }
@@ -267,15 +274,15 @@
         var modal = document.getElementById("analysisModal");
         var btn = document.querySelector(".button");
         var span = document.getElementsByClassName("close")[0];
-    
+
         btn.onclick = function () {
             modal.style.display = "block";
         }
-    
+
         span.onclick = function () {
             modal.style.display = "none";
         }
-    
+
         window.onclick = function (event) {
             if (event.target == modal) {
                 modal.style.display = "none";
@@ -287,56 +294,105 @@
                 type: "POST",
                 url: "/analysis",
                 data: $("#expenseForm").serialize(), // Serialize form data
-                success: function(response) {
+                success: function (response) {
                     // Handle the response as needed
                     console.log(response);
                 },
-                error: function(error) {
+                error: function (error) {
                     console.log(error);
                 }
             });
         }
-        function updateDate() {
-        var currentDate = new Date();
-        var dateElement = document.getElementById("current-date");
-        dateElement.innerHTML = currentDate.toDateString();
 
-        // Call createBarChart with the appropriate data
-        createBarChart('budgetChart', ['Budget'], [{{ total_budget_cost }}]);
-    }
+        function updateDate() {
+            var currentDate = new Date();
+            var dateElement = document.getElementById("current-date");
+            dateElement.innerHTML = currentDate.toDateString();
+        }
+
         // Call the function to update the date when the page loads
         updateDate();
 
         // You can also update the date at regular intervals if needed
         setInterval(updateDate, 1000); // Update every 1000 milliseconds (1 second)
+
         function createBarChart(canvasId, label, data) {
-        var ctx = document.getElementById(canvasId).getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: label,
-                datasets: [{
-                    label: 'Amount',
-                    data: data,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
+            var ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: label,
+                    datasets: [{
+                        label: 'Amount',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
                     }
                 }
-            }
-        });
-        
-        
-    }
+            });
+        }
 
-   
+        function createPieChart(canvasId, labels, data) {
+            var ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 0.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                }
+            });
+        }
+
+        function createCharts() {
+            var expensesLabel = ['Total', 'Investment', 'Transport', 'Food'];
+            var expensesData = [
+                parseFloat("{{ total_expense }}"),
+                parseFloat("{{ total_investment_cost }}"),
+                parseFloat("{{ total_transport_cost }}"),
+                parseFloat("{{ total_food_cost }}")
+            ];
+            createBarChart('expensesChart', expensesLabel, expensesData);
+
+            var expensesLabels = ['Investment', 'Transport', 'Food'];
+            var expensesData = [
+                
+                parseFloat("{{ total_investment_cost }}"),
+                parseFloat("{{ total_transport_cost }}"),
+                parseFloat("{{ total_food_cost }}")
+            ];
+            createPieChart('expensesPieChart', expensesLabels, expensesData);
+        }
+
+        createCharts();
     </script>
-    
+
 </body>
+
 </html>
