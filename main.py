@@ -184,7 +184,7 @@ def index():
         # Dictionary to store the latest prices for each ticker
         total_values = defaultdict(float)
         initial_total_closing_prices = defaultdict(float)
-        api = 'QW29Q45GXY6XOPFX'
+        api = '1HEU5NM89I8H1AKX'
 
         for investment_doc in investment_ref:
             investment_data = investment_doc.to_dict()
@@ -221,20 +221,19 @@ def index():
         # Calculate the total closingPrice for all tickers
         total_investment_value = round(float(sum(total_values.values())), 2)
         initial_total_closing_price = round(float(sum(initial_total_closing_prices.values())), 2)
-        value_variance = round(float((total_investment_value - initial_total_closing_price)), 2)
-        value_variance_abs = abs(value_variance)
+        value_difference = round(float((total_investment_value - initial_total_closing_price)), 2)
+        value_difference_abs = abs(value_difference)
 
         total_expense = total_food_cost + total_transport_cost
         total_savings = total_budget_cost - total_expense
-
         
         return render_template('home.html', email=user_email, coins=coins, total_food_cost=total_food_cost,
                            total_transport_cost=total_transport_cost,
                            total_budget_cost=total_budget_cost,
                            total_savings=total_savings,
                            total_investment_value=total_investment_value,
-                           value_variance=value_variance,
-                           value_variance_abs=value_variance_abs
+                           value_difference=value_difference,
+                           value_difference_abs=value_difference_abs
                            )
     
     if request.method == 'POST':
@@ -304,7 +303,7 @@ def fetch_total_cost(expense_type, user_email, current_date):
     total_cost = 0
 
     # Fetch the list of expenses for the given expense type and user
-    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).where('date', '==', current_date).stream()
+    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).stream()
 
     # Iterate through the expenses and calculate the total cost
     for expense_doc in expense_ref:
@@ -314,7 +313,7 @@ def fetch_total_cost(expense_type, user_email, current_date):
     return total_cost
 
 @app.route('/home')
-def home(current_variance=0.0):
+def home():
     if 'user' not in session:
         return redirect('/')
     
@@ -344,12 +343,12 @@ def home(current_variance=0.0):
     session['total_budget_cost'] = total_budget_cost
     
     # Fetch all investment records for the user
-    investment_ref = db.collection('Investment').where('user_email', '==', user_email).stream()
+    investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('status', '==', 'active').stream()
 
     # Dictionary to store the latest prices for each ticker
     total_values = defaultdict(float)
     initial_total_closing_prices = defaultdict(float)
-    api = 'QW29Q45GXY6XOPFX'
+    api = '1HEU5NM89I8H1AKX'
 
     for investment_doc in investment_ref:
         investment_data = investment_doc.to_dict()
@@ -386,12 +385,24 @@ def home(current_variance=0.0):
     # Calculate the total closingPrice for all tickers
     total_investment_value = round(float(sum(total_values.values())), 2)
     initial_total_closing_price = round(float(sum(initial_total_closing_prices.values())), 2)
-    value_variance = round(float((total_investment_value - initial_total_closing_price)), 2)
-    value_variance_abs = abs(value_variance)
+    value_difference = round(float((total_investment_value - initial_total_closing_price)), 2)
+    value_difference_abs = abs(value_difference)
 
+    sold_investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('status', '==', 'sold').stream()
+
+    total_investment_sold = 0
+
+    for sold_investment_doc in sold_investment_ref:
+        sold_investment_data = sold_investment_doc.to_dict()
+        print(sold_investment_data)
+        total_investment_sold += float(sold_investment_data.get('price_difference', 0))
+    
     total_expense = total_food_cost + total_transport_cost
-    total_savings = float(total_budget_cost - total_expense)
-    total_savings += current_variance
+    total_savings = float((total_budget_cost + total_investment_sold) - total_expense)
+    
+    user_doc.reference.update({
+            'totalSavings': total_savings
+            })
 
     progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
 
@@ -404,9 +415,9 @@ def home(current_variance=0.0):
                            savings_goal=savings_goal,
                            progress_percentage=progress_percentage,
                            total_investment_value=total_investment_value,
-                           value_variance=value_variance,
-                           value_variance_abs=value_variance_abs,
-                           current_variance=current_variance
+                           value_difference=value_difference,
+                           value_difference_abs=value_difference_abs,
+                           
                            )
 
 
@@ -644,7 +655,8 @@ def register():
                 'loginDays': 0,
                 'coins': 0,
                 'nextRewardTime': datetime.min,
-                'savingsGoal': 0
+                'savingsGoal': 0,
+                'totalSavings': 0
             }
             db.collection('users').add(user_data)
 
@@ -1350,7 +1362,7 @@ def delete_budget_expense(unique_index):
 def addinvestment():
     
     if request.method == 'POST':
-        api = 'QW29Q45GXY6XOPFX'
+        api = '1HEU5NM89I8H1AKX'
         base_url = 'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY'
         user_email = session['user']
         investment_id = request.form.get('investment_id')
@@ -1402,7 +1414,9 @@ def addinvestment():
                 'unique_index': unique_index,
                 'cost': totalClosingPrice,
                 'lastRefreshed': lastRefreshed,
-                'status': 'active'
+                'status': 'active',
+                'latest_price': totalClosingPrice,
+                'price_difference': 0
             }
 
             # Get dynamic fields
@@ -1450,10 +1464,17 @@ def user_investment_expenses():
         ticker = investment_data.get('ticker', '')
         quantity = investment_data.get('quantity', 0)
         latest_price = get_latest_price(ticker)
-        if latest_price is not None:
+        
+        total_latest_price = round((latest_price * quantity), 2)
+        print(total_latest_price)
+
+        
+        if total_latest_price is not None:
             # Calculate the difference between latest price and closingPrice
             closing_price = investment_data.get('cost', 0)
-            price_difference = latest_price - closing_price
+            price_difference = round(total_latest_price - closing_price, 2)
+            price_difference_abs = abs(price_difference)
+            
 
             user_investment_data.append({
                 'ticker': ticker,
@@ -1463,14 +1484,21 @@ def user_investment_expenses():
                 'current_date': current_date,
                 'cost': closing_price,
                 'lastRefreshed': investment_data.get('lastRefreshed', ''),
-                'latest_price': latest_price,
-                'price_difference': price_difference
+                'latest_price': investment_data.get('latest_price', 0),
+                'price_difference': price_difference,
+                'price_difference_abs': price_difference_abs
             })
+
+            investment_data={
+            'latest_price': total_latest_price
+            }
+
+            investment_doc.reference.update(investment_data)
     
     return render_template('user_investment_expenses.html',  user_investment_data=user_investment_data)
 
 def get_latest_price(ticker):
-    api = 'Y2SEPNPM0ZXA6FR2'
+    api = '1HEU5NM89I8H1AKX'
     base_url = 'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY'
     url = f'{base_url}&symbol={ticker}&interval=1min&apikey={api}'
 
@@ -1494,21 +1522,49 @@ def get_latest_price(ticker):
         return round(closing_price, 2)
     else:
         return None  # Handle the case where API response does not contain expected data
-    
-@app.route('/investment_cashout/<int:unique_index>/<float:current_variance>', methods=['POST'])
-def add_to_savings(unique_index, current_variance):
+
+@app.route('/sell_investment/<unique_index>', methods=['POST', 'GET'])
+def sell_investment(unique_index):
     try:
-        # Update the status of the investment to 'cashed_out'
-        investment_ref = db.collection('Investment').document(str(unique_index))
-        investment_ref.update({'status': 'cashed_out'})
-        
-        # Flash the current_variance for display purposes (optional)
-        flash('Successfully cashed out!', 'success')
+        user_email = session['user']
+        investment_expense = db.collection('Investment').where('user_email', '==', user_email).where('status', '==', 'active').where('unique_index', '==', int(unique_index)).limit(1).stream()
 
+        for investment_doc in investment_expense:
+            investment_data = investment_doc.to_dict()
+
+            # Fetch the required information from the investment expense
+            quantity = investment_data.get('quantity', 0)
+            closing_price = investment_data.get('cost', 0)
+            latest_price = get_latest_price(investment_data.get('ticker', ''))
+            total_latest_price = latest_price * quantity
+
+            if total_latest_price is not None:
+                # Calculate the difference between latest price and closingPrice
+                price_difference = total_latest_price - closing_price
+
+                # Update totalSavings field in the user model in Firestore
+                user_ref = db.collection('users').where('email', '==', user_email).limit(1).get()
+                if user_ref:
+                    user_doc = user_ref[0]
+                    user_data = user_doc.to_dict()
+                    current_total_savings = user_data.get('totalSavings', 0)
+                    new_total_savings = current_total_savings + price_difference
+
+                    user_doc.reference.update({'totalSavings': new_total_savings})
+                
+                investment_doc.reference.update({
+                    'status': 'sold',
+                    'price_difference': price_difference
+                    })
+
+                flash(f"Successfully sold!", "success")
+            else:
+                flash(f"Failed to update total savings. Unable to fetch the latest price for investment with unique index {unique_index}.", "warning")
+
+        return redirect('/user_investment_expenses')
     except Exception as e:
-        flash(f'An error occurred: {str(e)}', 'danger')
-
-    return redirect('/home')
+        flash(f"An error occurred during savings update: {str(e)}", "warning")
+        return redirect('/user_investment_expenses')
 
 @app.route('/edit_investment_expenses', methods=['GET', 'POST'])
 def edit_investment_expense():
@@ -1543,7 +1599,6 @@ def edit_investment_expense():
             'quantity': new_quantity,
             'ticker':new_ticker
         }
-        print(investment_data)
         user_investment_data=[]
         investment_doc.reference.update(investment_data)
         user_investment_data.append(investment_data)

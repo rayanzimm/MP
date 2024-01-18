@@ -193,7 +193,15 @@
       {% for investment_item in user_investment_data %}
       <tr>
         <td>{{ investment_item['ticker'] }}</td>
-        <td>{{ investment_item['latest_price'] }} {{ investment_item['price_difference'] }}</td>
+        <td>${{ investment_item['latest_price'] }}
+                    {% if investment_item['price_difference'] > 0 %}
+                        +${{ investment_item['price_difference_abs'] }}
+                    {% elif investment_item['price_difference'] < 0 %} 
+                        -${{ investment_item['price_difference_abs'] }} 
+                    {% else %} 
+                        ${{ investment_item['price_difference_abs'] }}
+                    {% endif%}
+        </td>
         <td>
           <button class="edit-btn"
             onclick="openModal('{{ investment_item['ticker'] }}', '{{ investment_item['quantity'] }}', '{{ investment_item['unique_index'] }}')">Edit</button>
@@ -201,6 +209,10 @@
         <td>
           <button class="delete-btn"
             onclick="deleteinvestmentExpense('{{ investment_item['unique_index'] }}')">Delete</button>
+        </td>
+        <td>
+          <button class="sell-btn"
+            onclick="sellInvestment('{{ investment_item['unique_index'] }}')">Sell</button>
         </td>
       </tr>
         {% endfor %}
@@ -299,6 +311,14 @@
         window.location.href = "/delete_investment_expense/" + uniqueIndex;
       }
     }
+
+    function sellInvestment(uniqueIndex) {
+    // Use JavaScript to confirm the status update (customize the confirmation dialog if needed)
+    if (confirm("Are you sure you want to sell the selected investment?")) {
+      // Redirect to the update_status route with the unique_index parameter
+      window.location.href = "/sell_investment/" + uniqueIndex;
+    }
+  }
 
   </script>
 

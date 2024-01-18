@@ -349,12 +349,12 @@
                 <h2>INVESTMENT</h2>
                 {% if 'total_investment_cost' in session %}
                 <p>Total Investment Value: ${{ total_investment_value }}
-                    {% if value_variance > 0 %}
-                        +${{ value_variance_abs }}
-                    {% elif value_variance < 0 %} 
-                        -${{ value_variance_abs }} 
+                    {% if value_difference > 0 %}
+                        +${{ value_difference_abs }}
+                    {% elif value_difference < 0 %} 
+                        -${{ value_difference_abs }} 
                     {% else %} 
-                        ${{ value_variance_abs }}
+                        ${{ value_difference_abs }}
                     {% endif%}
                     </p>
                         {% else %}
