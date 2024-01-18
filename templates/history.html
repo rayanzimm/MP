@@ -112,7 +112,7 @@
                 {% for expense in expenses %}
                     <tr>
                         <td>{{ expense['category'] }}</td>
-                        <td>{{ expense['cost'] }}</td>
+                        <td>{{ '{:.2f}'.format(expense['cost']) }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

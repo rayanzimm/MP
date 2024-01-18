@@ -394,7 +394,7 @@ def home():
 
     for sold_investment_doc in sold_investment_ref:
         sold_investment_data = sold_investment_doc.to_dict()
-        print(sold_investment_data)
+        
         total_investment_sold += float(sold_investment_data.get('price_difference', 0))
     
     total_expense = total_food_cost + total_transport_cost
@@ -556,6 +556,10 @@ def history():
     # Organize expenses by date
     all_expenses_by_date = organize_expenses_by_date(all_expenses)
 
+    for date, expenses in all_expenses_by_date.items():
+        for expense in expenses:
+            expense['cost'] = float(expense['cost'])
+
     # Calculate total expenses for each date
     total_by_date = calculate_total_by_date(all_expenses_by_date)
 
@@ -569,7 +573,7 @@ def calculate_total_by_date(expenses_by_date):
 
     for date, expenses in expenses_by_date.items():
         total_cost = sum(float(expense['cost']) for expense in expenses)
-        total_by_date[date] = total_cost
+        total_by_date[date] = float(total_cost)
 
     return total_by_date
 
@@ -1466,8 +1470,6 @@ def user_investment_expenses():
         latest_price = get_latest_price(ticker)
         
         total_latest_price = round((latest_price * quantity), 2)
-        print(total_latest_price)
-
         
         if total_latest_price is not None:
             # Calculate the difference between latest price and closingPrice

@@ -193,13 +193,14 @@
       {% for investment_item in user_investment_data %}
       <tr>
         <td>{{ investment_item['ticker'] }}</td>
-        <td>${{ investment_item['latest_price'] }}
+        <td>
+          ${{ '{:.2f}'.format(investment_item['latest_price']) }}
                     {% if investment_item['price_difference'] > 0 %}
-                        +${{ investment_item['price_difference_abs'] }}
+                    <span style="color: green">+${{ '{:.2f}'.format(investment_item['price_difference_abs']) }}</span>
                     {% elif investment_item['price_difference'] < 0 %} 
-                        -${{ investment_item['price_difference_abs'] }} 
-                    {% else %} 
-                        ${{ investment_item['price_difference_abs'] }}
+                    <span style="color: red">-${{ '{:.2f}'.format(investment_item['price_difference_abs']) }}</span> 
+                    {% elif investment_item['price_difference'] == 0 %} 
+                        
                     {% endif%}
         </td>
         <td>

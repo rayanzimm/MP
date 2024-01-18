@@ -211,20 +211,20 @@
         <div class="dashboard">
             <div class="card">
                 <h2>Budget</h2>
-                <p>Total budget Cost: ${{ total_budget_cost }}</p>
+                <p>Total Budget: ${{ '{:.2f}'.format(total_budget_cost) }}</p>
                 <!-- Chart placeholder -->
             </div>
             <div class="card">
                 <h2>Earnings</h2>
-                <p>Investment: $ {{ total_investmentReturns_cost }}</p>
+                <p>Investment: $ {{ '{:.2f}'.format(total_investmentReturns_cost) }}</p>
                 <!-- Chart placeholder -->
             </div>
             <div class="card">
                 <h2>Expenses</h2>
-                <p>Total : $ {{ total_expense }}</p>
-                <p>Investment: $ {{ total_investment_cost }}</p>
-                <p>Transport: $ {{ total_transport_cost }}</p>
-                <p>Food: $ {{ total_food_cost }}</p>
+                <p>Total : $ {{ '{:.2f}'.format(total_expense) }}</p>
+                <p>Investment: $ {{ '{:.2f}'.format(total_investment_cost) }}</p>
+                <p>Transport: $ {{ '{:.2f}'.format(total_transport_cost) }}</p>
+                <p>Food: $ {{ '{:.2f}'.format(total_food_cost) }}</p>
                 <canvas id="expensesPieChart" width="5" height="5"></canvas>
             </div>
             <div class="card full-width">

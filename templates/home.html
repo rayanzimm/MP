@@ -227,7 +227,7 @@
             font-size: 16px;
             margin-right: 20px;
             height: 35px;
-            width: auto;
+            width: 80px;
             /* Allow width to be flexible */
         }
 
@@ -240,6 +240,7 @@
             color: white;
             height: 20px;
             margin: 0;
+            margin-left: auto;
             /* Remove default margin for better alignment */
         }
 
@@ -296,7 +297,7 @@
 
             <div>
                 <h2>Savings Goal </h2>
-                <p>${{ total_savings }}/${{ savings_goal }}</p>
+                <p>${{ '{:.2f}'.format(total_savings) }}/${{ '{:.2f}'.format(savings_goal) }}</p>
                 <!-- Progress bar -->
             </div>
 
@@ -328,7 +329,7 @@
             <div class="card" onclick="redirectTo('/user_budget')">
                 <h2>BUDGET (FOR TODAY)</h2>
                 {% if 'total_budget_cost' in session %}
-                <p>Total Budget : ${{ total_budget_cost }}</p>
+                <p>Total Budget : ${{ '{:.2f}'.format(total_budget_cost) }}</p>
                 {% else %}
                 <p>Total Budget : Not available</p>
                 {% endif %}
@@ -338,7 +339,7 @@
             <div class="card" onclick="redirectTo('/user_transport_expenses')">
                 <h2>TRANSPORT</h2>
                 {% if 'total_transport_cost' in session %}
-                <p>Total Transport Cost: ${{ total_transport_cost }}</p>
+                <p>Total Transport Cost: ${{ '{:.2f}'.format(total_transport_cost) }}</p>
                 {% else %}
                 <p>Total Transport Cost: Not available</p>
                 {% endif %}
@@ -348,13 +349,13 @@
             <div class="card" onclick="redirectTo('/user_investment_expenses')">
                 <h2>INVESTMENT</h2>
                 {% if 'total_investment_cost' in session %}
-                <p>Total Investment Value: ${{ total_investment_value }}
+                <p>Total Investment Value: ${{ '{:.2f}'.format(total_investment_value) }}
                     {% if value_difference > 0 %}
-                        +${{ value_difference_abs }}
+                    <span style="color: green">+${{ '{:.2f}'.format(value_difference_abs) }}</span>
                     {% elif value_difference < 0 %} 
-                        -${{ value_difference_abs }} 
-                    {% else %} 
-                        ${{ value_difference_abs }}
+                    <span style="color: red">-${{ '{:.2f}'.format(value_difference_abs) }}</span>
+                    {% elif value_difference == 0 %} 
+                        
                     {% endif%}
                     </p>
                         {% else %}
@@ -366,7 +367,7 @@
             <div class="card" onclick="redirectTo('/user_food_expenses')">
                 <h2>FOOD</h2>
                 {% if 'total_food_cost' in session %}
-                <p>Total Food Cost: ${{ total_food_cost }}</p>
+                <p>Total Food Cost: ${{ '{:.2f}'.format(total_food_cost) }}</p>
                 {% else %}
                 <p>Total Food Cost: Not available</p>
                 {% endif %}
