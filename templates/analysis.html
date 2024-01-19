@@ -349,6 +349,22 @@
     </div>
 
     <script>
+
+var userEmail = "{{ email }}";
+
+        // Store the email in localStorage
+        localStorage.setItem('userEmail', userEmail);
+
+        var user_email = localStorage.getItem('userEmail');
+
+        fetch('/store_user_email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: user_email }),
+        });
+
         function confirmLogout() {
             var result = confirm("Are you sure you want to log out?");
             if (result) {
