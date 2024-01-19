@@ -61,69 +61,69 @@ app.secret_key = 'secret'
 
 
 
-# app.config['MAIL_SERVER'] = 'smtp.office365.com'
-# app.config['MAIL_PORT'] = 587
-# app.config['MAIL_USE_TLS'] = True
-# app.config['MAIL_USE_SSL'] = False
-# app.config['MAIL_USERNAME'] = 'finsaver@outlook.com'  # Replace with your Outlook email address
-# app.config['MAIL_PASSWORD'] = 'fintech2024'  # Replace with your Outlook email password
-# app.config['MAIL_DEFAULT_SENDER'] = 'finsaver@outlook.com'  # Replace with your Outlook email address
-# # Initialize Flask-Mail
-# mail = Mail(app)
+app.config['MAIL_SERVER'] = 'smtp.office365.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = 'finsaver@outlook.com'  # Replace with your Outlook email address
+app.config['MAIL_PASSWORD'] = 'fintech2024'  # Replace with your Outlook email password
+app.config['MAIL_DEFAULT_SENDER'] = 'finsaver@outlook.com'  # Replace with your Outlook email address
+# Initialize Flask-Mail
+mail = Mail(app)
 
-# scheduler = BackgroundScheduler()
+scheduler = BackgroundScheduler()
 
-# def send_daily_reminder(user_email):
-#     try:
-#         print(user_email)
+def send_daily_reminder(user_email):
+    try:
+        print(user_email)
 
-#         if user_email:
-#             with app.app_context():
-#                 msg = Message('Daily Expense Reminder', recipients=[user_email])
-#                 msg.body = 'Don\'t forget to upload your daily Budget & Expenses'
-#                 msg.html = '<p>Don\'t forget to upload your daily Budget & Expenses</p>'
+        if user_email:
+            with app.app_context():
+                msg = Message('Daily Expense Reminder', recipients=[user_email])
+                msg.body = 'Don\'t forget to upload your daily Budget & Expenses'
+                msg.html = '<p>Don\'t forget to upload your daily Budget & Expenses</p>'
 
-#                 mail.send(msg)
+                mail.send(msg)
 
-#                 print("Daily reminder email sent successfully")
-#         else:
-#             print("User email not found. Unable to send reminder.")
+                print("Daily reminder email sent successfully")
+        else:
+            print("User email not found. Unable to send reminder.")
 
-#     except Exception as e:
-#         print(f"Error sending email: {str(e)}")
-
-
+    except Exception as e:
+        print(f"Error sending email: {str(e)}")
 
 
-# @app.route('/store_user_email', methods=['POST'])
-# def store_user_email():
-#     try:
-#         data = request.get_json()
-#         user_email = data.get('email')
-
-#         # Now you can use user_email in your send_daily_reminder function
-#         send_daily_reminder(user_email)
-
-#         return "Email received and processed successfully"
-
-#     except Exception as e:
-#         return f"Error storing email: {str(e)}"
 
 
-# def get_user_email_for_daily_reminder():
-#     try:
-#         user_email = session['user']
-#         # Fetch any user's email from the database
-#         user_ref = db.collection('users').where('email', '==', user_email).limit(1).stream()
+@app.route('/store_user_email', methods=['POST'])
+def store_user_email():
+    try:
+        data = request.get_json()
+        user_email = data.get('email')
 
-#         for user_doc in user_ref:
-#             user_data = user_doc.to_dict()
-#             return user_data.get('email')
+        # Now you can use user_email in your send_daily_reminder function
+        send_daily_reminder(user_email)
 
-#     except Exception as e:
-#         # Handle any exceptions during database query
-#         print(f"Error fetching user email: {str(e)}")
-#         return None
+        return "Email received and processed successfully"
+
+    except Exception as e:
+        return f"Error storing email: {str(e)}"
+
+
+def get_user_email_for_daily_reminder():
+    try:
+        user_email = session['user']
+        # Fetch any user's email from the database
+        user_ref = db.collection('users').where('email', '==', user_email).limit(1).stream()
+
+        for user_doc in user_ref:
+            user_data = user_doc.to_dict()
+            return user_data.get('email')
+
+    except Exception as e:
+        # Handle any exceptions during database query
+        print(f"Error fetching user email: {str(e)}")
+        return None
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -175,6 +175,7 @@ def index():
         user_data = user_doc.to_dict()
         update_login_rewards(user_email, user_data, user_doc)
         coins=user_data.get('coins', 0)
+        savings_goal = savings_goal = float(user_data.get('savingsGoal', 0))
         total_food_cost = fetch_total_cost('Food', user_email, current_date)
         total_transport_cost = fetch_total_cost('Transport', user_email, current_date)
         total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
@@ -198,7 +199,6 @@ def index():
                 stockData = response.json()
 
                 if 'Time Series (1min)' in stockData:
-                    print("hello")
                     lastRefreshed = stockData["Meta Data"]["3. Last Refreshed"]
                     latestPrices = stockData["Time Series (1min)"][lastRefreshed]
                     closingUSDPrice = latestPrices["4. close"]
@@ -224,16 +224,34 @@ def index():
         value_difference = round(float((total_investment_value - initial_total_closing_price)), 2)
         value_difference_abs = abs(value_difference)
 
-        total_expense = total_food_cost + total_transport_cost
-        total_savings = total_budget_cost - total_expense
+        sold_investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('status', '==', 'sold').stream()
+
+        total_investment_sold = 0
+
+        for sold_investment_doc in sold_investment_ref:
+            sold_investment_data = sold_investment_doc.to_dict()
+            
+            total_investment_sold += float(sold_investment_data.get('price_difference', 0))
         
+        total_expense = total_food_cost + total_transport_cost
+        total_savings = float((total_budget_cost + total_investment_sold) - total_expense)
+        
+        user_doc.reference.update({
+                'totalSavings': total_savings
+                })
+        
+        progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
+         
         return render_template('home.html', email=user_email, coins=coins, total_food_cost=total_food_cost,
                            total_transport_cost=total_transport_cost,
                            total_budget_cost=total_budget_cost,
                            total_savings=total_savings,
+                           savings_goal=savings_goal,
                            total_investment_value=total_investment_value,
                            value_difference=value_difference,
-                           value_difference_abs=value_difference_abs
+                           value_difference_abs=value_difference_abs,
+                           progress_percentage=progress_percentage
+
                            )
     
     if request.method == 'POST':
@@ -252,7 +270,6 @@ def index():
             user_data = user_doc.to_dict()
             update_login_rewards(email, user_data, user_doc)
             coins=user_data.get('coins', 0)
-            print(coins)
 
             return render_template('home.html', email=email, coins=coins)
         except:
@@ -362,7 +379,6 @@ def home():
             stockData = response.json()
 
             if 'Time Series (1min)' in stockData:
-                print("hello")
                 lastRefreshed = stockData["Meta Data"]["3. Last Refreshed"]
                 latestPrices = stockData["Time Series (1min)"][lastRefreshed]
                 closingUSDPrice = latestPrices["4. close"]
@@ -529,7 +545,7 @@ def update_savings_goal():
 
         # Update the 'savingsGoal' field
         if request.method == 'POST':
-            new_savings_goal = request.form.get('savings_goal')
+            new_savings_goal = float(request.form.get('savings_goal'))
         
         user_data = {
             'savingsGoal': new_savings_goal
