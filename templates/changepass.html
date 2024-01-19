@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <title>Update Profile</title>
-    <title>Forgot Password</title>
+    <title>Change Password</title>
     <style>
         body {
             font-family: 'Lato', sans-serif;
@@ -61,27 +60,22 @@
             color: #ECF0F1; /* Light text color */
             
             text-decoration: none;
-            
+            text-align: center;
         }
 
     </style>
 </head>
 
 <body>
-    
     <div class="container">
-        <div class="profile-container">
-            <div>
-                <a href="{{ url_for('index') }}" class="close-button">
-                    <i class="fas fa-times"></i>
-                </a>
-        
-        </div>
-        </div>
+        <a href="{{ url_for('profile') }}" class="close-button">
+            <i class="fas fa-times"></i>
         <div class="forgot-password-container">
-            <h4>Enter email to reset password!</h4>
-            <form action="/forgetpass" method="post" name="form">
-                <input type="email" id="email" name="email" placeholder="Email" required><br>
+        </a>
+            
+            <h4>Change Password</h4>
+            <form action="/changepass" method="post" name="form">
+                <input type="email" id="email" name="email" placeholder="Email" value="{{ user_email }}" required readonly><br>
                 <input type="submit" value="Send">
             </form>
         </div>

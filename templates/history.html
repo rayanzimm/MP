@@ -83,13 +83,13 @@
 <body>
     <div class="navbar">
         <div class="image" align="left">
-            <a href="{{ url_for('home')}}">
+            <a href="{{ url_for('analysis')}}">
                 <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
             </a>
         </div>
         <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
         <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
-        <a href="{{ url_for('analysis') }}"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('home') }}"><i class="fas fa-chart-bar"></i> Tracker</a>
         <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
         <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
@@ -112,7 +112,7 @@
                 {% for expense in expenses %}
                     <tr>
                         <td>{{ expense['category'] }}</td>
-                        <td>{{ '{:.2f}'.format(expense['cost']) }}</td>
+                        <td>{{ expense['cost'] }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

@@ -181,19 +181,85 @@
             margin: 0;
             color: #ffffff;
         }
+        .coins-container {
+            display: flex;
+            align-items: center;
+            /* Align items vertically in the center */
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .coins-pill {
+            display: flex;
+            align-items: center;
+            /* Align items vertically in the center */
+            background-color: #212946;
+            color: white;
+            border-radius: 20px;
+            text-align: center;
+            padding: 8px 15px;
+            /* Adjust padding for better appearance */
+            font-size: 16px;
+            margin-right: 55px;
+            height: 35px;
+            width: 80px;
+            /* Allow width to be flexible */
+        }
+
+        .coins-pill i {
+            margin-right: 5px;
+            /* Add spacing between icon and text */
+        }
+
+        .coins-text {
+            color: white;
+            height: 20px;
+            
+            margin-left: auto;
+            /* Remove default margin for better alignment */
+        }
+        .progress {
+            height: 20px;
+            margin-bottom: 20px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            width: 94.5%;
+            margin-left:25px ;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #4caf50;
+            text-align: center;
+            line-height: 20px;
+            color: #fff;
+
+            /* Text color */
+        }
+        .header {
+            color: #ffffff;
+            font-size: 24px;
+            margin-left: 30px;
+            display: flex;
+            padding-top: 30px;
+            align-items: center;
+            
+        }
+  
     </style>
 </head>
 
 <body>
     <div class="navbar">
         <div class="image" align="left">
-            <a href="{{ url_for('home')}}">
+            <a href="{{ url_for('analysis')}}">
                 <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}" class="image">
             </a>
         </div>
         <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
         <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
-        <a href="{{ url_for('analysis') }}"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('home') }}"><i class="fas fa-chart-bar"></i> Tracker</a>
         <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
         <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
@@ -203,6 +269,23 @@
     </div>
 
     <div class="main-content">
+        <div class="header">
+            <div>
+                <h3>Final Savings Goal</h3>
+                <p>${{ '{:.2f}'.format(total_savings) }}/${{ '{:.2f}'.format(savings_goal) }}</p>
+            </div> 
+        </div>
+        <div class="coins-container">
+            <div class="coins-pill">
+                <i class="fas fa-coins"></i>
+                <p class="coins-text">{{ coins }}</p>
+            </div>
+        </div>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: {{ progress_percentage }}%;"
+                aria-valuenow="{{ progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        
         <div class="top-bar">
             <div class="date-indicator">
                 <p id="current-date"></p>
@@ -211,25 +294,28 @@
         <div class="dashboard">
             <div class="card">
                 <h2>Budget</h2>
-                <p>Total Budget: ${{ '{:.2f}'.format(total_budget_cost) }}</p>
+                <p>Total budget Cost: ${{ total_budget_cost }}</p>
                 <!-- Chart placeholder -->
+                <canvas id="budgetLineChart" width="300" height="200"></canvas>
             </div>
             <div class="card">
-                <h2>Earnings</h2>
-                <p>Investment: $ {{ '{:.2f}'.format(total_investmentReturns_cost) }}</p>
+                <h2>Investment Earnings</h2>
+                <p>$ {{ total_investmentReturns_cost }}</p>
+                <h2>Total Savings</h2>
+                <p>$ {{ total_savings }}</p>
                 <!-- Chart placeholder -->
             </div>
             <div class="card">
                 <h2>Expenses</h2>
-                <p>Total : $ {{ '{:.2f}'.format(total_expense) }}</p>
-                <p>Investment: $ {{ '{:.2f}'.format(total_investment_cost) }}</p>
-                <p>Transport: $ {{ '{:.2f}'.format(total_transport_cost) }}</p>
-                <p>Food: $ {{ '{:.2f}'.format(total_food_cost) }}</p>
-                <canvas id="expensesPieChart" width="5" height="5"></canvas>
+                <p>Total : $ {{ total_expense }}</p>
+                <p>Investment: $ {{ total_investment_cost }}</p>
+                <p>Transport: $ {{ total_transport_cost }}</p>
+                <p>Food: $ {{ total_food_cost }}</p>
+                <canvas id="expensesPieChart"  width="50" height="50"></canvas>
             </div>
             <div class="card full-width">
                 <h2>Financial Statistics</h2>
-                <canvas id="expensesChart" width="300" height="50"></canvas>
+                <canvas id="expensesChart" width="300" height="70"></canvas>
             </div>
             <a href="#" class="button">View Analysis Report</a>
             <!-- Form for Savings Analysis -->
@@ -341,34 +427,68 @@
         }
 
         function createPieChart(canvasId, labels, data) {
-            var ctx = document.getElementById(canvasId).getContext('2d');
-            new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.7)',
-                            'rgba(54, 162, 235, 0.7)',
-                            'rgba(255, 206, 86, 0.7)',
-                            'rgba(75, 192, 192, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(75, 192, 192, 1)'
-                        ],
-                        borderWidth: 0.5
-                    }]
+    var ctx = document.getElementById(canvasId).getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ],
+                borderWidth: 0.5
+            }]
+        },
+        options: {
+            radius: '80%',
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '60%',  // Use cutout to create a hole in the middle of the pie chart
+            plugins: {
+                legend: {
+                    position: 'right',  // Adjust the position of the legend as needed
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                }
-            });
-        }
+            },
+            layout: {
+
+            },
+        },
+    });
+}
+
+
+
+        function createLineChart(canvasId, labels, data) {
+        var ctx = document.getElementById(canvasId).getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Budget Amount',
+                    data: data,
+                    fill: false,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+            }
+        });
+    }
+
 
         function createCharts() {
             var expensesLabel = ['Total', 'Investment', 'Transport', 'Food'];
@@ -388,6 +508,12 @@
                 parseFloat("{{ total_food_cost }}")
             ];
             createPieChart('expensesPieChart', expensesLabels, expensesData);
+
+            var budgetLabels = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri','Sat','Sun'];  // Add your actual day labels
+            var budgetData = [
+                parseFloat("{{ total_budget_cost }}")
+            ];
+            createLineChart('budgetLineChart', budgetLabels, budgetData);
         }
 
         createCharts();

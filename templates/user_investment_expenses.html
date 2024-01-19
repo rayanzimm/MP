@@ -162,7 +162,16 @@
       align-items: center;
       /* Align items vertically at the center */
     }
+
+
+
+    .tradingview-widget-container {
+    margin-top: 50px;
+    height: 500px;
+  
+}
   </style>
+   
 </head>
 
 <body>
@@ -171,15 +180,12 @@
     <button class="close-button" onclick="window.location.href='/home'">X</button>
     <button type="button" class="modal-btn" onclick="openAddModal()"">Add Investments</button>
 
-      <div class=" toggle-switch" onclick="window.location.href='/user_investment_returns'">
-      <input class="toggle-input" id="toggle" type="checkbox">
-      <label class="toggle-label" for="toggle"></label>
-  </div>
-
+      
   <div class="header">
+    
     <h1>User Investments</h1>
   </div>
-
+  
   {% if user_investment_data %}
   <table class="table">
     <thead>
@@ -236,6 +242,8 @@
       </form>
     </div>
   </div>
+ 
+  
   <div class="error-message" name="errorMessage">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -253,7 +261,6 @@
     {% endwith %}
   </div>
   </div>
-
 
   <div class="modal" id="addinvestmentModal" tabindex="-1" role="dialog" aria-labelledby="addinvestmentModalLabel">
     <div class="modal-dialog" role="modal-content">
@@ -279,12 +286,21 @@
       </div>
     </div>
   </div>
+  <div class="tradingview-widget-container ">
+    <div id="tradingview_d5eeb"></div>
+    <div class="tradingview-widget-copyright">
+      <a href="https://www.tradingview.com/symbols/NASDAQ-MSFT/" rel="noopener" target="_blank">
+    </div>
+  </div>
 
+  
 
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
+
+    
 
 
   <script>
@@ -321,6 +337,35 @@
     }
   }
 
+  </script>
+
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+      new TradingView.widget({
+        
+        "symbol": "NASDAQ:MSFT",
+        "interval": "D",
+        "timezone": "Asia/Singapore",
+        "theme": "dark",
+        "style": "1",
+        "locale": "en",
+        "toolbar_bg": "#f1f3f6",
+        "enable_publishing": false,
+        "allow_symbol_change": true,
+        "watchlist": [
+          "NASDAQ:AAPL",
+          "NASDAQ:TSLA",
+          "NASDAQ:MSFT",
+          "NASDAQ:META"
+        ],
+        "studies": [
+          "STD;MACD",
+          "STD;RSI"
+        ],
+        "container_id": "tradingview_d5eeb"
+      });
+    });
   </script>
 
 

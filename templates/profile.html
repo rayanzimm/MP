@@ -130,6 +130,18 @@
 
         }
 
+        
+        .change-pass-button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #34db60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+
+        }
+
         .update-profile-button:hover {
             background-color: #2980b9;
         }
@@ -152,13 +164,13 @@
     
     <div class="navbar">
         <div class="image" align="left">
-            <a href="{{ url_for('home')}}">
+            <a href="{{ url_for('analysis')}}">
                 <img src="{{ url_for('static', filename='/assets/img/finsaver1.png') }}">
             </a>
         </div>
         <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
         <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
-        <a href="{{ url_for('analysis') }}"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('home') }}"><i class="fas fa-chart-bar"></i> Tracker</a>
         <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
         <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
@@ -186,8 +198,11 @@
                     Profile</button>
                 <button class="delete-profile-button" onclick="window.location.href='/delete_profile'">Delete
                     Profile</button>
+                <button class="change-pass-button" onclick="window.location.href='/changepass'">Change
+                    Password</button>
             </div>
-        </div>
+        </div>        
+
 
         <div class="error-message" name="errorMessage">
             {% with messages = get_flashed_messages(with_categories=true) %}

@@ -29,6 +29,7 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from flask import send_file
+
 app = Flask(__name__)
 UPLOAD_FOLDER = r'static\assets\img'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -50,7 +51,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'D:\Microsoft VS Code\MP\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -242,7 +243,7 @@ def index():
         
         progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
          
-        return render_template('home.html', email=user_email, coins=coins, total_food_cost=total_food_cost,
+        return render_template('analysis.html', email=user_email, coins=coins, total_food_cost=total_food_cost,
                            total_transport_cost=total_transport_cost,
                            total_budget_cost=total_budget_cost,
                            total_savings=total_savings,
@@ -706,6 +707,28 @@ def reset_password():
         except Exception as e:
             flash(f"An error occurred: {str(e)}", "warning")
     return render_template('forgetpass.html')
+
+
+@app.route('/changepass', methods=['GET', 'POST'])
+def change_password():
+    user_email = session.get('user')
+    if request.method == 'POST':
+        try:
+            # Assuming the email is sent in the request form
+            data = request.form
+            email = data.get('email')
+
+            if re.match(r"[^@]+@[^@]+\.[^@]+", email) and email.endswith('.com'):
+                auth.send_password_reset_email(email)
+                flash("Reset email has been successfuly sent! Please check your inbox.", "success")
+            else:
+                flash("Please enter a valid email", "warning")
+        except Exception as e:
+            flash(f"An error occurred: {str(e)}", "warning")
+
+    # Pass the user's email to the template
+    
+    return render_template('changepass.html', user_email=user_email)
 
 
 @app.route('/update_profile', methods=['GET', 'POST'])
@@ -1679,6 +1702,14 @@ openai.api_key = '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'
 def total_budget_expense():
     user_email = session['user']
 
+    email = session['user']
+    user_ref = db.collection('users').where('email', '==', email).limit(1).get()
+    user_doc = user_ref[0]
+    user_data = user_doc.to_dict()
+
+    coins=user_data.get('coins', 0)
+    savings_goal = float(user_data.get('savingsGoal', 0))
+
     total_food_cost = fetch_total_cost_analysis('Food', user_email)
     total_transport_cost = fetch_total_cost_analysis('Transport', user_email)
     total_budget_cost = fetch_total_cost_analysis('Budget', user_email)
@@ -1696,6 +1727,8 @@ def total_budget_expense():
     session['total_investment_cost'] = total_investment_cost
     session['total_investmentReturns_cost'] = total_investmentReturns_cost
 
+    progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
+
     return render_template('analysis.html',
                            total_food_cost=total_food_cost,
                            total_transport_cost=total_transport_cost,
@@ -1703,7 +1736,10 @@ def total_budget_expense():
                            total_investment_cost=total_investment_cost,
                            total_investmentReturns_cost=total_investmentReturns_cost,
                            total_expense=total_expense,
-                           total_savings=total_savings)
+                           total_savings=total_savings,
+                           coins=coins,
+                           savings_goal=savings_goal,
+                           progress_percentage=progress_percentage,)
 
 
 
@@ -1831,6 +1867,8 @@ def add_graph_to_pdf(pdf):
     
     # Close the plot
     plt.close()
+
+
 
 @app.route('/settings')
 def settings():

@@ -275,13 +275,13 @@
 <body>
     <div class="navbar">
         <div class="image" align="left">
-            <a href="{{ url_for('home')}}">
+            <a href="{{ url_for('analysis')}}">
                 <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
             </a>
         </div>
         <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
         <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
-        <a href="{{ url_for('analysis') }}"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('home') }}"><i class="fas fa-chart-bar"></i> Tracker</a>
         <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
         <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
@@ -296,7 +296,7 @@
         <div class="header">
 
             <div>
-                <h2>Savings Goal </h2>
+                <h2>Final Savings Goal </h2>
                 <p>${{ '{:.2f}'.format(total_savings) }}/${{ '{:.2f}'.format(savings_goal) }}</p>
                 <!-- Progress bar -->
             </div>
@@ -320,11 +320,6 @@
             <p id="current-date"></p>
         </div>
 
-        <!--canvas id="barChart"></canvas-->
-
-
-
-        <!-- Add more cards for Income, Transport, Investment, Food, etc. -->
         <div class="card-container">
             <div class="card" onclick="redirectTo('/user_budget')">
                 <h2>BUDGET (FOR TODAY)</h2>
@@ -368,6 +363,16 @@
                 <h2>FOOD</h2>
                 {% if 'total_food_cost' in session %}
                 <p>Total Food Cost: ${{ '{:.2f}'.format(total_food_cost) }}</p>
+                {% else %}
+                <p>Total Food Cost: Not available</p>
+                {% endif %}
+                <!-- Add progress bar and pie chart for Food here -->
+            </div>
+
+            <div class="card" onclick="redirectTo('/user_food_expenses')">
+                <h2>OTHERS</h2>
+                {% if 'total_food_cost' in session %}
+                <p>Total Others Cost: ${{ '{:.2f}'.format(total_food_cost) }}</p>
                 {% else %}
                 <p>Total Food Cost: Not available</p>
                 {% endif %}

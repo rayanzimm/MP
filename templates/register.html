@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>Update Profile</title>
     <title>Register</title>
     <style>
         body {
@@ -87,14 +89,27 @@
         .container {
             width: 55%;
         }
+        .close-button {
+            color: #ECF0F1; /* Light text color */
+            margin-top: 200px;
+            
+            text-decoration: none;
+            text-align: center;
+        }
 
     </style>
 </head>
 
 <body>
+    
     <div class="container">
+        
+        <a href="{{ url_for('index') }}" class="close-button">
+            <i class="fas fa-times"></i>
+        </a>
+    
         <div class="image" align="center">
-            <img src="D:\Microsoft VS Code\MP\MP\static\assets\img\finsaverdark.png" style="width:200px; height:140">
+            <img src="static\assets\img\finsaverdark.png" style="width:200px; height:140">
         </div>
         <form action="/register" method='POST' class='signup-form' name="signup-form" enctype="multipart/form-data">
             <h4>Enter Details Below</h4>
