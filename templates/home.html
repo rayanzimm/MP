@@ -369,12 +369,12 @@
                 <!-- Add progress bar and pie chart for Food here -->
             </div>
 
-            <div class="card" onclick="redirectTo('/user_food_expenses')">
+            <div class="card" onclick="redirectTo('/user_others_expenses')">
                 <h2>OTHERS</h2>
-                {% if 'total_food_cost' in session %}
-                <p>Total Others Cost: ${{ '{:.2f}'.format(total_food_cost) }}</p>
+                {% if 'total_others_cost' in session %}
+                <p>Total Others Cost: ${{ '{:.2f}'.format(total_others_cost) }}</p>
                 {% else %}
-                <p>Total Food Cost: Not available</p>
+                <p>Total Other Expenses: Not available</p>
                 {% endif %}
                 <!-- Add progress bar and pie chart for Food here -->
             </div>

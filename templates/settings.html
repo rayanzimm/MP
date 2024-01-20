@@ -121,6 +121,17 @@
     cursor: pointer;
     border-radius: 4px;
   }
+  .abt-button {
+    margin-left: 20px;
+    text-decoration: none; /* Remove default underline */
+    color: #2feaff; /* Set button color */
+    transition: text-decoration 0.3s ease; /* Add a smooth transition for the underline effect */
+}
+
+.abt-button:hover {
+    text-decoration: underline; /* Add underline on hover */
+}
+
 </style>
 </head>
 <body>
@@ -149,9 +160,7 @@
             </div>
           </label>
         </div>
-        <div class="section">
-          <label id="aboutUsLabel">About Us</label>
-        </div>
+        <a href="/about" class="abt-button">About Us</a>
         <div class="section">
           <h2>SETTING A</h2>
           <p>blah blah blah</p>

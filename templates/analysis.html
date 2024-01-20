@@ -311,6 +311,7 @@
                 <p>Investment: $ {{ total_investment_cost }}</p>
                 <p>Transport: $ {{ total_transport_cost }}</p>
                 <p>Food: $ {{ total_food_cost }}</p>
+                <p>Others: $ {{ total_others_cost }}</p>
                 <canvas id="expensesPieChart"  width="50" height="50"></canvas>
             </div>
             <div class="card full-width">
@@ -342,6 +343,9 @@
 
                     <label for="transport_expense">Transport Expense: $</label>
                     <input type="text" name="transport_expense" value="{{ total_transport_cost }}" readonly required>
+
+                    <label for="other_expense">Other Expenses: $</label>
+                    <input type="text" name="others_expense" value="{{ total_others_cost }}" readonly required>
                     <button type="submit" class="button">Analyze</button>
                 </form>
             </div>
@@ -507,21 +511,23 @@ var userEmail = "{{ email }}";
 
 
         function createCharts() {
-            var expensesLabel = ['Total', 'Investment', 'Transport', 'Food'];
+            var expensesLabel = ['Total', 'Investment', 'Transport', 'Food', 'others'];
             var expensesData = [
                 parseFloat("{{ total_expense }}"),
                 parseFloat("{{ total_investment_cost }}"),
                 parseFloat("{{ total_transport_cost }}"),
-                parseFloat("{{ total_food_cost }}")
+                parseFloat("{{ total_food_cost }}"),
+                parseFloat("{{ total_others_cost }}")
             ];
             createBarChart('expensesChart', expensesLabel, expensesData);
 
-            var expensesLabels = ['Investment', 'Transport', 'Food'];
+            var expensesLabels = ['Investment', 'Transport', 'Food', 'others'];
             var expensesData = [
                 
                 parseFloat("{{ total_investment_cost }}"),
                 parseFloat("{{ total_transport_cost }}"),
-                parseFloat("{{ total_food_cost }}")
+                parseFloat("{{ total_food_cost }}"),
+                parseFloat("{{ total_others_cost }}")
             ];
             createPieChart('expensesPieChart', expensesLabels, expensesData);
 

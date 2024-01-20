@@ -62,15 +62,15 @@ app.secret_key = 'secret'
 
 
 
-# app.config['MAIL_SERVER'] = 'smtp.office365.com'
-# app.config['MAIL_PORT'] = 587
-# app.config['MAIL_USE_TLS'] = True
-# app.config['MAIL_USE_SSL'] = False
-# app.config['MAIL_USERNAME'] = 'finsaver@outlook.com'  # Replace with your Outlook email address
-# app.config['MAIL_PASSWORD'] = 'fintech2024'  # Replace with your Outlook email password
-# app.config['MAIL_DEFAULT_SENDER'] = 'finsaver@outlook.com'  # Replace with your Outlook email address
-# # Initialize Flask-Mail
-# mail = Mail(app)
+app.config['MAIL_SERVER'] = 'smtp.office365.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = 'finsaver@outlook.com'  # Replace with your Outlook email address
+app.config['MAIL_PASSWORD'] = 'fintech2024'  # Replace with your Outlook email password
+app.config['MAIL_DEFAULT_SENDER'] = 'finsaver@outlook.com'  # Replace with your Outlook email address
+# Initialize Flask-Mail
+mail = Mail(app)
 
 # scheduler = BackgroundScheduler()
 
@@ -126,6 +126,33 @@ app.secret_key = 'secret'
 #         print(f"Error fetching user email: {str(e)}")
 #         return None
 
+@app.route('/about', methods=['GET', 'POST'])
+def about():
+    if request.method == 'POST':
+
+        name = request.form['name']
+        client_email = request.form['email']
+        message_content = request.form['message']
+
+        print(f"Name: {name}, Client Email: {client_email}, Message: {message_content}")
+
+        # Send email
+        send_email(name, client_email, message_content)
+
+        return render_template('about.html', show_dialog=True)
+
+    return render_template('about.html', show_dialog=False)
+
+def send_email(name, client_email, message_content):
+    # Create a message object
+    msg = Message('New Contact Form Submission from Finsaver', sender='finsaver@outlook.com', recipients=['finsaver@outlook.com'])
+
+    # Set the email body
+    msg.body = f"Name: {name}\nClient Email: {client_email}\nMessage: {message_content}"
+
+    # Send the email
+    mail.send(msg)
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -180,7 +207,7 @@ def index():
         total_food_cost = fetch_total_cost('Food', user_email, current_date)
         total_transport_cost = fetch_total_cost('Transport', user_email, current_date)
         total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
-        
+        total_others_cost = fetch_total_cost('others', user_email, current_date)
         investment_ref = db.collection('Investment').where('user_email', '==', user_email).stream()
 
         # Dictionary to store the latest prices for each ticker
@@ -234,7 +261,7 @@ def index():
             
             total_investment_sold += float(sold_investment_data.get('price_difference', 0))
         
-        total_expense = total_food_cost + total_transport_cost
+        total_expense = total_food_cost + total_transport_cost + total_others_cost
         total_savings = float((total_budget_cost + total_investment_sold) - total_expense)
         
         user_doc.reference.update({
@@ -246,6 +273,7 @@ def index():
         return render_template('analysis.html', email=user_email, coins=coins, total_food_cost=total_food_cost,
                            total_transport_cost=total_transport_cost,
                            total_budget_cost=total_budget_cost,
+                           total_others_cost=total_others_cost,
                            total_savings=total_savings,
                            savings_goal=savings_goal,
                            total_investment_value=total_investment_value,
@@ -356,10 +384,11 @@ def home():
     total_food_cost = fetch_total_cost('Food', user_email, current_date)
     total_transport_cost = fetch_total_cost('Transport', user_email, current_date)
     total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
+    total_others_cost = fetch_total_cost('others', user_email, current_date)
     session['total_food_cost'] = total_food_cost
     session['total_transport_cost'] = total_transport_cost
     session['total_budget_cost'] = total_budget_cost
-    
+    session['total_others_cost'] = total_others_cost
     # Fetch all investment records for the user
     investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('status', '==', 'active').stream()
 
@@ -414,7 +443,7 @@ def home():
         
         total_investment_sold += float(sold_investment_data.get('price_difference', 0))
     
-    total_expense = total_food_cost + total_transport_cost
+    total_expense = total_food_cost + total_transport_cost + total_others_cost
     total_savings = float((total_budget_cost + total_investment_sold) - total_expense)
     
     user_doc.reference.update({
@@ -427,6 +456,7 @@ def home():
                            total_food_cost=total_food_cost,
                            total_transport_cost=total_transport_cost,
                            total_budget_cost=total_budget_cost,
+                           total_others_cost=total_others_cost,
                            total_savings=total_savings,
                            coins=coins,
                            savings_goal=savings_goal,
@@ -622,7 +652,7 @@ def fetch_all_expenses(user_email):
     all_expenses = []
 
     # Fetch expenses for all categories
-    for expense_type in ['Budget', 'Investment', 'Food', 'Transport', 'Investment Returns']:
+    for expense_type in ['Budget', 'Investment', 'Food', 'Transport', 'Investment Returns', 'others']:
         expenses = fetch_expenses_by_type(expense_type, user_email)
         all_expenses.extend(expenses)
 
@@ -1696,6 +1726,183 @@ def delete_investment_expense(unique_index):
     # Pass the updated data to the template
     return render_template('user_investment_expenses.html', user_investment_data=user_investment_data)
 
+
+
+@app.route('/addothers', methods=['GET', 'POST'])
+def addothers():
+    if request.method == 'POST':
+        user_email = session['user']
+        others_id = request.form.get('others_id')
+        othersName = request.form.get('othersName')
+        cost = request.form.get('cost')
+
+        try:
+            # Check if othersName or cost is empty
+            if not othersName or not cost:
+                flash("Please fill in both others name and cost.", "warning")
+                return redirect('/user_others_expenses')
+
+            latest_others = db.collection('others').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
+            latest_index = 0
+
+            for others_doc in latest_others:
+                latest_index = int(others_doc.to_dict().get('unique_index', 0))
+
+            unique_index = latest_index + 1
+
+            # Get current date
+            current_date = datetime.now().strftime("%Y-%m-%d")
+
+            # Original data
+            others_data = {
+                'user_email': user_email,
+                'othersName': othersName,
+                'cost': cost,
+                'date': current_date,  # Add the date field
+                'unique_index': unique_index
+            }
+
+            # Get dynamic fields
+            dynamic_fields = request.form.getlist('newField')
+            print("Dynamic Fields:", dynamic_fields)
+
+            # Process dynamic fields and add them to others_data
+            for index, value in enumerate(dynamic_fields):
+                others_data[f'newField_{index + 1}'] = value
+
+            if others_id:
+                # Editing an existing others expense
+                others_ref = db.collection('others').document(others_id)
+                others_ref.update(others_data)
+            else:
+                # Adding a new others expense
+                db.collection('others').add(others_data)
+
+            flash("others expense saved successfully!", "success")
+            return redirect('/user_others_expenses')
+
+        except Exception as e:
+            flash(f"An error occurred during others creation: {str(e)}", "warning")
+
+    return render_template('user_others_expenses.html')
+
+
+@app.route('/user_others_expenses')
+def user_others_expenses():
+    if 'user' not in session:
+        return redirect('/')
+
+    user_email = session['user']
+    current_date = datetime.now().strftime("%Y-%m-%d")
+
+    # Fetch the list of others expenses for the logged-in user
+    others_expenses = db.collection('others').where('user_email', '==', user_email).where('date', '==', current_date).stream()
+
+    # Create a list to store the others data
+    user_others_data = []
+
+    # Iterate through the others expenses and extract relevant information
+    for others_doc in others_expenses:
+        others_data = others_doc.to_dict()
+        user_others_data.append({
+            'othersName': others_data.get('othersName', ''),
+            'cost': others_data.get('cost', ''),
+            'unique_index': others_data.get('unique_index', ''),
+            'date': others_data.get('date', ''),
+            'current_date': current_date
+        })
+
+    # Render user_others_expense.html
+    return render_template('user_others_expenses.html', user_others_data=user_others_data)
+
+@app.route('/edit_others_expenses', methods=['GET', 'POST'])
+def edit_others_expense():
+    # Redirect to the home page if the user is not logged in
+    if 'user' not in session:
+        return redirect('/')
+
+    user_email = session['user']
+    others_unique_index = request.form.get('unique_index')
+
+    if not others_unique_index or not others_unique_index.strip():
+        raise ValueError("Invalid or empty unique_index")
+    
+    others_unique_index = int(others_unique_index)
+    others_ref = db.collection('others').where('user_email', '==', user_email).where('unique_index', '==', others_unique_index).get()
+    others_iter = iter(others_ref)
+    others_doc = next(others_iter, None)
+
+    if not others_doc:
+       return redirect('/')
+   
+    others_data = others_doc.to_dict()
+    
+    if request.method == 'POST':
+        print(request.form)
+        new_others_name = request.form.get('othersName')
+        new_cost = request.form.get('cost')
+
+        others_data={
+            'cost': new_cost,
+            'othersName':new_others_name
+        }
+        print(others_data)
+        user_others_data=[]
+        others_doc.reference.update(others_data)
+        user_others_data.append(others_data)
+
+        flash("others expense updated successfully!", "success")
+        return redirect('/user_others_expenses')
+
+    
+    return render_template('user_others_expenses.html', user_others_data=user_others_data, others_data=others_data)
+
+@app.route('/delete_others_expense/<int:unique_index>', methods=['GET'])
+def delete_others_expense(unique_index):
+    if 'user' not in session:
+        return redirect('/')
+    
+    user_email = session['user']
+    
+    # Find the others expense with the given unique index
+    others_ref = db.collection('others').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
+    others_iter = iter(others_ref)
+    others_doc = next(others_iter, None)
+    
+    if not others_doc:
+        # others expense not found
+        flash("others expense not found.", "warning")
+        return redirect('/user_others_expenses')
+    
+    try:
+        # Delete the others expense from Firestore
+        others_doc.reference.delete()
+        flash("others expense deleted successfully!", "success")
+        
+        # Fetch the updated list of others expenses for the logged-in user
+        others_expenses = db.collection('others').where('user_email', '==', user_email).stream()
+        
+        # Create a list to store the others data
+        user_others_data = []
+
+        # Iterate through the others expenses and extract relevant information
+        for others_doc in others_expenses:
+            others_data = others_doc.to_dict()
+            user_others_data.append({
+                'othersName': others_data.get('othersName', ''),
+                'cost': others_data.get('cost', ''),
+                'unique_index': others_data.get('unique_index', '')
+            })
+
+    except Exception as e:
+        # Handle any errors that may occur during deletion
+        flash(f"An error occurred during others expense deletion: {str(e)}", "danger")
+        return redirect('/user_others_expenses')
+    
+    # Pass the updated data to the template
+    return render_template('user_others_expenses.html', user_others_data=user_others_data)
+
+
         
 openai.api_key = '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'
 @app.route('/analysis')
@@ -1715,9 +1922,9 @@ def total_budget_expense():
     total_budget_cost = fetch_total_cost_analysis('Budget', user_email)
     total_investment_cost = fetch_total_cost_analysis('Investment', user_email)
     total_investmentReturns_cost = fetch_total_cost_analysis('Investment Returns', user_email)
-
+    total_others_cost = fetch_total_cost_analysis('others', user_email)
     # Calculate total expense including food, transport, and investment costs
-    total_expense = total_food_cost + total_transport_cost + total_investment_cost
+    total_expense = total_food_cost + total_transport_cost + total_investment_cost + total_others_cost
     total_savings = float(total_budget_cost - total_expense)
 
     # Store values in session
@@ -1726,7 +1933,7 @@ def total_budget_expense():
     session['total_budget_cost'] = total_budget_cost
     session['total_investment_cost'] = total_investment_cost
     session['total_investmentReturns_cost'] = total_investmentReturns_cost
-
+    session['total_others_cost'] = total_others_cost
     progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
 
     return render_template('analysis.html',
@@ -1734,6 +1941,7 @@ def total_budget_expense():
                            total_transport_cost=total_transport_cost,
                            total_budget_cost=total_budget_cost,
                            total_investment_cost=total_investment_cost,
+                           total_others_cost=total_others_cost,
                            total_investmentReturns_cost=total_investmentReturns_cost,
                            total_expense=total_expense,
                            total_savings=total_savings,
@@ -1841,12 +2049,12 @@ def add_graph_to_pdf(pdf):
     total_budget_cost = session.get('total_budget_cost', 0)
     total_investment_cost = session.get('total_investment_cost', 0)
     total_savings = session.get('total_savings', 0)
-
+    total_others_cost = session.get('total_others_cost', 0)
     # Create a new figure
     fig, ax = plt.subplots()
     bars = ax.bar(['Food', 'Transport', 'Budget', 'Investment', 'Savings'],
-                  [total_food_cost, total_transport_cost, total_budget_cost, total_investment_cost, total_savings],
-                  color=['blue', 'green', 'orange', 'purple', 'red'])
+                  [total_food_cost, total_transport_cost, total_budget_cost, total_investment_cost, total_savings, total_others_cost],
+                  color=['blue', 'green', 'orange', 'purple', 'red', 'pink'])
 
     # Add labels and title
     ax.set_xlabel('Categories')
@@ -1881,14 +2089,15 @@ def graph():
     total_transport_cost = session.get('total_transport_cost', 0)
     total_budget_cost = session.get('total_budget_cost', 0)
     total_investment_cost = session.get('total_investment_cost', 0)
+    total_others_cost = session.get('total_others_cost', 0)
     total_savings = session.get('total_savings', 0)
 
     # Create a bar graph
-    categories = ['Food', 'Transport', 'Budget', 'Investment', 'Savings']
-    values = [total_food_cost, total_transport_cost, total_budget_cost, total_investment_cost, total_savings]
+    categories = ['Food', 'Transport', 'Budget', 'Investment', 'Savings', 'others']
+    values = [total_food_cost, total_transport_cost, total_budget_cost, total_investment_cost, total_savings, total_others_cost]
 
     fig, ax = plt.subplots()
-    bars = ax.bar(categories, values, color=['blue', 'green', 'orange', 'purple', 'red'])
+    bars = ax.bar(categories, values, color=['blue', 'green', 'orange', 'purple', 'red', 'pink'])
 
     # Add labels and title
     ax.set_xlabel('Categories')

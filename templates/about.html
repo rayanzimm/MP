@@ -5,44 +5,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
             background-color: #000A2B;
+            color: #333;
         }
-        title{
+
+        header {
+            text-align: center;
+            padding: 30px;
+            background-color: #212946;
             color: #ffffff;
         }
-        header {
-            text-decoration-color: #ffffff;
-            text-align: center;
-            padding: 20px;
-            background-color: #22a5c5;
+
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            text-decoration: none;
+            padding: 10px;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1.2em;
         }
 
         section {
             max-width: 800px;
-            margin: 0 auto;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #34495e;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
 
         h2 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
             color: #ffffff;
         }
 
         p {
             line-height: 1.6;
+            margin-bottom: 20px;
             color: #ffffff;
         }
 
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            text-decoration: none;
-            padding: 10px;
+        a {
+            color: #2feaff;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .fa-envelope {
+            margin-right: 8px;
+        }
+        form {
+            margin-top: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
             color: #ffffff;
-            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 98%;
+            padding: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #2feaff;
+            color: #000A2B;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1aa6e8;
         }
     </style>
 </head>
@@ -55,17 +113,48 @@
 
     <section>
         <h2>Our Story</h2>
-        <p>Welcome to Finsaver, where [brief description of your company's mission and values]. We strive to [explain your goals and what sets your company apart].</p>
+        <p>Welcome to Finsaver, where we are committed to [brief description of your company's mission and values]. We strive to [explain your goals and what sets your company apart].</p>
 
         <h2>Our Team</h2>
         <p>We are a dedicated team of professionals passionate about [industry or niche]. Our team members bring diverse skills and experiences to ensure the success of our projects.</p>
 
         <h2>Mission Statement</h2>
-        <p>At Finsaver, our mission is to [state your mission and what you aim to achieve]. We are committed to providing [products/services] that [benefits to customers or community].</p>
+        <p>At Finsaver, our mission is to [state your mission and what you aim to achieve]. We are committed to providing [products/services] that bring [benefits to customers or community].</p>
 
         <h2>Contact Us</h2>
-        <p>Feel free to reach out to us at finsaver@outlook.com for any inquiries or collaboration opportunities.</p>
-    </section>
-</body>
+        <p>Feel free to reach out to us at <i class="fa fa-envelope"></i><a href="mailto:finsaver@outlook.com">finsaver@outlook.com</a> for any inquiries or collaboration opportunities.</p>
+        
+        <form action="/about" method="post" onsubmit="submitForm()">
+            <label for="name">Your Name:</label>
+            <input type="text" id="name" name="name" required>
 
+            <label for="email">Your Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="message">Your Message:</label>
+            <textarea id="message" name="message" rows="4" required></textarea>
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <!-- Success dialog -->
+        <div id="success-dialog">
+            <p>Thank you for your message! We will get back to you soon.</p>
+        </div>
+    </section>
+
+    <script>
+        function submitForm() {
+            
+            var formSubmitted = false;
+
+            if (formSubmitted) {
+                // Show the success dialog
+                document.getElementById('success-dialog').style.display = 'block';
+            }
+
+            // Return false to prevent the default form submission
+            return !formSubmitted;
+        }
+    </script>
 </html>
