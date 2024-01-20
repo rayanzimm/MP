@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="css/progress-wizard.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rewards Shop</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #000A2B;
+            position: relative;
+        }
+
+        .navbar {
+            background-color: #212946;
+            width: 200px;
+            height: 100%;
+            position: fixed;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar a {
+            display: block;
+            color: white;
+            padding: 16px;
+            text-decoration: none;
+        }
+
+        .navbar a i {
+            margin-right: 8px;
+        }
+
+        .navbar a.active {
+            background-color: #151a2c;
+            color: white;
+        }
+
+        .logout {
+            margin-top: auto;
+            color: white;
+            padding: 16px;
+        }
+
+        .image:hover {
+            background-color: #212946;
+        }
+
+        .coins-container {
+            display: flex;
+            align-items: center;
+            /* Align items vertically in the center */
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .coins-pill {
+            display: flex;
+            align-items: center;
+            /* Align items vertically in the center */
+            background-color: #212946;
+            color: white;
+            border-radius: 20px;
+            text-align: center;
+            padding: 8px 15px;
+            /* Adjust padding for better appearance */
+            font-size: 16px;
+            margin-right: 20px;
+            height: 35px;
+            width: 80px;
+            /* Allow width to be flexible */
+        }
+
+        .coins-pill i {
+            margin-right: 5px;
+            /* Add spacing between icon and text */
+        }
+
+        .center-container {
+            position: absolute;
+            margin-left: 410px;
+            margin-right: 60px;
+            margin-top:30px;
+            width: 105vh;
+        }
+
+        .progress-wrapper {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .stepper-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+
+            @media (max-width: 768px) {
+                font-size: 12px;
+            }
+        }
+
+        .stepper-item:not(:first-child)::before {
+            content: "";
+            position: absolute;
+            top: 30%;
+            transform: translateY(-50%);
+            height: 2px;
+            background-color: #ccc;
+        
+        }
+        .stepper-item:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            top: 30%;
+            transform: translateY(-50%);
+            height: 2px;
+            background-color: #ccc;
+        }
+
+        .stepper-item .step-counter {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: lightgray;
+            margin-bottom: 6px;
+            color: white;
+        }
+
+        .stepper-item.active {
+            font-weight: bold;
+        }
+
+        .stepper-item.completed .step-counter {
+            background-color:  #2B99C0;
+        }
+
+        .stepper-item:not(:first-child)::before {
+            left: 0;
+            width: 50%;
+        }
+
+        .stepper-item:not(:last-child)::after {
+            right: 0;
+            width: 50%;
+        }
+
+        .step-name {
+            color: white;
+        }
+
+        .stepper-item.completed::before,
+        .stepper-item.completed::after {
+            background-color: #2B99C0;
+        }
+
+        .completed .step-counter {
+            background-color: #2B99C0;
+        }
+
+        .products-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .product-card {
+            width: 300px;
+            border: 1px solid #2B99C0;
+            padding: 10px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .product-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .product-details h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .product-details p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .buy-button {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            margin: 10px;
+            padding: 8px 16px;
+            background-color: #2B99C0;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <div class="image" align="left">
+            <a href="{{ url_for('home')}}">
+                <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
+            </a>
+        </div>
+        <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
+        <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
+        <a href="{{ url_for('analysis') }}"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
+        <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
+        <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
+        <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i
+                class="fas fa-sign-out-alt"></i>Logout</a>
+    </div>
+    
+    <div class="center-container">
+        <div class="progress-wrapper">
+            {% for day in range(1, 8) %}
+                {% if day <= login_days %}
+                    <div class="stepper-item completed">
+                        <div class="step-counter">{{ day }}</div>
+                        <div class="step-name">Day {{ day }}</div>
+                    </div>
+                {% else %}
+                    <div class="stepper-item">
+                        <div class="step-counter">{{ day }}</div>
+                        <div class="step-name">Day {{ day }}</div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="products-container">
+            {% for product in all_product_data %}
+                <div class="product-card">
+                    <img src="{{ product['image'] }}" alt="{{ product.name }}">
+                    <div class="product-details">
+                        <h3>{{ product['name'] }}</h3>
+                        <p>{{ product['description'] }}</p>
+                        <p>Price: {{ product['price'] }}</p>
+                    </div>
+                    <button class="buy-button" onclick="buyProduct('{{ product['product_id'] }}')">Buy</button>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="error-message">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+
+        {% endif %}
+        {% endwith %}
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <div class="coins-container">
+                <div class="coins-pill">
+                    <i class="fas fa-coins"></i>
+                    <p class="coins-text">{{ coins }}</p>
+                </div>
+            </div>
+    
+    <script>
+        function buyProduct(product_id) {
+        // Use JavaScript to confirm the deletion (you can customize the confirmation dialog)
+        if (confirm("Are you sure you want to buy this item?")) {
+            // Redirect to the delete_income_expense route with the unique_index parameter
+            window.location.href = "/deduct-coins/" + product_id;
+        }
+        else {
+
+        }
+    }
+    //         function buyProduct(name, product_id, price) {
+    //     // Make an asynchronous request to Flask route to deduct coins
+    //     fetch(`/deduct-coins/${product_id}`, {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify({
+    //             name: name,
+    //             price: price,
+    //         }),
+    //     })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         if (data.success) {
+    //             alert(`Successfully purchased ${name} for ${price} coins.`);
+    //             // You may want to update the UI or redirect to a new page here
+    //         } else {
+    //             alert(data.message);
+    //         }
+    //     })
+    //     .catch(error => {
+    //         console.error('Error:', error);
+    //     });
+    // }
+    </script>
+
+
+</body>
+
+</html>

@@ -1,4 +1,4 @@
-from flask import Flask, session, render_template, request, redirect, flash, url_for , make_response, send_file
+from flask import Flask, session, render_template, request, redirect, flash, url_for , make_response, send_file, jsonify
 from google.cloud.firestore_v1.base_query import FieldFilter
 import pyrebase
 import firebase_admin
@@ -51,7 +51,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -207,7 +207,7 @@ def index():
         total_food_cost = fetch_total_cost('Food', user_email, current_date)
         total_transport_cost = fetch_total_cost('Transport', user_email, current_date)
         total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
-        total_others_cost = fetch_total_cost('others', user_email, current_date)
+        total_others_cost = fetch_total_cost('Others', user_email, current_date)
         investment_ref = db.collection('Investment').where('user_email', '==', user_email).stream()
 
         # Dictionary to store the latest prices for each ticker
@@ -302,7 +302,7 @@ def index():
 
             return render_template('home.html', email=email, coins=coins)
         except:
-            flash("Invalid email or password.", "warning")
+            flash(f"Error logging in: {str(e)}", "warning")
     return render_template('login.html')
 
 def update_login_rewards(user_email, user_data, user_doc):
@@ -384,7 +384,7 @@ def home():
     total_food_cost = fetch_total_cost('Food', user_email, current_date)
     total_transport_cost = fetch_total_cost('Transport', user_email, current_date)
     total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
-    total_others_cost = fetch_total_cost('others', user_email, current_date)
+    total_others_cost = fetch_total_cost('Others', user_email, current_date)
     session['total_food_cost'] = total_food_cost
     session['total_transport_cost'] = total_transport_cost
     session['total_budget_cost'] = total_budget_cost
@@ -591,6 +591,111 @@ def update_savings_goal():
 
     return redirect('/home')
 
+@app.route('/shop', methods=['GET', 'POST'])
+def shop():
+    if 'user' not in session:
+        return redirect('/')
+    
+    email = session['user']
+
+    user_ref = db.collection('users').where('email', '==', email).limit(1).get()
+
+    if not user_ref:
+        flash("User not found.", "danger")
+        return redirect('/')
+            
+    user_doc = user_ref[0]
+    user_data = user_doc.to_dict()
+    coins = user_data.get('coins', 0)
+    login_days = user_data.get('loginDays', 0)
+
+    product_ref = db.collection('Products').stream()
+
+    all_product_data = []
+
+    # Iterate through the food expenses and extract relevant information
+    for product_doc in product_ref:
+        product_data = product_doc.to_dict()
+        all_product_data.append({
+            'description': product_data.get('description', ''),
+            'image': product_data.get('image', ''),
+            'name': product_data.get('name', ''),
+            'price': product_data.get('price', 0),
+            'product_id': product_data.get('product_id', 0)
+        })
+
+    if request.method == 'POST':
+        selected_product = request.form.get('selected_product')
+        if selected_product:
+            selected_product_info = next((p for p in all_product_data if p['name'] == selected_product), None)
+
+            if selected_product_info:
+                product_price = selected_product_info['price']
+
+                if coins >= product_price:
+                    new_coins = coins - product_price
+                    user_ref.update({'coins': new_coins})
+
+                    flash(f"Successfully purchased {selected_product} for {product_price} coins.", "success")
+                else:
+                    flash("Insufficient coins to make the purchase.", "danger")
+
+    return render_template('shop.html', coins=coins, login_days=login_days, all_product_data=all_product_data)
+
+@app.route('/deduct-coins/<int:product_id>', methods=['POST', 'GET'])
+def deduct_coins(product_id):
+    if 'user' not in session:
+        return jsonify({'success': False, 'message': 'User not logged in'})
+
+    email = session['user']
+    print(email)
+    user_ref = db.collection('users').where('email', '==', email).limit(1).get()
+
+    if not user_ref:
+        return jsonify({'success': False, 'message': 'User not found'})
+
+    user_doc = user_ref[0]
+    user_data = user_doc.to_dict()
+
+    product_ref = db.collection('Products').where('product_id', '==', product_id).limit(1).get()
+    
+    product_iter = iter(product_ref)
+    product_doc = next(product_iter, None)
+    product_data = product_doc.to_dict()
+    
+    product_name = product_data.get('name')
+    product_price = product_data.get('price')
+    
+
+    coins = user_data.get('coins')
+    if coins is None or not isinstance(coins, int):
+        return jsonify({'success': False, 'message': 'Invalid or missing coins field'})
+
+    if coins < product_price:
+        return jsonify({'success': False, 'message': 'Insufficient coins'})
+
+    if not product_ref:
+        return jsonify({'success': False, 'message': 'Product not found'})
+
+
+    new_coins = coins - product_price
+    user_doc.reference.update({'coins': new_coins})
+    send_purchase_email(email, product_name, product_price)
+    return redirect('/shop')
+
+def send_purchase_email(email, product_name, product_price):
+    subject = 'Purchase Confirmation'
+    body = f'Thank you for purchasing {product_name} for {product_price} coins. Your order has been confirmed.'
+
+    msg = Message(subject, sender=app.config['MAIL_DEFAULT_SENDER'], recipients=[email])
+    msg.body = body
+
+    try:
+        mail.send(msg)
+        print('Email sent successfully.')
+    except Exception as e:
+        print(f'Error sending email: {e}')
+
 @app.route('/history')
 def history():
     if 'user' not in session:
@@ -652,7 +757,7 @@ def fetch_all_expenses(user_email):
     all_expenses = []
 
     # Fetch expenses for all categories
-    for expense_type in ['Budget', 'Investment', 'Food', 'Transport', 'Investment Returns', 'others']:
+    for expense_type in ['Budget', 'Investment', 'Food', 'Transport', 'Others']:
         expenses = fetch_expenses_by_type(expense_type, user_email)
         all_expenses.extend(expenses)
 
@@ -1742,7 +1847,7 @@ def addothers():
                 flash("Please fill in both others name and cost.", "warning")
                 return redirect('/user_others_expenses')
 
-            latest_others = db.collection('others').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
+            latest_others = db.collection('Others').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
             latest_index = 0
 
             for others_doc in latest_others:
@@ -1776,7 +1881,7 @@ def addothers():
                 others_ref.update(others_data)
             else:
                 # Adding a new others expense
-                db.collection('others').add(others_data)
+                db.collection('Others').add(others_data)
 
             flash("others expense saved successfully!", "success")
             return redirect('/user_others_expenses')
@@ -1796,7 +1901,7 @@ def user_others_expenses():
     current_date = datetime.now().strftime("%Y-%m-%d")
 
     # Fetch the list of others expenses for the logged-in user
-    others_expenses = db.collection('others').where('user_email', '==', user_email).where('date', '==', current_date).stream()
+    others_expenses = db.collection('Others').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
     # Create a list to store the others data
     user_others_data = []
@@ -1828,7 +1933,7 @@ def edit_others_expense():
         raise ValueError("Invalid or empty unique_index")
     
     others_unique_index = int(others_unique_index)
-    others_ref = db.collection('others').where('user_email', '==', user_email).where('unique_index', '==', others_unique_index).get()
+    others_ref = db.collection('Others').where('user_email', '==', user_email).where('unique_index', '==', others_unique_index).get()
     others_iter = iter(others_ref)
     others_doc = next(others_iter, None)
 
@@ -1865,22 +1970,22 @@ def delete_others_expense(unique_index):
     user_email = session['user']
     
     # Find the others expense with the given unique index
-    others_ref = db.collection('others').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
+    others_ref = db.collection('Others').where('user_email', '==', user_email).where('unique_index', '==', unique_index).get()
     others_iter = iter(others_ref)
     others_doc = next(others_iter, None)
     
     if not others_doc:
         # others expense not found
-        flash("others expense not found.", "warning")
+        flash("Others expense not found.", "warning")
         return redirect('/user_others_expenses')
     
     try:
         # Delete the others expense from Firestore
         others_doc.reference.delete()
-        flash("others expense deleted successfully!", "success")
+        flash("Others expense deleted successfully!", "success")
         
         # Fetch the updated list of others expenses for the logged-in user
-        others_expenses = db.collection('others').where('user_email', '==', user_email).stream()
+        others_expenses = db.collection('Others').where('user_email', '==', user_email).stream()
         
         # Create a list to store the others data
         user_others_data = []
@@ -1921,8 +2026,7 @@ def total_budget_expense():
     total_transport_cost = fetch_total_cost_analysis('Transport', user_email)
     total_budget_cost = fetch_total_cost_analysis('Budget', user_email)
     total_investment_cost = fetch_total_cost_analysis('Investment', user_email)
-    total_investmentReturns_cost = fetch_total_cost_analysis('Investment Returns', user_email)
-    total_others_cost = fetch_total_cost_analysis('others', user_email)
+    total_others_cost = fetch_total_cost_analysis('Others', user_email)
     # Calculate total expense including food, transport, and investment costs
     total_expense = total_food_cost + total_transport_cost + total_investment_cost + total_others_cost
     total_savings = float(total_budget_cost - total_expense)
@@ -1932,7 +2036,6 @@ def total_budget_expense():
     session['total_transport_cost'] = total_transport_cost
     session['total_budget_cost'] = total_budget_cost
     session['total_investment_cost'] = total_investment_cost
-    session['total_investmentReturns_cost'] = total_investmentReturns_cost
     session['total_others_cost'] = total_others_cost
     progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
 
@@ -1942,7 +2045,6 @@ def total_budget_expense():
                            total_budget_cost=total_budget_cost,
                            total_investment_cost=total_investment_cost,
                            total_others_cost=total_others_cost,
-                           total_investmentReturns_cost=total_investmentReturns_cost,
                            total_expense=total_expense,
                            total_savings=total_savings,
                            coins=coins,
@@ -2093,7 +2195,7 @@ def graph():
     total_savings = session.get('total_savings', 0)
 
     # Create a bar graph
-    categories = ['Food', 'Transport', 'Budget', 'Investment', 'Savings', 'others']
+    categories = ['Food', 'Transport', 'Budget', 'Investment', 'Savings', 'Others']
     values = [total_food_cost, total_transport_cost, total_budget_cost, total_investment_cost, total_savings, total_others_cost]
 
     fig, ax = plt.subplots()
