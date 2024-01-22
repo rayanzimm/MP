@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,30 +34,47 @@
             overflow: visible;
             display: flex;
             flex-direction: column;
+            align-items: flex-start;
+            /* Updated this line */
         }
+
         .navbar a {
             display: block;
             color: white;
-            padding: 16px;
+            padding: 16px 0px 16px 0px;
+            /* Add left padding for all items */
             text-decoration: none;
+
         }
+
+
         .navbar a i {
-        margin-right: 8px;
+            margin-right: 8px;
         }
+
         .navbar a.active {
             background-color: #151a2c;
             color: white;
         }
+
+        .image img {
+            width: 100%;
+            height: auto;
+            /* This ensures the aspect ratio is maintained */
+        }
+
         .logout {
             margin-top: auto;
             color: white;
             padding: 16px;
         }
+
         .image:hover {
             background-color: #212946;
         }
+
         .main {
-            margin-left: 250px;
+            margin-left: 225px;
             padding: 20px;
         }
 
@@ -164,22 +181,20 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="navbar">
-            <div class="image" align="left">
-                <a href="{{ url_for('analysis')}}">
-                    <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
-                </a>
-            </div>
-            <a href="{{ url_for('shop') }}"><i class="fas fa-gift"></i> Shop</a>
-            <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
-            <a href="{{ url_for('home') }}"><i class="fas fa-chart-bar"></i> Tracker</a>
-            <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
-            <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
-            <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
-            <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i
-                    class="fas fa-sign-out-alt"></i>Logout</a>
+    <div class="navbar">
+        <div class="image" align="left">
+            <a href="{{ url_for('analysis')}}">
+                <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
+            </a>
         </div>
+        <a href="{{ url_for('shop') }}"><i class="fas fa-gift"></i> Shop</a>
+        <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
+        <a href="{{ url_for('home') }}"><i class="fas fa-chart-bar"></i> Tracker</a>
+        <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
+        <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
+        <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i
+                class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
     <div class="main">
         <div class="ticker-form-container">
@@ -209,6 +224,23 @@
                 {% endfor %}
             </div>
         </div>
+    </div>
+
+    <div class="error-message" name="errorMessage">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <span>{{ message }}</span>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+
+        {% endif %}
+        {% endwith %}
     </div>
 
 

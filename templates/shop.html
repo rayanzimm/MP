@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
@@ -29,14 +29,19 @@
             overflow: visible;
             display: flex;
             flex-direction: column;
+            align-items: flex-start;
+            /* Updated this line */
         }
 
         .navbar a {
             display: block;
             color: white;
-            padding: 16px;
+            padding: 16px 0px 16px 0px;
+            /* Add left padding for all items */
             text-decoration: none;
+
         }
+
 
         .navbar a i {
             margin-right: 8px;
@@ -45,6 +50,12 @@
         .navbar a.active {
             background-color: #151a2c;
             color: white;
+        }
+
+        .image img {
+            width: 100%;
+            height: auto;
+            /* This ensures the aspect ratio is maintained */
         }
 
         .logout {
@@ -91,7 +102,7 @@
             position: absolute;
             margin-left: 410px;
             margin-right: 60px;
-            margin-top:30px;
+            margin-top: 30px;
             width: 105vh;
         }
 
@@ -121,8 +132,9 @@
             transform: translateY(-50%);
             height: 2px;
             background-color: #ccc;
-        
+
         }
+
         .stepper-item:not(:last-child)::after {
             content: "";
             position: absolute;
@@ -151,7 +163,7 @@
         }
 
         .stepper-item.completed .step-counter {
-            background-color:  #2B99C0;
+            background-color: #2B99C0;
         }
 
         .stepper-item:not(:first-child)::before {
@@ -258,50 +270,48 @@
 <body>
     <div class="navbar">
         <div class="image" align="left">
-            <a href="{{ url_for('home')}}">
+            <a href="{{ url_for('analysis')}}">
                 <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
             </a>
         </div>
-        <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
+        <a href="{{ url_for('shop') }}"><i class="fas fa-gift"></i> Shop</a>
         <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
-        <a href="{{ url_for('analysis') }}"><i class="fas fa-chart-bar"></i> Analysis</a>
+        <a href="{{ url_for('home') }}"><i class="fas fa-chart-bar"></i> Tracker</a>
         <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
-        <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
         <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i
                 class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
-    
+
     <div class="center-container">
         <div class="progress-wrapper">
             {% for day in range(1, 8) %}
-                {% if day <= login_days %}
-                    <div class="stepper-item completed">
-                        <button class="step-counter" onclick="handleButtonClick({{ day }})">{{ day }}</button>
-                        <div class="step-name">Day {{ day }}</div>
-                    </div>
-                {% else %}
-                    <div class="stepper-item">
-                        <button class="step-counter" onclick="handleButtonClick({{ day }})">{{ day }}</button>
-                        <div class="step-name">Day {{ day }}</div>
-                    </div>
-                {% endif %}
-            {% endfor %}
+            {% if day <= login_days %} <div class="stepper-item completed">
+                <button class="step-counter" onclick="handleButtonClick({{ day }})">{{ day }}</button>
+                <div class="step-name">Day {{ day }}</div>
         </div>
-        <div class="products-container">
-            {% for product in all_product_data %}
-                <div class="product-card">
-                    <img src="{{ product['image'] }}" alt="{{ product.name }}">
-                    <div class="product-details">
-                        <h3>{{ product['name'] }}</h3>
-                        <p>{{ product['description'] }}</p>
-                        <p>Price: {{ product['price'] }}</p>
-                    </div>
-                    <button class="buy-button" onclick="buyProduct('{{ product['product_id'] }}')">Buy</button>
-                </div>
-            {% endfor %}
+        {% else %}
+        <div class="stepper-item">
+            <button class="step-counter" onclick="handleButtonClick({{ day }})">{{ day }}</button>
+            <div class="step-name">Day {{ day }}</div>
         </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <div class="products-container">
+        {% for product in all_product_data %}
+        <div class="product-card">
+            <img src="{{ product['image'] }}" alt="{{ product.name }}">
+            <div class="product-details">
+                <h3>{{ product['name'] }}</h3>
+                <p>{{ product['description'] }}</p>
+                <p>Price: {{ product['price'] }}</p>
+            </div>
+            <button class="buy-button" onclick="buyProduct('{{ product['product_id'] }}')">Buy</button>
+        </div>
+        {% endfor %}
+    </div>
     </div>
 
     <div class="error-message">
@@ -323,47 +333,47 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <div class="coins-container">
-                <div class="coins-pill">
-                    <i class="fas fa-coins"></i>
-                    <p class="coins-text">{{ coins }}</p>
-                </div>
-            </div>
-    
+    <div class="coins-container">
+        <div class="coins-pill">
+            <i class="fas fa-coins"></i>
+            <p class="coins-text">{{ coins }}</p>
+        </div>
+    </div>
+
     <script>
         function buyProduct(product_id) {
-        if (confirm("Are you sure you want to buy this item?")) {
-            window.location.href = "/deduct-coins/" + product_id;
-        }
-        else {
+            if (confirm("Are you sure you want to buy this item?")) {
+                window.location.href = "/deduct-coins/" + product_id;
+            }
+            else {
 
+            }
         }
-    }
-    //         function buyProduct(name, product_id, price) {
-    //     // Make an asynchronous request to Flask route to deduct coins
-    //     fetch(`/deduct-coins/${product_id}`, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //         },
-    //         body: JSON.stringify({
-    //             name: name,
-    //             price: price,
-    //         }),
-    //     })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         if (data.success) {
-    //             alert(`Successfully purchased ${name} for ${price} coins.`);
-    //             // You may want to update the UI or redirect to a new page here
-    //         } else {
-    //             alert(data.message);
-    //         }
-    //     })
-    //     .catch(error => {
-    //         console.error('Error:', error);
-    //     });
-    // }
+        //         function buyProduct(name, product_id, price) {
+        //     // Make an asynchronous request to Flask route to deduct coins
+        //     fetch(`/deduct-coins/${product_id}`, {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify({
+        //             name: name,
+        //             price: price,
+        //         }),
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         if (data.success) {
+        //             alert(`Successfully purchased ${name} for ${price} coins.`);
+        //             // You may want to update the UI or redirect to a new page here
+        //         } else {
+        //             alert(data.message);
+        //         }
+        //     })
+        //     .catch(error => {
+        //         console.error('Error:', error);
+        //     });
+        // }
     </script>
 
 

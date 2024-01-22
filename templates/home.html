@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -26,15 +26,19 @@
             overflow: visible;
             display: flex;
             flex-direction: column;
+            align-items: flex-start; /* Updated this line */
         }
 
         .navbar a {
             display: block;
             color: white;
-            padding: 16px;
+            padding: 16px 0px 16px 0px;
+            /* Add left padding for all items */
             text-decoration: none;
+            
         }
 
+       
         .navbar a i {
             margin-right: 8px;
         }
@@ -44,6 +48,11 @@
             color: white;
         }
 
+        .image img {
+            width: 100%;
+            height: auto;
+            /* This ensures the aspect ratio is maintained */
+        }
         .logout {
             margin-top: auto;
             color: white;
@@ -85,7 +94,7 @@
             margin-bottom: 20px;
         }
 
-        .card h2 {
+        .card h6 {
             color: #ffffff;
             margin-top: 0;
         }
@@ -295,7 +304,7 @@
         <div class="header">
 
             <div>
-                <h2>Final Savings Goal </h2>
+                <h4>Final Savings Goal </h4>
                 <p>${{ '{:.2f}'.format(total_savings) }}/${{ '{:.2f}'.format(savings_goal) }}</p>
                 <!-- Progress bar -->
             </div>
@@ -321,7 +330,7 @@
 
         <div class="card-container">
             <div class="card" onclick="redirectTo('/user_budget')">
-                <h2>BUDGET (FOR TODAY)</h2>
+                <h6>BUDGET (FOR TODAY)</h6>
                 {% if 'total_budget_cost' in session %}
                 <p>Total Budget : ${{ '{:.2f}'.format(total_budget_cost_daily) }}</p>
                 {% else %}
@@ -331,7 +340,7 @@
             </div>
 
             <div class="card" onclick="redirectTo('/user_transport_expenses')">
-                <h2>TRANSPORT</h2>
+                <h6>TRANSPORT</h6>
                 {% if 'total_transport_cost' in session %}
                 <p>Total Transport Cost: ${{ '{:.2f}'.format(total_transport_cost_daily) }}</p>
                 {% else %}
@@ -341,7 +350,7 @@
             </div>
 
             <div class="card" onclick="redirectTo('/user_investment_expenses')">
-                <h2>INVESTMENT</h2>
+                <h6>INVESTMENT</h6>
                 {% if 'total_investment_cost' in session %}
                 <p>Total Investment Value: ${{ '{:.2f}'.format(total_investment_value) }}
                     {% if value_difference > 0 %}
@@ -359,7 +368,7 @@
             </div>
 
             <div class="card" onclick="redirectTo('/user_food_expenses')">
-                <h2>FOOD</h2>
+                <h6>FOOD</h6>
                 {% if 'total_food_cost' in session %}
                 <p>Total Food Cost: ${{ '{:.2f}'.format(total_food_cost_daily) }}</p>
                 {% else %}
@@ -369,7 +378,7 @@
             </div>
 
             <div class="card" onclick="redirectTo('/user_others_expenses')">
-                <h2>OTHERS</h2>
+                <h6>OTHERS</h6>
                 {% if 'total_others_cost' in session %}
                 <p>Total Others Cost: ${{ '{:.2f}'.format(total_others_cost_daily) }}</p>
                 {% else %}
@@ -389,6 +398,22 @@
                     <button type="submit">Update</button>
                 </form>
             </div>
+        </div>
+        <div class="error-message" name="errorMessage">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+    
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                <span>{{ message }}</span>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+    
+            {% endif %}
+            {% endwith %}
         </div>
 
 

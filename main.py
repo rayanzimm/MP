@@ -51,7 +51,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -201,12 +201,7 @@ def index():
         
         user_doc = user_ref[0]
         user_data = user_doc.to_dict()
-        update_login_rewards(user_email, user_data, user_doc)
-        coins=user_data.get('coins', 0)
 
-        
-        
-         
         return redirect('/analysis')
     
     if request.method == 'POST':
@@ -226,7 +221,7 @@ def index():
             update_login_rewards(email, user_data, user_doc)
             coins=user_data.get('coins', 0)
 
-            return render_template('analysis.html', email=email, coins=coins)
+            return redirect('/analysis')
         except Exception as e:
             
             flash(f"Error logging in: {str(e)}", "warning")
@@ -650,9 +645,9 @@ def send_purchase_email(email, product_name, product_price):
 def history():
     if 'user' not in session:
         return redirect('/')
-    
+
     user_email = session['user']
-    
+
     all_expenses = fetch_all_expenses(user_email)
 
     # Organize expenses by date
@@ -665,6 +660,8 @@ def history():
     # Calculate total expenses for each date
     total_by_date = calculate_total_by_date(all_expenses_by_date)
 
+    # Sort expenses by date in descending order
+    all_expenses_by_date = dict(sorted(all_expenses_by_date.items(), key=lambda x: datetime.strptime(x[0], '%Y-%m-%d'), reverse=True))
 
     return render_template('history.html',
                            all_expenses_by_date=all_expenses_by_date,
@@ -858,15 +855,15 @@ def update_profile():
                 filename = secure_filename(new_photo.filename)
                 full_path = "static/assets/img/" + filename
                 new_photo.save(full_path)
-                flash("New photo uploaded successfully!", "success")
 
                 # Update user details in Firestore, including the new file path for the uploaded photo
                 user_data['photo_path'] = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         # Update user details in Firestore
         user_doc.reference.update(user_data)
-        flash("Profile updated successfully!", "success")
+        
+        flash("Profile successfully updated!", "success")
         return redirect('/profile')
-
+    
     return render_template('update_profile.html', user_data=user_data)
 
 @app.route('/profile')
@@ -1959,7 +1956,7 @@ def delete_others_expense(unique_index):
 
 
         
-openai.api_key = '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'
+openai.api_key = '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'
 @app.route('/analysis')
 def total_budget_expense():
     user_email = session['user']
@@ -1968,7 +1965,7 @@ def total_budget_expense():
     user_ref = db.collection('users').where('email', '==', email).limit(1).get()
     user_doc = user_ref[0]
     user_data = user_doc.to_dict()
-
+    update_login_rewards(email, user_data, user_doc)
     coins=user_data.get('coins', 0)
     savings_goal = float(user_data.get('savingsGoal', 0))
 
@@ -1979,8 +1976,6 @@ def total_budget_expense():
     total_others_cost = fetch_total_cost_analysis('Others', user_email)
     # Calculate total expense including food, transport, and investment costs
     
-
-
     # Store values in session
     session['total_food_cost'] = total_food_cost
     session['total_transport_cost'] = total_transport_cost
@@ -2004,7 +1999,10 @@ def total_budget_expense():
     user_doc.reference.update({
             'totalSavings': total_savings
             })
+    
     progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
+
+    
 
     return render_template('analysis.html',
                            total_food_cost=total_food_cost,
@@ -2028,8 +2026,9 @@ def analysis():
         budget = float(request.form['budget'])
         food_expense = float(request.form['food_expense'])
         transport_expense = float(request.form['transport_expense'])
+        investment_expense = float(request.form['investment_expense'])
 
-        prompt = f"Given a budget of {budget}, food expense of {food_expense}, and transport expense of {transport_expense}, analyze the impact on savings."
+        prompt = f"Given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}, analyze the impact on savings."
         analysis_result = openai_analysis(prompt)
 
         # Store the analysis result in the session

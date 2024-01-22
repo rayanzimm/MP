@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <title>Expense Analysis</title>
 </head>
@@ -14,6 +15,7 @@
         background-color: #000A2B;
         color: white;
     }
+
     .navbar {
         background-color: #212946;
         width: 200px;
@@ -22,83 +24,105 @@
         overflow: visible;
         display: flex;
         flex-direction: column;
+        align-items: flex-start;
+        /* Updated this line */
     }
+
     .navbar a {
         display: block;
         color: white;
-        padding: 16px;
+        padding: 16px 0px 16px 0px;
+        /* Add left padding for all items */
         text-decoration: none;
+
     }
+
+
     .navbar a i {
         margin-right: 8px;
     }
+
     .navbar a.active {
         background-color: #151a2c;
         color: white;
     }
+
+    .image img {
+        width: 100%;
+        height: auto;
+        /* This ensures the aspect ratio is maintained */
+    }
+
     .logout {
         margin-top: auto;
         color: white;
         padding: 16px;
     }
+
     .image:hover {
         background-color: #212946;
     }
+
     .main-content {
         margin-left: 250px;
     }
+
     h2 {
-        color: #000000; /* Adjust the color as needed */
+        color: #000000;
+        /* Adjust the color as needed */
         font-size: 24px;
         padding: 20px;
     }
 
     p {
-        color: #000000; /* Adjust the color as needed */
+        color: #000000;
+        /* Adjust the color as needed */
         font-size: 18px;
 
     }
+
     .download-button {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
 
-        .download-button:hover {
-            background-color: #45a049;
-        }
-        .result-form {
-                max-width: 1000px;
-                margin: 20px auto;
-                margin-left: 450px;
-                padding: 50px;
-                background-color: #ffffff;
-                border-radius: 8px;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            }
-            button[type="submit"] {
-                background-color: #4CAF50;
-                color: white;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                margin-top: 10px;
-                margin-left: 1300px;
-            }
+    .download-button:hover {
+        background-color: #45a049;
+    }
 
-            button[type="submit"]:hover {
-                background-color: #45a049;
-            }
+    .result-form {
+        max-width: 1000px;
+        margin: 20px auto;
+        margin-left: 375px;
+        padding: 50px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
 
+    button[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+        margin-left: 1225px;
+    }
 
+    button[type="submit"]:hover {
+        background-color: #45a049;
+    }
 </style>
+
 <body>
     <div class="navbar">
         <div class="image" align="left">
@@ -122,36 +146,37 @@
     </form>
     <div class="result-form">
         {% if prompt %}
-            <div class="form-group">
-                
-                <p>{{ prompt }}</p>
-            </div>
+        <div class="form-group">
+
+            <p>{{ prompt }}</p>
+        </div>
         {% endif %}
-    
+
         {% if analysis_result %}
-            <div class="form-group">
-                <h2>Analysis Result:</h2>
-                <p>{{ analysis_result }}</p>
-            </div>
+        <div class="form-group">
+            <h2>Analysis Result:</h2>
+            <p>{{ analysis_result }}</p>
+        </div>
         {% endif %}
     </div>
-    
-       
+
+
     <script>
         function submitForm() {
             $.ajax({
                 type: "POST",
                 url: "/analysis",
                 data: $("#expenseForm").serialize(), // Serialize form data
-                success: function(response) {
+                success: function (response) {
                     // Handle the response as needed
                     console.log(response);
                 },
-                error: function(error) {
+                error: function (error) {
                     console.log(error);
                 }
             });
         }
     </script>
 </body>
+
 </html>

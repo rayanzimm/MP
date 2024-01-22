@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <title>User Profile</title>
     <style>
@@ -28,28 +28,40 @@
             overflow: visible;
             display: flex;
             flex-direction: column;
+            align-items: flex-start; /* Updated this line */
         }
+
         .navbar a {
             display: block;
             color: white;
-            padding: 16px;
+            padding: 16px 0px 16px 0px;
+            /* Add left padding for all items */
             text-decoration: none;
+            
         }
+
+       
         .navbar a i {
-        margin-right: 8px;
+            margin-right: 8px;
         }
+
         .navbar a.active {
             background-color: #151a2c;
             color: white;
         }
+
+        .image img {
+            width: 100%;
+            height: auto;
+            /* This ensures the aspect ratio is maintained */
+        }
+
         .logout {
             margin-top: auto;
             color: white;
             padding: 16px;
         }
-        .image:hover {
-            background-color: #212946;
-        }
+
         .main-content {
             margin-left: 250px;
             padding: 20px;
@@ -130,7 +142,7 @@
 
         }
 
-        
+
         .change-pass-button {
             padding: 10px 20px;
             margin: 10px;
@@ -155,13 +167,11 @@
             color: white;
             padding: 16px;
         }
-
-
     </style>
 </head>
 
 <body>
-    
+
     <div class="navbar">
         <div class="image" align="left">
             <a href="{{ url_for('analysis')}}">
@@ -177,14 +187,15 @@
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i
                 class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
-    
+
     <div class="content-wrapper">
         <div class="profile-photo">
-            <img src="{{ user_data.get('photo_path', 'static/assets/img/defaultprofile.jpg')|replace('\\', '/') }}" alt="Profile Photo">
+            <img src="{{ user_data.get('photo_path', 'static/assets/img/defaultprofile.jpg')|replace('\\', '/') }}"
+                alt="Profile Photo">
 
-             </div>
-        
-        <h2>ACCOUNT INFORMATION</h2>
+        </div>
+
+        <h4>ACCOUNT INFORMATION</h4>
         <!-- Add other profile information below -->
         <div class="profile-section">
             <p><span>First Name:</span> {{ user_data.get('firstName', 'N/A') }}</p>
@@ -201,13 +212,12 @@
                 <button class="change-pass-button" onclick="window.location.href='/changepass'">Change
                     Password</button>
             </div>
-        </div>        
-
+        </div>
 
         <div class="error-message" name="errorMessage">
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-    
+
             {% for category, message in messages %}
             <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                 <span>{{ message }}</span>
@@ -216,7 +226,7 @@
                 </button>
             </div>
             {% endfor %}
-    
+
             {% endif %}
             {% endwith %}
         </div>
