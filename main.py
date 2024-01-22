@@ -158,36 +158,7 @@ def allowed_file(filename):
 
 from flask import render_template
 
-@app.route('/progress')
-def progress():
-    if 'user' not in session:
-        return redirect('/')
-    
-    email = session['user']
-    user_ref = db.collection('users').where('email', '==', email).limit(1).get()
-
-    if not user_ref:
-        flash("User not found.", "danger")
-        return redirect('/')
         
-    user_doc = user_ref[0]
-    user_data = user_doc.to_dict()
-    
-    # Retrieve loginDays from user_data
-    login_days = user_data.get('loginDays', 1)
-
-    # Define the maximum number of steps (assuming 7 steps for the progress bar)
-    max_steps = 7
-
-    # Calculate the progress width based on loginDays
-    progress_width = (login_days / max_steps) * 100
-
-    # Create a list of steps for the progress bar
-    steps = [{"step_number": i + 1, "active": i < login_days} for i in range(max_steps)]
-
-    return render_template('progress_bar.html', loginDays=login_days, progressWidth=progress_width, steps=steps)
-        
-
 @app.route('/', methods=['POST', 'GET'])
 def index():
     if 'user' in session:
@@ -232,6 +203,8 @@ def update_login_rewards(user_email, user_data, user_doc):
     current_datetime = datetime.now(singapore_timezone)
     current_date = current_datetime.strftime("%Y-%m-%d")
 
+    coins_rewarded = 0  
+
     # Update the 'lastLogin' field to today's date
     if user_data['lastLogin'] != current_datetime and current_datetime.hour >= 6:
         if current_datetime > user_data.get('nextRewardTime', datetime.min):
@@ -239,23 +212,19 @@ def update_login_rewards(user_email, user_data, user_doc):
                 user_data['lastLogin'] = current_datetime
                 user_data['loginDays'] = 1
                 coins_rewarded = reward_coins(user_email, user_data['loginDays'])
-                user_data['coins'] += coins_rewarded
-                flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
                 user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
             else:
                 user_data['lastLogin'] = current_datetime
                 user_data['loginDays'] += 1
                 coins_rewarded = reward_coins(user_email, user_data['loginDays'])
-                user_data['coins'] += coins_rewarded
-                flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
                 user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
-        else:
-            user_data['lastLogin'] = current_datetime
-    else:
-        user_data['lastLogin'] = current_datetime
-
-    # Save the updated user document back to Firestore
+    
+    user_data['coins_rewarded'] = coins_rewarded
+    
     db.collection('users').document(user_doc.id).update(user_data)
+    
+    if coins_rewarded > 0:
+        flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
 
 def reward_coins(user_email, login_days):
     try:
