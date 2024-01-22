@@ -166,6 +166,7 @@
 
         .step-name {
             color: white;
+            pointer-events: none;
         }
 
         .stepper-item.completed::before,
@@ -175,6 +176,31 @@
 
         .completed .step-counter {
             background-color: #2B99C0;
+        }
+
+        .stepper-item button {
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: lightgray;
+            color: white;
+            border: none;
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .stepper-item.completed button {
+            background-color: #2B99C0;
+        }
+
+        .stepper-item button:hover {
+            background-color: #212946;
+        }
+
+        .step-name {
+            color: white;
+            pointer-events: none;
         }
 
         .products-container {
@@ -232,15 +258,16 @@
 <body>
     <div class="navbar">
         <div class="image" align="left">
-            <a href="{{ url_for('analysis')}}">
+            <a href="{{ url_for('home')}}">
                 <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
             </a>
         </div>
-        <a href="{{ url_for('shop') }}"><i class="fas fa-gift"></i> Shop</a>
+        <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
         <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
-        <a href="{{ url_for('home') }}"><i class="fas fa-chart-bar"></i> Tracker</a>
+        <a href="{{ url_for('analysis') }}"><i class="fas fa-chart-bar"></i> Analysis</a>
         <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
+        <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
         <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i
                 class="fas fa-sign-out-alt"></i>Logout</a>
@@ -251,12 +278,12 @@
             {% for day in range(1, 8) %}
                 {% if day <= login_days %}
                     <div class="stepper-item completed">
-                        <div class="step-counter">{{ day }}</div>
+                        <button class="step-counter" onclick="handleButtonClick({{ day }})">{{ day }}</button>
                         <div class="step-name">Day {{ day }}</div>
                     </div>
                 {% else %}
                     <div class="stepper-item">
-                        <div class="step-counter">{{ day }}</div>
+                        <button class="step-counter" onclick="handleButtonClick({{ day }})">{{ day }}</button>
                         <div class="step-name">Day {{ day }}</div>
                     </div>
                 {% endif %}
@@ -305,9 +332,7 @@
     
     <script>
         function buyProduct(product_id) {
-        // Use JavaScript to confirm the deletion (you can customize the confirmation dialog)
         if (confirm("Are you sure you want to buy this item?")) {
-            // Redirect to the delete_income_expense route with the unique_index parameter
             window.location.href = "/deduct-coins/" + product_id;
         }
         else {
