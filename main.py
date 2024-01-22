@@ -193,7 +193,7 @@ def index():
     if 'user' in session:
         user_email = session['user']
         user_ref = db.collection('users').where('email', '==', user_email).limit(1).get()
-        current_date = datetime.now().strftime("%Y-%m-%d")
+
 
         if not user_ref:
             flash("User not found.", "danger")
@@ -203,85 +203,11 @@ def index():
         user_data = user_doc.to_dict()
         update_login_rewards(user_email, user_data, user_doc)
         coins=user_data.get('coins', 0)
-        savings_goal = savings_goal = float(user_data.get('savingsGoal', 0))
-        total_food_cost = fetch_total_cost('Food', user_email, current_date)
-        total_transport_cost = fetch_total_cost('Transport', user_email, current_date)
-        total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
-        total_others_cost = fetch_total_cost('Others', user_email, current_date)
-        investment_ref = db.collection('Investment').where('user_email', '==', user_email).stream()
 
-        # Dictionary to store the latest prices for each ticker
-        total_values = defaultdict(float)
-        initial_total_closing_prices = defaultdict(float)
-        api = '1HEU5NM89I8H1AKX'
-
-        for investment_doc in investment_ref:
-            investment_data = investment_doc.to_dict()
-            ticker = investment_data.get('ticker')
-            quantity = int(investment_data.get('quantity'))
-            if ticker and quantity:
-
-                # Fetch the latest prices for each ticker
-                url = f'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={ticker}&interval=1min&apikey={api}'
-                response = requests.get(url)
-                stockData = response.json()
-
-                if 'Time Series (1min)' in stockData:
-                    lastRefreshed = stockData["Meta Data"]["3. Last Refreshed"]
-                    latestPrices = stockData["Time Series (1min)"][lastRefreshed]
-                    closingUSDPrice = latestPrices["4. close"]
-                    
-                    if closingUSDPrice:
-                        # Convert to SGD if necessary
-                        conversion_url = f"https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=SGD&apikey={api}"
-                        conversion_response = requests.get(conversion_url)
-                        conversion_data = conversion_response.json()
-                        exchange_rate = float(conversion_data['Realtime Currency Exchange Rate']['5. Exchange Rate'])
-                        closingPrice = float(closingUSDPrice) * exchange_rate
-
-                        total_value = quantity * closingPrice
-
-                        # Update the total value for the investment
-                        total_values[ticker] += total_value
-            
-            current_closing_price = investment_data.get('cost', 0)
-            initial_total_closing_prices[ticker] += current_closing_price
-        # Calculate the total closingPrice for all tickers
-        total_investment_value = round(float(sum(total_values.values())), 2)
-        initial_total_closing_price = round(float(sum(initial_total_closing_prices.values())), 2)
-        value_difference = round(float((total_investment_value - initial_total_closing_price)), 2)
-        value_difference_abs = abs(value_difference)
-
-        sold_investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('status', '==', 'sold').stream()
-
-        total_investment_sold = 0
-
-        for sold_investment_doc in sold_investment_ref:
-            sold_investment_data = sold_investment_doc.to_dict()
-            
-            total_investment_sold += float(sold_investment_data.get('price_difference', 0))
         
-        total_expense = total_food_cost + total_transport_cost + total_others_cost
-        total_savings = float((total_budget_cost + total_investment_sold) - total_expense)
         
-        user_doc.reference.update({
-                'totalSavings': total_savings
-                })
-        
-        progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
          
-        return render_template('analysis.html', email=user_email, coins=coins, total_food_cost=total_food_cost,
-                           total_transport_cost=total_transport_cost,
-                           total_budget_cost=total_budget_cost,
-                           total_others_cost=total_others_cost,
-                           total_savings=total_savings,
-                           savings_goal=savings_goal,
-                           total_investment_value=total_investment_value,
-                           value_difference=value_difference,
-                           value_difference_abs=value_difference_abs,
-                           progress_percentage=progress_percentage
-
-                           )
+        return redirect('/analysis')
     
     if request.method == 'POST':
         email = request.form.get('email')
