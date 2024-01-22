@@ -51,7 +51,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -300,8 +300,9 @@ def index():
             update_login_rewards(email, user_data, user_doc)
             coins=user_data.get('coins', 0)
 
-            return render_template('home.html', email=email, coins=coins)
-        except:
+            return render_template('analysis.html', email=email, coins=coins)
+        except Exception as e:
+            
             flash(f"Error logging in: {str(e)}", "warning")
     return render_template('login.html')
 
@@ -381,14 +382,32 @@ def home():
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
     # Fetch the total cost for each expense type
-    total_food_cost = fetch_total_cost('Food', user_email, current_date)
-    total_transport_cost = fetch_total_cost('Transport', user_email, current_date)
-    total_budget_cost = fetch_total_cost('Budget', user_email, current_date)
-    total_others_cost = fetch_total_cost('Others', user_email, current_date)
+    total_food_cost_daily = fetch_total_cost('Food', user_email, current_date)
+    total_transport_cost_daily = fetch_total_cost('Transport', user_email, current_date)
+    total_budget_cost_daily = fetch_total_cost('Budget', user_email, current_date)
+    total_others_cost_daily = fetch_total_cost('Others', user_email, current_date)
+    
+    session['total_food_cost_daily'] = total_food_cost_daily
+    session['total_transport_cost_daily'] = total_transport_cost_daily
+    session['total_budget_cost_daily'] = total_budget_cost_daily
+    session['total_others_cost_daily'] = total_others_cost_daily
+
+    total_food_cost = fetch_total_cost_analysis('Food', user_email)
+    total_transport_cost = fetch_total_cost_analysis('Transport', user_email)
+    total_budget_cost = fetch_total_cost_analysis('Budget', user_email)
+
+    total_others_cost = fetch_total_cost_analysis('Others', user_email)
+    # Calculate total expense including food, transport, and investment costs
+    
+
+
+    # Store values in session
     session['total_food_cost'] = total_food_cost
     session['total_transport_cost'] = total_transport_cost
     session['total_budget_cost'] = total_budget_cost
+
     session['total_others_cost'] = total_others_cost
+
     # Fetch all investment records for the user
     investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('status', '==', 'active').stream()
 
@@ -445,7 +464,8 @@ def home():
     
     total_expense = total_food_cost + total_transport_cost + total_others_cost
     total_savings = float((total_budget_cost + total_investment_sold) - total_expense)
-    
+    # session['total_investment_value'] = total_investment_value
+    # session['value_difference_abs'] =  value_difference_abs
     user_doc.reference.update({
             'totalSavings': total_savings
             })
@@ -457,6 +477,10 @@ def home():
                            total_transport_cost=total_transport_cost,
                            total_budget_cost=total_budget_cost,
                            total_others_cost=total_others_cost,
+                           total_food_cost_daily=total_food_cost_daily,
+                           total_transport_cost_daily=total_transport_cost_daily,
+                           total_budget_cost_daily=total_budget_cost_daily,
+                           total_others_cost_daily=total_others_cost_daily,
                            total_savings=total_savings,
                            coins=coins,
                            savings_goal=savings_goal,
@@ -1153,7 +1177,7 @@ def delete_food_expense(unique_index):
         return redirect('/user_food_expenses')
     
     # Pass the updated data to the template
-    return render_template('user_food_expenses.html', user_food_data=user_food_data)
+    return redirect('/user_food_expenses')
 
 
 @app.route('/addtransport', methods=['GET', 'POST'])
@@ -1320,7 +1344,7 @@ def delete_transport_expense(unique_index):
         return redirect('/user_transport_expenses')
     
     # Pass the updated data to the template
-    return render_template('user_transport_expenses.html', user_transport_data=user_transport_data)
+    return redirect('/user_transport_expenses')
 
 
 @app.route('/copy_previous_budget', methods=['POST'])
@@ -1531,10 +1555,10 @@ def delete_budget_expense(unique_index):
     except Exception as e:
         # Handle any errors that may occur during deletion
         flash(f"An error occurred during food expense deletion: {str(e)}", "danger")
-        return redirect('/user_budget_expenses')
+        return redirect('/user_budget')
     
     # Pass the updated data to the template
-    return render_template('user_budget.html', user_budget_data=user_budget_data)
+    return redirect('/user_budget')
         
 @app.route('/addinvestment', methods=['GET', 'POST'])
 def addinvestment():
@@ -1742,48 +1766,48 @@ def sell_investment(unique_index):
         flash(f"An error occurred during savings update: {str(e)}", "warning")
         return redirect('/user_investment_expenses')
 
-@app.route('/edit_investment_expenses', methods=['GET', 'POST'])
-def edit_investment_expense():
-    # Redirect to the home page if the user is not logged in
-    if 'user' not in session:
-        return redirect('/')
+# @app.route('/edit_investment_expenses', methods=['GET', 'POST'])
+# def edit_investment_expense():
+#     # Redirect to the home page if the user is not logged in
+#     if 'user' not in session:
+#         return redirect('/')
 
-    user_email = session['user']
-    investment_unique_index = request.form.get('unique_index')
+#     user_email = session['user']
+#     investment_unique_index = request.form.get('unique_index')
 
-    if not investment_unique_index or not investment_unique_index.strip():
-        raise ValueError("Invalid or empty unique_index")
+#     if not investment_unique_index or not investment_unique_index.strip():
+#         raise ValueError("Invalid or empty unique_index")
     
-    investment_unique_index = int(investment_unique_index)
-    investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('unique_index', '==', investment_unique_index).get()
-    investment_iter = iter(investment_ref)
-    investment_doc = next(investment_iter, None)
+#     investment_unique_index = int(investment_unique_index)
+#     investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('unique_index', '==', investment_unique_index).get()
+#     investment_iter = iter(investment_ref)
+#     investment_doc = next(investment_iter, None)
 
-    if not investment_doc:
-       return redirect('/')
+#     if not investment_doc:
+#        return redirect('/')
    
-    investment_data = investment_doc.to_dict()
+#     investment_data = investment_doc.to_dict()
     
-    if request.method == 'POST':
-        print(request.form)
-        new_ticker = request.form.get('ticker')
-        new_quantity = int(request.form.get('quantity'))
-        new_closing_price = round(float(investment_data.get('cost')) * new_quantity)
+#     if request.method == 'POST':
+#         print(request.form)
+#         new_ticker = request.form.get('ticker')
+#         new_quantity = int(request.form.get('quantity'))
+#         new_closing_price = round(float(investment_data.get('cost')) * new_quantity)
 
-        investment_data={
-            'cost': new_closing_price,
-            'quantity': new_quantity,
-            'ticker':new_ticker
-        }
-        user_investment_data=[]
-        investment_doc.reference.update(investment_data)
-        user_investment_data.append(investment_data)
+#         investment_data={
+#             'cost': new_closing_price,
+#             'quantity': new_quantity,
+#             'ticker':new_ticker
+#         }
+#         user_investment_data=[]
+#         investment_doc.reference.update(investment_data)
+#         user_investment_data.append(investment_data)
 
-        flash("investment expense updated successfully!", "success")
-        return redirect('/user_investment_expenses')
+#         flash("investment expense updated successfully!", "success")
+#         return redirect('/user_investment_expenses')
 
     
-    return render_template('user_investment_expenses.html', user_investment_data=user_investment_data, investment_data=investment_data)
+#     return render_template('user_investment_expenses.html', user_investment_data=user_investment_data, investment_data=investment_data)
 
 @app.route('/delete_investment_expense/<int:unique_index>', methods=['GET'])
 def delete_investment_expense(unique_index):
@@ -1829,7 +1853,7 @@ def delete_investment_expense(unique_index):
         return redirect('/user_investment_expenses')
     
     # Pass the updated data to the template
-    return render_template('user_investment_expenses.html', user_investment_data=user_investment_data)
+    return redirect('/user_investment_expenses')
 
 
 
@@ -2005,7 +2029,7 @@ def delete_others_expense(unique_index):
         return redirect('/user_others_expenses')
     
     # Pass the updated data to the template
-    return render_template('user_others_expenses.html', user_others_data=user_others_data)
+    return redirect('/user_others_expenses')
 
 
         
@@ -2028,8 +2052,8 @@ def total_budget_expense():
     total_investment_cost = fetch_total_cost_analysis('Investment', user_email)
     total_others_cost = fetch_total_cost_analysis('Others', user_email)
     # Calculate total expense including food, transport, and investment costs
-    total_expense = total_food_cost + total_transport_cost + total_investment_cost + total_others_cost
-    total_savings = float(total_budget_cost - total_expense)
+    
+
 
     # Store values in session
     session['total_food_cost'] = total_food_cost
@@ -2037,6 +2061,23 @@ def total_budget_expense():
     session['total_budget_cost'] = total_budget_cost
     session['total_investment_cost'] = total_investment_cost
     session['total_others_cost'] = total_others_cost
+
+    sold_investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('status', '==', 'sold').stream()
+
+    total_investment_sold = 0
+
+    for sold_investment_doc in sold_investment_ref:
+        sold_investment_data = sold_investment_doc.to_dict()
+        
+        total_investment_sold += float(sold_investment_data.get('price_difference', 0))
+    
+    total_expense = total_food_cost + total_transport_cost + total_others_cost
+    total_savings = float((total_budget_cost + total_investment_sold) - total_expense)
+    # session['total_investment_value'] = total_investment_value
+    # session['value_difference_abs'] =  value_difference_abs
+    user_doc.reference.update({
+            'totalSavings': total_savings
+            })
     progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
 
     return render_template('analysis.html',
@@ -2049,7 +2090,8 @@ def total_budget_expense():
                            total_savings=total_savings,
                            coins=coins,
                            savings_goal=savings_goal,
-                           progress_percentage=progress_percentage,)
+                           progress_percentage=progress_percentage,
+                           total_investment_sold=total_investment_sold)
 
 
 

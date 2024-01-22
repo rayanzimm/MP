@@ -279,12 +279,11 @@
                 <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
             </a>
         </div>
-        <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
+        <a href="{{ url_for('shop') }}"><i class="fas fa-gift"></i> Shop</a>
         <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
         <a href="{{ url_for('home') }}"><i class="fas fa-chart-bar"></i> Tracker</a>
         <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
-        <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
         <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i
                 class="fas fa-sign-out-alt"></i>Logout</a>
@@ -324,7 +323,7 @@
             <div class="card" onclick="redirectTo('/user_budget')">
                 <h2>BUDGET (FOR TODAY)</h2>
                 {% if 'total_budget_cost' in session %}
-                <p>Total Budget : ${{ '{:.2f}'.format(total_budget_cost) }}</p>
+                <p>Total Budget : ${{ '{:.2f}'.format(total_budget_cost_daily) }}</p>
                 {% else %}
                 <p>Total Budget : Not available</p>
                 {% endif %}
@@ -334,7 +333,7 @@
             <div class="card" onclick="redirectTo('/user_transport_expenses')">
                 <h2>TRANSPORT</h2>
                 {% if 'total_transport_cost' in session %}
-                <p>Total Transport Cost: ${{ '{:.2f}'.format(total_transport_cost) }}</p>
+                <p>Total Transport Cost: ${{ '{:.2f}'.format(total_transport_cost_daily) }}</p>
                 {% else %}
                 <p>Total Transport Cost: Not available</p>
                 {% endif %}
@@ -362,7 +361,7 @@
             <div class="card" onclick="redirectTo('/user_food_expenses')">
                 <h2>FOOD</h2>
                 {% if 'total_food_cost' in session %}
-                <p>Total Food Cost: ${{ '{:.2f}'.format(total_food_cost) }}</p>
+                <p>Total Food Cost: ${{ '{:.2f}'.format(total_food_cost_daily) }}</p>
                 {% else %}
                 <p>Total Food Cost: Not available</p>
                 {% endif %}
@@ -372,7 +371,7 @@
             <div class="card" onclick="redirectTo('/user_others_expenses')">
                 <h2>OTHERS</h2>
                 {% if 'total_others_cost' in session %}
-                <p>Total Others Cost: ${{ '{:.2f}'.format(total_others_cost) }}</p>
+                <p>Total Others Cost: ${{ '{:.2f}'.format(total_others_cost_daily) }}</p>
                 {% else %}
                 <p>Total Other Expenses: Not available</p>
                 {% endif %}

@@ -165,19 +165,19 @@
     <div class="navbar">
         <div class="image" align="left">
             <a href="{{ url_for('analysis')}}">
-                <img src="{{ url_for('static', filename='/assets/img/finsaver1.png') }}">
+                <img src="{{ url_for('static', filename='assets/img/finsaver1.png') }}">
             </a>
         </div>
-        <a href="#rewards"><i class="fas fa-gift"></i> Rewards</a>
+        <a href="{{ url_for('shop') }}"><i class="fas fa-gift"></i> Shop</a>
         <a href="{{ url_for('news') }}"><i class="fas fa-newspaper"></i> News</a>
         <a href="{{ url_for('home') }}"><i class="fas fa-chart-bar"></i> Tracker</a>
         <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
-        <a href="#achievements"><i class="fas fa-trophy"></i> Achievements</a>
         <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
-        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i
+                class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
-
+    
     <div class="content-wrapper">
         <div class="profile-photo">
             <img src="{{ user_data.get('photo_path', 'static/assets/img/defaultprofile.jpg')|replace('\\', '/') }}" alt="Profile Photo">
