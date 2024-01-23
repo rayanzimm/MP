@@ -91,6 +91,18 @@
             background-color: #1EAE98;
             color: white;
         }
+        .filters {
+            position: fixed;
+            top: 0;
+            right: 0;
+            margin-top: 10px;
+            padding: 10px;
+            z-index: 1;
+        }
+
+        .filter-input {
+            margin-right: 10px;
+        }
 
     </style>
 </head>
@@ -110,6 +122,27 @@
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i
                 class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
+    <form id="filterForm" method="GET">
+        <div class="filters">
+            <label for="startDateFilter" class="filter-input">Start Date:</label>
+            <input type="date" id="startDateFilter" name="start_date" class="filter-input">
+
+            <label for="endDateFilter" class="filter-input">End Date:</label>
+            <input type="date" id="endDateFilter" name="end_date" class="filter-input">
+
+            <label for="categoryFilter" class="filter-input">Category:</label>
+            <select id="categoryFilter" name="category_filter" class="filter-input">
+                <option value="" {% if not category_filter %}selected{% endif %}>All</option>
+                <option value="Food" {% if category_filter == 'Food' %}selected{% endif %}>Food</option>
+                <option value="Transport" {% if category_filter == 'Transport' %}selected{% endif %}>Transport</option>
+                <option value="Budget" {% if category_filter == 'Budget' %}selected{% endif %}>Budget</option>
+                <option value="Investment" {% if category_filter == 'Investment' %}selected{% endif %}>Investment</option>
+                <option value="Others" {% if category_filter == 'Others' %}selected{% endif %}>Others</option>
+            </select>
+
+            <button type="button" onclick="applyFilters()">Apply Filters</button>
+        </div>
+    </form>
     <div class="main-content">
         <h1 class="header">Expense History</h1>
         {% for date, expenses in all_expenses_by_date.items() %}
@@ -135,14 +168,44 @@
     </div>
 
     <script>
-        function confirmLogout() {
-    var result = confirm("Are you sure you want to log out?");
-    if (result) {
-        window.location.href = '/logout';  // Redirect to /logout if the user clicks "OK"
-    } else {
-        // Do nothing or handle the "Cancel" action
+        function applyFilters() {
+    var startDate = document.getElementById('startDateFilter').value;
+    var endDate = document.getElementById('endDateFilter').value;
+    var categoryFilter = document.getElementById('categoryFilter').value;
+
+    // If "All" category is selected, reset the categoryFilter value
+    if (categoryFilter.toLowerCase() === 'all') {
+        categoryFilter = '';
     }
+
+    // Build the form action based on filters
+    var formAction = '/history?';
+
+    if (categoryFilter) {
+        formAction += 'category_filter=' + categoryFilter;
+    }
+
+    if (startDate || endDate) {
+        formAction += '&start_date=' + startDate + '&end_date=' + endDate;
+    }
+
+    // Redirect to the constructed form action
+    window.location.href = formAction;
 }
+
+
+
+
+
+    
+        function confirmLogout() {
+            var result = confirm("Are you sure you want to log out?");
+            if (result) {
+                window.location.href = '/logout';
+            }
+        }
     </script>
+    
+    
 </body>
 </html>

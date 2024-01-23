@@ -51,7 +51,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -617,7 +617,13 @@ def history():
 
     user_email = session['user']
 
-    all_expenses = fetch_all_expenses(user_email)
+    # Get filter parameters from the request
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    category_filter = request.args.get('category_filter')
+
+    # Fetch all expenses based on filters
+    all_expenses = fetch_filtered_expenses(user_email, start_date, end_date, category_filter)
 
     # Organize expenses by date
     all_expenses_by_date = organize_expenses_by_date(all_expenses)
@@ -686,6 +692,21 @@ def format_date(value, format='%d %B %Y'):
 
 app.jinja_env.filters['format_date'] = format_date
 
+def fetch_filtered_expenses(user_email, start_date=None, end_date=None, category_filter=None):
+    all_expenses = fetch_all_expenses(user_email)
+
+    # Apply filters
+    filtered_expenses = []
+
+    for expense in all_expenses:
+        expense_date = datetime.strptime(expense['date'], '%Y-%m-%d')
+
+        if (start_date is None or expense_date >= datetime.strptime(start_date, '%Y-%m-%d')) and \
+           (end_date is None or expense_date <= datetime.strptime(end_date, '%Y-%m-%d')) and \
+           (category_filter is None or expense['category'] == category_filter):
+            filtered_expenses.append(expense)
+
+    return filtered_expenses
 
 @app.route('/logout')
 def logout():
@@ -1925,7 +1946,7 @@ def delete_others_expense(unique_index):
 
 
         
-openai.api_key = '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'
+openai.api_key = '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'
 @app.route('/analysis')
 def total_budget_expense():
     user_email = session['user']
@@ -1941,16 +1962,28 @@ def total_budget_expense():
     total_food_cost = fetch_total_cost_analysis('Food', user_email)
     total_transport_cost = fetch_total_cost_analysis('Transport', user_email)
     total_budget_cost = fetch_total_cost_analysis('Budget', user_email)
-    total_investment_cost = fetch_total_cost_analysis('Investment', user_email)
     total_others_cost = fetch_total_cost_analysis('Others', user_email)
-    # Calculate total expense including food, transport, and investment costs
+
+    # Fetch all user investments
+    investment_ref = db.collection('Investment').where('user_email', '==', user_email).stream()
     
-    # Store values in session
-    session['total_food_cost'] = total_food_cost
-    session['total_transport_cost'] = total_transport_cost
-    session['total_budget_cost'] = total_budget_cost
-    session['total_investment_cost'] = total_investment_cost
-    session['total_others_cost'] = total_others_cost
+    user_investment_data = []
+
+    for investment_doc in investment_ref:
+        investment_data = investment_doc.to_dict()
+
+        user_investment_data.append({
+            'ticker': investment_data.get('ticker', ''),
+            'quantity': investment_data.get('quantity', 0),
+            'unique_index': investment_data.get('unique_index', ''),
+            'date': investment_data.get('date', ''),
+            'cost': investment_data.get('cost', 0),
+            'lastRefreshed': investment_data.get('lastRefreshed', ''),
+            'latest_price': investment_data.get('latest_price', 0),
+            'status': investment_data.get('status', '')
+        })
+
+    total_investment_cost = fetch_total_cost_analysis('Investment', user_email)
 
     sold_investment_ref = db.collection('Investment').where('user_email', '==', user_email).where('status', '==', 'sold').stream()
 
@@ -1963,15 +1996,12 @@ def total_budget_expense():
     
     total_expense = total_food_cost + total_transport_cost + total_others_cost
     total_savings = float((total_budget_cost + total_investment_sold) - total_expense)
-    # session['total_investment_value'] = total_investment_value
-    # session['value_difference_abs'] =  value_difference_abs
+
     user_doc.reference.update({
             'totalSavings': total_savings
             })
     
     progress_percentage = (total_savings / savings_goal) * 100 if savings_goal > 0 else 0
-
-    
 
     return render_template('analysis.html',
                            total_food_cost=total_food_cost,
@@ -1984,9 +2014,8 @@ def total_budget_expense():
                            coins=coins,
                            savings_goal=savings_goal,
                            progress_percentage=progress_percentage,
-                           total_investment_sold=total_investment_sold)
-
-
+                           total_investment_sold=total_investment_sold,
+                           user_investment_data=user_investment_data)
 
 @app.route('/analysis', methods=['GET', 'POST'])
 def analysis():
@@ -1997,14 +2026,32 @@ def analysis():
         transport_expense = float(request.form['transport_expense'])
         investment_expense = float(request.form['investment_expense'])
 
-        prompt = f"Given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}, analyze the impact on savings."
-        analysis_result = openai_analysis(prompt)
+        # Fetch all user investments
+        user_email = session['user']
+        investment_ref = db.collection('Investment').where('user_email', '==', user_email).stream()
+        user_investments = [investment_doc.to_dict().get('ticker', '') for investment_doc in investment_ref]
 
-        # Store the analysis result in the session
+        prompt = f"Analyze the impact on savings given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}. Provide a detailed analysis report on the user's financial statistics "
+
+        analysis_result = openai_analysis(prompt)
         session['analysis_result'] = analysis_result
 
-        return redirect(url_for('prompt'))
-    return render_template('analysis.html', prompt="something")
+        # Recommend investments based on similar investments the user has bought
+        if user_investments:
+            similar_investments = ', '.join(user_investments[:5])  # Consider the first 5 investments as similar
+            prompt2 = f"given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}. Recommend 5 investments similar to {similar_investments}."
+        else:
+            # If the user has no investments, provide a generic recommendation prompt
+            prompt2 = f"Given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}, provide recommendations for 5 stocks based on their current profile."
+
+        recommendations = openai_analysis(prompt2)
+        session['recommendations'] = recommendations
+
+        # Pass 'prompt2' as a keyword argument to url_for
+        return redirect(url_for('prompt', prompt=prompt2))
+    
+    return render_template('analysis.html', prompt="something", prompt2="things")
+
 
 def openai_analysis(prompt):
     try:
@@ -2023,6 +2070,24 @@ def openai_analysis(prompt):
 
     except Exception as e:
         return f"Error: {str(e)}"
+    
+def openai_analysis2(prompt2):
+    try:
+        response = openai.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt2,
+                }
+            ],
+            model="gpt-3.5-turbo",
+        )
+        print (response)
+        recommendations = response.choices[0].message.content
+        return recommendations
+
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 def fetch_total_cost_analysis(expense_type, user_email):
     total_cost = 0
@@ -2037,15 +2102,14 @@ def fetch_total_cost_analysis(expense_type, user_email):
 @app.route('/prompt')
 def prompt():
     analysis_result = session.get('analysis_result', '')
-    return render_template('prompt.html', analysis_result=analysis_result)
+    recommendations = session.get('recommendations', '')
+    return render_template('prompt.html', analysis_result=analysis_result, recommendations=recommendations)
 
 @app.route('/download_pdf', methods=['POST'])
 def download_pdf():
     # Retrieve the analysis result from the session
     analysis_result = session.get('analysis_result', '')
-
-    # Retrieve the data needed for the PDF
-    recommendations = request.form.get('recommendations')
+    recommendations = session.get('recommendations', '')
 
     # Create a PDF document
     pdf = FPDF('P', 'mm', 'Letter')
@@ -2059,19 +2123,21 @@ def download_pdf():
     # Add analysis result with a border
     pdf.set_fill_color(200, 220, 255)  # Light blue background
     pdf.cell(0, 10, "Analysis Result:", ln=True, align='L', fill=True)
-    pdf.multi_cell(0, 10, analysis_result, align='L')
+    pdf.multi_cell(0, 10, analysis_result.encode('utf-8').decode('latin-1'), align='L')  # Encode and decode using 'utf-8'
     pdf.ln(5)  # Add a little space after the analysis result
-    
-    # Add recommendations with a border
+
     pdf.set_fill_color(255, 240, 200)  # Light yellow background
     pdf.cell(0, 10, "Recommendations:", ln=True, align='L', fill=True)
-    pdf.multi_cell(0, 10, recommendations, align='L')
-    pdf.ln(10)  # Add space after recommendations
+    pdf.multi_cell(0, 10, recommendations.encode('utf-8').decode('latin-1'), align='L')  # Encode and decode using 'utf-8'
+    pdf.ln(20)
 
-    # Add the graph to the PDF
+    pdf.set_fill_color(255, 200, 200)
+    pdf.cell(0, 10, "Expense Breakdown:", ln=True, align='L', fill=True)
+    pdf.ln(20)
+
     add_graph_to_pdf(pdf)
+    pdf.ln(20)
 
-    # Construct the path to the user's downloads folder
     downloads_folder = os.path.expanduser("~" + os.sep + "Downloads")
     pdf_path = os.path.join(downloads_folder, 'finsaver_analysis.pdf')
 
@@ -2090,7 +2156,7 @@ def add_graph_to_pdf(pdf):
     total_others_cost = session.get('total_others_cost', 0)
     # Create a new figure
     fig, ax = plt.subplots()
-    bars = ax.bar(['Food', 'Transport', 'Budget', 'Investment', 'Savings'],
+    bars = ax.bar(['Food', 'Transport', 'Budget', 'Investment', 'Savings', 'Others'],
                   [total_food_cost, total_transport_cost, total_budget_cost, total_investment_cost, total_savings, total_others_cost],
                   color=['blue', 'green', 'orange', 'purple', 'red', 'pink'])
 

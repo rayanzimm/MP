@@ -110,14 +110,12 @@
             display: none;
             position: fixed;
             z-index: 1;
-            left: 0;
-            top: 0;
-            margin-top: 70px;
-            margin-left: 480px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
             width: 50%;
-            height: 70%;
+            height: 80%;
             overflow: auto;
-            background-color: rgb(0, 0, 0);
             background-color: rgba(0, 0, 0, 0.4);
         }
 
@@ -136,14 +134,15 @@
             float: right;
             font-size: 28px;
             font-weight: bold;
+            cursor: pointer;
         }
 
         .close:hover,
         .close:focus {
             color: black;
             text-decoration: none;
-            cursor: pointer;
         }
+
 
         label {
             display: block;
@@ -370,29 +369,38 @@
     <div id="analysisModal" class="modal">
         <!-- Modal content -->
         <div class="modal-content">
-            <div class="modal-header">
                 <span class="close">&times;</span>
-                <h2>Analysis Report</h2>
-            </div>
-            <div class="modal-body">
+            <div class="modal-body d-flex justify-content-center align-items-center">
                 <form method="post" action="/analysis">
-                    <label for="budget">Budget: $ </label>
-                    <input type="text" name="budget" value="{{ total_budget_cost }}" readonly required>
-
-                    <label for="investment_expense">Investment Expense: $</label>
-                    <input type="text" name="investment_expense" value="{{ total_investment_cost }}" readonly required>
-
-                    <label for="food_expense">Food Expense: $</label>
-                    <input type="text" name="food_expense" value="{{ total_food_cost }}" readonly required>
-
-                    <label for="transport_expense">Transport Expense: $</label>
-                    <input type="text" name="transport_expense" value="{{ total_transport_cost }}" readonly required>
-
-                    <label for="other_expense">Other Expenses: $</label>
-                    <input type="text" name="others_expense" value="{{ total_others_cost }}" readonly required>
-                    <button type="submit" class="button">Analyze</button>
+                    <div class="mb-3">
+                        <label for="budget" class="form-label">Budget: $</label>
+                        <input type="text" name="budget" value="{{ total_budget_cost }}" class="form-control" readonly required>
+                    </div>
+            
+                    <div class="mb-3">
+                        <label for="investment_expense" class="form-label">Investment Expense: $</label>
+                        <input type="text" name="investment_expense" value="{{ total_investment_cost }}" class="form-control" readonly required>
+                    </div>
+            
+                    <div class="mb-3">
+                        <label for="food_expense" class="form-label">Food Expense: $</label>
+                        <input type="text" name="food_expense" value="{{ total_food_cost }}" class="form-control" readonly required>
+                    </div>
+            
+                    <div class="mb-3">
+                        <label for="transport_expense" class="form-label">Transport Expense: $</label>
+                        <input type="text" name="transport_expense" value="{{ total_transport_cost }}" class="form-control" readonly required>
+                    </div>
+            
+                    <div class="mb-3">
+                        <label for="other_expense" class="form-label">Other Expenses: $</label>
+                        <input type="text" name="others_expense" value="{{ total_others_cost }}" class="form-control" readonly required>
+                    </div>
+            
+                    <button type="submit" class="btn btn-primary">Analyze</button>
                 </form>
             </div>
+            
         </div>
     </div>
 
