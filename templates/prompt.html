@@ -98,14 +98,57 @@
     }
 
     .result-form {
-        max-width: 1000px;
-        margin: 20px auto;
-        margin-left: 375px;
-        padding: 50px;
-        background-color: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
+    margin: 20px auto;
+    margin-left: 375px;
+    padding: 50px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+    color: #000000;
+    max-height: 1000px;
+    border: 10px solid #84f7ff; /* Added a light border around the form */
     }
+
+    .result-form h2 {
+        font-size: 24px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #ddd; /* Add a border below the title */
+    }
+
+    .result-form p {
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+    /* Style for the form group containing prompt or analysis result */
+    .result-form .form-group {
+        margin-bottom: 20px;
+        border: 1px solid #9c9b9b; /* Added a subtle border for each form group */
+        padding: 10px;
+        border-radius: 4px; /* Optional: added a slight border-radius for a softer look */
+    }
+
+    /* Style for the download button inside the form */
+    .result-form button[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+        margin-left: 0; /* Adjusted margin-left to 0 for centering */
+        display: block; /* Make the button a block element for centering */
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .result-form button[type="submit"]:hover {
+        background-color: #45a049;
+    }
+
 
     button[type="submit"] {
         background-color: #4CAF50;
@@ -159,6 +202,7 @@
         </div>
         {% endif %}
     </div>
+    
 
 
     <script>
