@@ -3,7 +3,7 @@
 
 <head>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/img/favicon.ico') }}">
     <meta charset="UTF-8">
@@ -284,7 +284,7 @@
         <a href="{{ url_for('home') }}"><i class="fas fa-chart-bar"></i> Tracker</a>
         <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
-        <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
+        <a href="{{ url_for('about') }}"><i class="fa-solid fa-circle-info"></i></i> About Us</a>
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i
                 class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
@@ -337,24 +337,24 @@
         <div class="dashboard">
             <div class="card">
                 <h2>Budget</h2>
-                <p>Total budget Cost: ${{ total_budget_cost }}</p>
+                <p>Total budget Cost: ${{ '{:.2f}'.format(total_budget_cost) }}</p>
                 <!-- Chart placeholder -->
                 <canvas id="budgetLineChart" width="300" height="200"></canvas>
             </div>
             <div class="card">
                 <h2>Investment Earnings</h2>
-                <p>$ {{ total_investment_sold }}</p>
+                <p>${{ '{:.2f}'.format(total_investment_sold) }}</p>
                 <h2>Total Savings</h2>
-                <p>$ {{ total_savings }}</p>
+                <p>${{ '{:.2f}'.format(total_savings) }}</p>
                 <!-- Chart placeholder -->
             </div>
             <div class="card">
                 <h2>Expenses</h2>
-                <p>Total : $ {{ total_expense }}</p>
-                <p>Investment: $ {{ total_investment_cost }}</p>
-                <p>Transport: $ {{ total_transport_cost }}</p>
-                <p>Food: $ {{ total_food_cost }}</p>
-                <p>Others: $ {{ total_others_cost }}</p>
+                <p>Total : ${{ '{:.2f}'.format(total_expense) }}</p>
+                <p>Investment: ${{ '{:.2f}'.format(total_investment_cost) }}</p>
+                <p>Transport: ${{ '{:.2f}'.format(total_transport_cost) }}</p>
+                <p>Food: ${{ '{:.2f}'.format(total_food_cost) }}</p>
+                <p>Others: ${{ '{:.2f}'.format(total_others_cost) }}</p>
                 <canvas id="expensesPieChart"  width="50" height="50"></canvas>
             </div>
             <div class="card full-width">
@@ -374,27 +374,27 @@
                 <form method="post" action="/analysis">
                     <div class="mb-3">
                         <label for="budget" class="form-label">Budget: $</label>
-                        <input type="text" name="budget" value="{{ total_budget_cost }}" class="form-control" readonly required>
+                        <input type="text" name="budget" value="{{ '%.2f'|format(total_budget_cost) }}" class="form-control" readonly required>
                     </div>
             
                     <div class="mb-3">
                         <label for="investment_expense" class="form-label">Investment Expense: $</label>
-                        <input type="text" name="investment_expense" value="{{ total_investment_cost }}" class="form-control" readonly required>
+                        <input type="text" name="investment_expense" value="{{ '%.2f'|format(total_investment_cost) }}" class="form-control" readonly required>
                     </div>
             
                     <div class="mb-3">
                         <label for="food_expense" class="form-label">Food Expense: $</label>
-                        <input type="text" name="food_expense" value="{{ total_food_cost }}" class="form-control" readonly required>
+                        <input type="text" name="food_expense" value="{{ '%.2f'|format(total_food_cost) }}" class="form-control" readonly required>
                     </div>
             
                     <div class="mb-3">
                         <label for="transport_expense" class="form-label">Transport Expense: $</label>
-                        <input type="text" name="transport_expense" value="{{ total_transport_cost }}" class="form-control" readonly required>
+                        <input type="text" name="transport_expense" value="{{ '%.2f'|format(total_transport_cost) }}" class="form-control" readonly required>
                     </div>
             
                     <div class="mb-3">
                         <label for="other_expense" class="form-label">Other Expenses: $</label>
-                        <input type="text" name="others_expense" value="{{ total_others_cost }}" class="form-control" readonly required>
+                        <input type="text" name="others_expense" value="{{ '%.2f'|format(total_others_cost) }}" class="form-control" readonly required>
                     </div>
             
                     <button type="submit" class="btn btn-primary">Analyze</button>

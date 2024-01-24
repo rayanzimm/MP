@@ -303,8 +303,8 @@ def home():
     
     total_expense = total_food_cost + total_transport_cost + total_others_cost
     total_savings = float((total_budget_cost + total_investment_sold) - total_expense)
-    # session['total_investment_value'] = total_investment_value
-    # session['value_difference_abs'] =  value_difference_abs
+    session['total_investment_value'] = total_investment_value
+    session['value_difference_abs'] =  value_difference_abs
     user_doc.reference.update({
             'totalSavings': total_savings
             })
@@ -419,9 +419,7 @@ def shop():
 def update_login_rewards(user_email, user_data, user_doc):
     singapore_timezone = pytz.timezone('Asia/Singapore')
     current_datetime = datetime.now(singapore_timezone)
-    current_date = current_datetime.strftime("%Y-%m-%d")
-
-    coins_rewarded = 0  
+    current_date = current_datetime.strftime("%Y-%m-%d") 
 
     # Update the 'lastLogin' field to today's date
     if user_data['lastLogin'] != current_datetime and current_datetime.hour >= 6:
@@ -429,7 +427,6 @@ def update_login_rewards(user_email, user_data, user_doc):
             next_week_start = user_data.get('nextWeekDate')
 
             if current_datetime > next_week_start:
-                print("new week")
                 user_data['lastLogin'] = current_datetime
                 user_data['loginDays'] = 1
                 user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
@@ -446,8 +443,6 @@ def update_login_rewards(user_email, user_data, user_doc):
     
     db.collection('users').document(user_doc.id).update(user_data)
     
-    if coins_rewarded > 0:
-        flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
 
 def reward_coins(login_days):
     try:
@@ -1452,55 +1447,58 @@ def addinvestment():
             closingPrice = float(closingUSDPrice) * exchange_rate
             totalClosingPrice = round(float(closingPrice) * quantity, 2)
 
-        try:
-            # Check if foodName or cost is empty
-            if not ticker or not quantity:
-                flash("Please fill in both investment name and cost.", "warning")
+            try:
+                # Check if foodName or cost is empty
+                if not ticker or not quantity:
+                    flash("Please fill in both investment name and cost.", "warning")
+                    return redirect('/user_investment_expenses')
+
+                latest_investment = db.collection('Investment').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
+                latest_index = 0
+
+                for investment_doc in latest_investment:
+                    latest_index = int(investment_doc.to_dict().get('unique_index', 0))
+
+                unique_index = latest_index + 1
+                current_date = datetime.now().strftime("%Y-%m-%d")
+                # Original data
+                investment_data = {
+                    'user_email': user_email,
+                    'ticker': ticker,
+                    'quantity': quantity,
+                    'date': current_date,  # Add the date field
+                    'unique_index': unique_index,
+                    'cost': totalClosingPrice,
+                    'lastRefreshed': lastRefreshed,
+                    'status': 'active',
+                    'latest_price': totalClosingPrice,
+                    'price_difference': 0
+                }
+
+                # Get dynamic fields
+                dynamic_fields = request.form.getlist('newField')
+                print("Dynamic Fields:", dynamic_fields)
+
+                # Process dynamic fields and add them to food_data
+                for index, value in enumerate(dynamic_fields):
+                    investment_data[f'newField_{index + 1}'] = value
+
+                if investment_id:
+                    # Editing an existing food expense
+                    investment_ref = db.collection('Investment').document(investment_id)
+                    investment_ref.update(investment_data)
+                else:
+                    # Adding a new food expense
+                    db.collection('Investment').add(investment_data)
+
+                flash("investment expense saved successfully!", "success")
                 return redirect('/user_investment_expenses')
 
-            latest_investment = db.collection('Investment').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
-            latest_index = 0
-
-            for investment_doc in latest_investment:
-                latest_index = int(investment_doc.to_dict().get('unique_index', 0))
-
-            unique_index = latest_index + 1
-            current_date = datetime.now().strftime("%Y-%m-%d")
-            # Original data
-            investment_data = {
-                'user_email': user_email,
-                'ticker': ticker,
-                'quantity': quantity,
-                'date': current_date,  # Add the date field
-                'unique_index': unique_index,
-                'cost': totalClosingPrice,
-                'lastRefreshed': lastRefreshed,
-                'status': 'active',
-                'latest_price': totalClosingPrice,
-                'price_difference': 0
-            }
-
-            # Get dynamic fields
-            dynamic_fields = request.form.getlist('newField')
-            print("Dynamic Fields:", dynamic_fields)
-
-            # Process dynamic fields and add them to food_data
-            for index, value in enumerate(dynamic_fields):
-                investment_data[f'newField_{index + 1}'] = value
-
-            if investment_id:
-                # Editing an existing food expense
-                investment_ref = db.collection('Investment').document(investment_id)
-                investment_ref.update(investment_data)
-            else:
-                # Adding a new food expense
-                db.collection('Investment').add(investment_data)
-
-            flash("investment expense saved successfully!", "success")
+            except Exception as e:
+                flash(f"An error occurred during investment creation: {str(e)}", "warning")
+        else:
+            flash("No such ticker.", "warning")
             return redirect('/user_investment_expenses')
-
-        except Exception as e:
-            flash(f"An error occurred during investment creation: {str(e)}", "warning")
 
     return render_template('user_investment_expenses.html', lastRefreshed=lastRefreshed)
 
@@ -1892,7 +1890,7 @@ def delete_others_expense(unique_index):
 
 
         
-openai.api_key = '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'
+openai.api_key = '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'
 @app.route('/analysis')
 def total_budget_expense():
     user_email = session['user']
@@ -1985,7 +1983,7 @@ def analysis():
         # Recommend investments based on similar investments the user has bought
         if user_investments:
             similar_investments = ', '.join(user_investments[:5])  # Consider the first 5 investments as similar
-            prompt2 = f"given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}. Recommend 5 investments similar to {similar_investments}."
+            prompt2 = f"given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}. Recommend 5 investments similar to {similar_investments}. Briefly explain why these stocks are reccomended to the user after analyzing their profile."
         else:
             # If the user has no investments, provide a generic recommendation prompt
             prompt2 = f"Given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}, provide recommendations for 5 stocks based on their current profile."
@@ -2063,7 +2061,7 @@ def download_pdf():
     pdf.set_font('helvetica', size=12)
 
     # Add title
-    pdf.cell(0, 10, "Monthly Analysis Report", ln=True, align='C')
+    pdf.cell(0, 10, "Analysis Report", ln=True, align='C')
     pdf.ln(5)  # Add a little space after the title
 
     # Add analysis result with a border
@@ -2072,17 +2070,19 @@ def download_pdf():
     pdf.multi_cell(0, 10, analysis_result.encode('utf-8').decode('latin-1'), align='L')  # Encode and decode using 'utf-8'
     pdf.ln(5)  # Add a little space after the analysis result
 
+    pdf.set_fill_color(255, 200, 200)
+    pdf.cell(0, 10, "Expense Breakdown:", ln=True, align='L', fill=True)
+    pdf.ln(5)
+    add_graph_to_pdf(pdf)
+    pdf.ln(100)
+
     pdf.set_fill_color(255, 240, 200)  # Light yellow background
     pdf.cell(0, 10, "Recommendations:", ln=True, align='L', fill=True)
     pdf.multi_cell(0, 10, recommendations.encode('utf-8').decode('latin-1'), align='L')  # Encode and decode using 'utf-8'
     pdf.ln(20)
 
-    pdf.set_fill_color(255, 200, 200)
-    pdf.cell(0, 10, "Expense Breakdown:", ln=True, align='L', fill=True)
-    pdf.ln(20)
 
-    add_graph_to_pdf(pdf)
-    pdf.ln(20)
+    
 
     downloads_folder = os.path.expanduser("~" + os.sep + "Downloads")
     pdf_path = os.path.join(downloads_folder, 'finsaver_analysis.pdf')
@@ -2125,12 +2125,6 @@ def add_graph_to_pdf(pdf):
     
     # Close the plot
     plt.close()
-
-
-
-@app.route('/settings')
-def settings():
-    return render_template('settings.html')
 
 @app.route("/graph")
 def graph():

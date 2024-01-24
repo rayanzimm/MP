@@ -3,7 +3,7 @@
 
 <head>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/img/favicon.ico') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -154,6 +154,10 @@
             /* Remove default margin */
         }
 
+        .newsCard h5 {
+            font-size: 16px;
+        }
+
         .newsCard h6.source {
             bottom: 30px;
             /* Adjusted to place "Source by" above "Published" */
@@ -193,7 +197,7 @@
         <a href="{{ url_for('home') }}"><i class="fas fa-chart-bar"></i> Tracker</a>
         <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Profile</a>
         <a href="{{ url_for('history') }}"><i class="fas fa-history"></i> History</a>
-        <a href="{{ url_for('settings') }}"><i class="fas fa-cogs"></i> Settings</a>
+        <a href="{{ url_for('about') }}"><i class="fa-solid fa-circle-info"></i></i> About Us</a>
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i
                 class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
@@ -216,8 +220,8 @@
                 <div class="newsCard">
                     <img src="{{ article.image_url }}" alt="News Image" style="height: 175px;">
                     <span class="line"></span>
-                    <h3 style="margin-bottom: 5px;"><a href="{{ article.article_url }}" style="text-align: center;">{{
-                            article.title }}</a></h3>
+                    <h5 style="margin-bottom: 5px;"><a href="{{ article.article_url }}" style="text-align: center;">{{
+                            article.title }}</a></h5>
                     <h6>By: {{ article.author }}</h6>
                     <h6>{{ article.published_utc }}</h6>
 

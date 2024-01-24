@@ -108,7 +108,7 @@
 
 <body>
     <header>
-        <a href="/settings" class="back-button">&lt; Back</a>
+        <a href="#" onclick="goBack()" class="back-button">&lt; Back</a>
         <h1>About Us</h1>
     </header>
 
@@ -156,6 +156,9 @@
 
             // Return false to prevent the default form submission
             return !formSubmitted;
+        }
+        function goBack() {
+            window.history.back();
         }
     </script>
 </html>

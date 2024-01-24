@@ -7,6 +7,7 @@
   <title>User Investments</title>
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/img/favicon.ico') }}">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <style>
     .modal {
@@ -78,6 +79,13 @@
       cursor: pointer;
     }
 
+    .modal-btn {
+      background-color: #2B99C0;
+      color: #fff;
+      border-radius: 50%;
+      margin-left: 525px;
+    }
+
     .edit-btn:hover {
       background-color: #0056b3;
       border-color: #0056b3;
@@ -86,6 +94,7 @@
     .modal-container {
       margin-top: 50px;
     }
+    
 
 
     .modal-btn-submit:hover {
@@ -162,6 +171,16 @@
       align-items: center;
       /* Align items vertically at the center */
     }
+    .back-button {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            text-decoration: none;
+            padding: 10px;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
 
 
 
@@ -175,10 +194,10 @@
 </head>
 
 <body>
-
+  <a href="#" onclick="goBack()" class="back-button">&lt; Back</a>
   <div class="container">
-    <button class="close-button" onclick="window.location.href='/home'">X</button>
-    <button type="button" class="modal-btn" onclick="openAddModal()"">Add Investments</button>
+    
+    
 
       
   <div class="header">
@@ -242,6 +261,8 @@
       </form>
     </div>
   </div>
+
+  <button type="button" class="modal-btn" onclick="openAddModal()""><i class="fa-solid fa-plus"></i></button>
  
   
   <div class="error-message" name="errorMessage">
@@ -366,6 +387,9 @@
         "container_id": "tradingview_d5eeb"
       });
     });
+    function goBack() {
+            window.history.back();
+        }
   </script>
 
 
