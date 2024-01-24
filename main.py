@@ -74,15 +74,28 @@ mail = Mail(app)
 
 # scheduler = BackgroundScheduler()
 
+
 # def send_daily_reminder(user_email):
 #     try:
 #         print(user_email)
 
 #         if user_email:
 #             with app.app_context():
-#                 msg = Message('Daily Expense Reminder', recipients=[user_email])
-#                 msg.body = 'Don\'t forget to upload your daily Budget & Expenses'
-#                 msg.html = '<p>Don\'t forget to upload your daily Budget & Expenses</p>'
+#                 subject = 'Daily Expense Reminder'
+
+#                 # Use HTML for a more professional and formatted email body
+#                 body = '''
+#                     <p>Dear User,</p>
+#                     <p>We hope this email finds you well. This is a friendly reminder to upload your daily Budget & Expenses.</p>
+#                     <p>Your commitment to tracking your expenses is essential for financial planning and management.</p>
+#                     <p>Thank you for your diligence!</p>
+#                     <p>Best regards,<br>Finsaver Team</p>
+#                 '''
+
+#                 # Create a Message object with both plain text and HTML bodies
+#                 msg = Message(subject, recipients=[user_email])
+#                 msg.body = "Don't forget to upload your daily Budget & Expenses."
+#                 msg.html = body  # Set the HTML body
 
 #                 mail.send(msg)
 
@@ -92,6 +105,7 @@ mail = Mail(app)
 
 #     except Exception as e:
 #         print(f"Error sending email: {str(e)}")
+
 
 
 
@@ -584,10 +598,24 @@ def deduct_coins(product_id):
 
 def send_purchase_email(email, product_name, product_price):
     subject = 'Purchase Confirmation'
-    body = f'Thank you for purchasing {product_name} for {product_price} coins. Your order has been confirmed.'
 
+    # Use HTML for a nicer email body
+    body = f'''
+        <p>Dear Customer,</p>
+        <p>Thank you for purchasing <strong>{product_name}</strong> for <strong>{product_price} coins</strong>. Your order has been confirmed.</p>
+        <p>Here are the details of your purchase:</p>
+        <ul>
+            <li>Product: {product_name}</li>
+            <li>Price: {product_price} coins</li>
+        </ul>
+        <p>We appreciate your business!</p>
+        <p>Best regards,<br>Finsaver Team</p>
+    '''
+
+    # Create a Message object with both plain text and HTML bodies
     msg = Message(subject, sender=app.config['MAIL_DEFAULT_SENDER'], recipients=[email])
-    msg.body = body
+    msg.body = f'Thank you for purchasing {product_name} for {product_price} coins. Your order has been confirmed.'
+    msg.html = body  # Set the HTML body
 
     try:
         mail.send(msg)
@@ -1931,7 +1959,7 @@ def delete_others_expense(unique_index):
 
 
         
-openai.api_key = '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'
+openai.api_key = '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'
 @app.route('/analysis')
 def total_budget_expense():
     user_email = session['user']
@@ -2027,7 +2055,7 @@ def analysis():
             prompt2 = f"given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}. Recommend 5 investments similar to {similar_investments}."
         else:
             # If the user has no investments, provide a generic recommendation prompt
-            prompt2 = f"Given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}, provide recommendations for 5 stocks based on their current profile."
+            prompt2 = f"Given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}, provide recommendations for 5 stocks based on their current profile.briefly explain why these stocks are reccomended to the user after analyzing their profile"
 
         recommendations = openai_analysis(prompt2)
         session['recommendations'] = recommendations
@@ -2102,7 +2130,7 @@ def download_pdf():
     pdf.set_font('helvetica', size=12)
 
     # Add title
-    pdf.cell(0, 10, "Monthly Analysis Report", ln=True, align='C')
+    pdf.cell(0, 10, "Analysis Report", ln=True, align='C')
     pdf.ln(5)  # Add a little space after the title
 
     # Add analysis result with a border
@@ -2111,17 +2139,19 @@ def download_pdf():
     pdf.multi_cell(0, 10, analysis_result.encode('utf-8').decode('latin-1'), align='L')  # Encode and decode using 'utf-8'
     pdf.ln(5)  # Add a little space after the analysis result
 
+    pdf.set_fill_color(255, 200, 200)
+    pdf.cell(0, 10, "Expense Breakdown:", ln=True, align='L', fill=True)
+    pdf.ln(5)
+    add_graph_to_pdf(pdf)
+    pdf.ln(100)
+
     pdf.set_fill_color(255, 240, 200)  # Light yellow background
     pdf.cell(0, 10, "Recommendations:", ln=True, align='L', fill=True)
     pdf.multi_cell(0, 10, recommendations.encode('utf-8').decode('latin-1'), align='L')  # Encode and decode using 'utf-8'
     pdf.ln(20)
 
-    pdf.set_fill_color(255, 200, 200)
-    pdf.cell(0, 10, "Expense Breakdown:", ln=True, align='L', fill=True)
-    pdf.ln(20)
 
-    add_graph_to_pdf(pdf)
-    pdf.ln(20)
+    
 
     downloads_folder = os.path.expanduser("~" + os.sep + "Downloads")
     pdf_path = os.path.join(downloads_folder, 'finsaver_analysis.pdf')
