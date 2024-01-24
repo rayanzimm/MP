@@ -538,21 +538,6 @@ def shop():
             'product_id': product_data.get('product_id', 0)
         })
 
-    if request.method == 'POST':
-        selected_product = request.form.get('selected_product')
-        if selected_product:
-            selected_product_info = next((p for p in all_product_data if p['name'] == selected_product), None)
-
-            if selected_product_info:
-                product_price = selected_product_info['price']
-
-                if coins >= product_price:
-                    new_coins = coins - product_price
-                    user_ref.update({'coins': new_coins})
-
-                    flash(f"Successfully purchased {selected_product} for {product_price} coins.", "success")
-                else:
-                    flash("Insufficient coins to make the purchase.", "danger")
 
     return render_template('shop.html', coins=coins, login_days=login_days, all_product_data=all_product_data)
 
