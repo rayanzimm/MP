@@ -529,13 +529,13 @@ def deduct_coins(product_id):
 
     coins = user_data.get('coins')
     if coins is None or not isinstance(coins, int):
-        return jsonify({'success': False, 'message': 'Invalid or missing coins field'})
+        flash("Invalid or missing coins.", "warning")
 
     if coins < product_price:
-        return jsonify({'success': False, 'message': 'Insufficient coins'})
+        flash("Insufficient coins.", "warning")
 
     if not product_ref:
-        return jsonify({'success': False, 'message': 'Product not found'})
+        flash("Product not found.", "warning")
 
 
     new_coins = coins - product_price
