@@ -10,7 +10,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/img/favicon.ico') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rewards Shop</title>
@@ -121,7 +120,10 @@
             align-items: center;
             flex: 1;
 
-            @media (max-width: 768px) {
+        }
+
+        @media (max-width: 768px) {
+            .stepper-item {
                 font-size: 12px;
             }
         }
@@ -224,13 +226,13 @@
         }
 
         .product-card {
-            width: calc(33.33% - 20px); 
+            width: 300px;
             border: 1px solid #2B99C0;
             padding: 10px;
             border-radius: 10px;
             position: relative;
-            box-sizing: border-box; 
         }
+
         .product-card img {
             width: 100%;
             height: auto;
@@ -288,17 +290,19 @@
     <div class="center-container">
         <div class="progress-wrapper">
             {% for day in range(1, 8) %}
-            {% if day <= login_days %} <div class="stepper-item completed">
-                <button class="step-counter" data-day="{{ day }}" onclick="handleButtonClick({{ day }})">{{ day }}</button>
-                <div class="step-name">Day {{ day }}</div>
-        </div>
-        {% else %}
-        <div class="stepper-item">
-            <button class="step-counter" data-day="{{ day }}" onclick="handleButtonClick({{ day }})">{{ day }}</button>
-            <div class="step-name">Day {{ day }}</div>
-        </div>
-        {% endif %}
-        {% endfor %}
+                {% if day <= login_days %} 
+                    <div class="stepper-item completed">
+                        <button class="step-counter" data-day="{{ day }}" onclick="handleButtonClick('{{ day }}')">{{ day
+                            }}</button>
+                        <div class="step-name">Day {{ day }}</div>
+                    </div>
+                {% else %}
+                    <div class="stepper-item">
+                        <button class="step-counter" data-day="{{ day }}" onclick="handleButtonClick('{{ day }}')">{{ day }}</button>
+                        <div class="step-name">Day {{ day }}</div>
+                    </div>
+                {% endif %}
+            {% endfor %}
     </div>
     <div class="products-container">
         {% for product in all_product_data %}
@@ -350,64 +354,23 @@
 
             }
         }
-        //         function buyProduct(name, product_id, price) {
-        //     // Make an asynchronous request to Flask route to deduct coins
-        //     fetch(`/deduct-coins/${product_id}`, {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //         },
-        //         body: JSON.stringify({
-        //             name: name,
-        //             price: price,
-        //         }),
-        //     })
-        //     .then(response => response.json())
-        //     .then(data => {
-        //         if (data.success) {
-        //             alert(`Successfully purchased ${name} for ${price} coins.`);
-        //             // You may want to update the UI or redirect to a new page here
-        //         } else {
-        //             alert(data.message);
-        //         }
-        //     })
-        //     .catch(error => {
-        //         console.error('Error:', error);
-        //     });
-        // }
+        
 
         function handleButtonClick(day) {
-            if (isEligibleForReward(day)) {
-                claimReward(day);
-            } else {
-                alert("You are not eligible for a reward today.");
-            }
+        var stepperItem = document.querySelector('.stepper-item button[data-day="' + day + '"]').parentNode;
+        
+        if (stepperItem && stepperItem.classList.contains('completed')) {
+            // The selected stepper item is completed, perform the action
+            window.location.href = "/claim_reward?day=" + day;
+        } else {
+            // Log information for debugging
+            console.log("Cannot claim reward for day " + day + ". Stepper item classes:", stepperItem ? stepperItem.classList : "Not found");
+            // You can display a message, disable the button, or take other actions
         }
+    }
+    
 
-        function isEligibleForReward(day) {
-            return day <= login_days;
-        }
 
-        function claimReward(day) {
-            fetch('/claim-reward', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ day: day }),
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert("Reward claimed successfully!");
-                } else {
-                    alert("Failed to claim reward. Please try again.");
-                }
-            })
-            .catch(error => {
-                console.error('Error claiming reward:', error);
-                alert("An error occurred. Please try again later.");
-            });
-        }
     </script>
 
 

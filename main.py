@@ -51,7 +51,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -74,28 +74,15 @@ mail = Mail(app)
 
 # scheduler = BackgroundScheduler()
 
-
 # def send_daily_reminder(user_email):
 #     try:
 #         print(user_email)
 
 #         if user_email:
 #             with app.app_context():
-#                 subject = 'Daily Expense Reminder'
-
-#                 # Use HTML for a more professional and formatted email body
-#                 body = '''
-#                     <p>Dear User,</p>
-#                     <p>We hope this email finds you well. This is a friendly reminder to upload your daily Budget & Expenses.</p>
-#                     <p>Your commitment to tracking your expenses is essential for financial planning and management.</p>
-#                     <p>Thank you for your diligence!</p>
-#                     <p>Best regards,<br>Finsaver Team</p>
-#                 '''
-
-#                 # Create a Message object with both plain text and HTML bodies
-#                 msg = Message(subject, recipients=[user_email])
-#                 msg.body = "Don't forget to upload your daily Budget & Expenses."
-#                 msg.html = body  # Set the HTML body
+#                 msg = Message('Daily Expense Reminder', recipients=[user_email])
+#                 msg.body = 'Don\'t forget to upload your daily Budget & Expenses'
+#                 msg.html = '<p>Don\'t forget to upload your daily Budget & Expenses</p>'
 
 #                 mail.send(msg)
 
@@ -105,7 +92,6 @@ mail = Mail(app)
 
 #     except Exception as e:
 #         print(f"Error sending email: {str(e)}")
-
 
 
 
@@ -211,57 +197,6 @@ def index():
             
             flash(f"Error logging in: {str(e)}", "warning")
     return render_template('login.html')
-
-def update_login_rewards(user_email, user_data, user_doc):
-    singapore_timezone = pytz.timezone('Asia/Singapore')
-    current_datetime = datetime.now(singapore_timezone)
-    current_date = current_datetime.strftime("%Y-%m-%d")
-
-    coins_rewarded = 0  
-
-    # Update the 'lastLogin' field to today's date
-    if user_data['lastLogin'] != current_datetime and current_datetime.hour >= 6:
-        if current_datetime > user_data.get('nextRewardTime', datetime.min):
-            if current_datetime.weekday() == 0:
-                user_data['lastLogin'] = current_datetime
-                user_data['loginDays'] = 1
-                coins_rewarded = reward_coins(user_email, user_data['loginDays'])
-                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
-            else:
-                user_data['lastLogin'] = current_datetime
-                user_data['loginDays'] += 1
-                coins_rewarded = reward_coins(user_email, user_data['loginDays'])
-                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
-    
-    user_data['coins_rewarded'] = coins_rewarded
-    
-    db.collection('users').document(user_doc.id).update(user_data)
-    
-    if coins_rewarded > 0:
-        flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
-
-def reward_coins(user_email, login_days):
-    try:
-    # Example: Reward 10 coins for the first day, and 5 additional coins for each subsequent day
-        coins_to_reward = 10 + (login_days - 1) * 5
-        
-        return coins_to_reward
-            
-    except Exception as e:
-        flash(f"Error updating coins: {str(e)}", "danger")
-
-def fetch_total_cost(expense_type, user_email, current_date):
-    total_cost = 0
-
-    # Fetch the list of expenses for the given expense type and user
-    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).stream()
-
-    # Iterate through the expenses and calculate the total cost
-    for expense_doc in expense_ref:
-        expense_data = expense_doc.to_dict()
-        total_cost += float(expense_data.get('cost', 0))
-
-    return total_cost
 
 @app.route('/home')
 def home():
@@ -409,79 +344,6 @@ def fetch_total_cost(expense_type, user_email, current_date):
 
     return total_cost
 
-def update_login_rewards(user_email, user_data, user_doc):
-    singapore_timezone = pytz.timezone('Asia/Singapore')
-    current_datetime = datetime.now(singapore_timezone)
-    current_date = current_datetime.strftime("%Y-%m-%d")
-
-    # Update the 'lastLogin' field to today's date
-    if user_data['lastLogin'] != current_datetime and current_datetime.hour >= 6:
-        if current_datetime > user_data.get('nextRewardTime', datetime.min):
-            if current_datetime.weekday() == 0:
-                user_data['lastLogin'] = current_datetime
-                user_data['loginDays'] = 1
-                coins_rewarded = reward_coins(user_email, user_data['loginDays'])
-                user_data['coins'] += coins_rewarded
-                flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
-                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
-            else:
-                user_data['lastLogin'] = current_datetime
-                user_data['loginDays'] += 1
-                coins_rewarded = reward_coins(user_email, user_data['loginDays'])
-                user_data['coins'] += coins_rewarded
-                flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
-                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
-        else:
-            user_data['lastLogin'] = current_datetime
-    else:
-        user_data['lastLogin'] = current_datetime
-
-    # Save the updated user document back to Firestore
-    db.collection('users').document(user_doc.id).update(user_data)
-
-
-def fetch_total_cost(expense_type, user_email, current_date):
-    total_cost = 0
-
-    # Fetch the list of expenses for the given expense type and user
-    expense_ref = db.collection(expense_type).where('user_email', '==', user_email).where('date', '==', current_date).stream()
-
-    # Iterate through the expenses and calculate the total cost
-    for expense_doc in expense_ref:
-        expense_data = expense_doc.to_dict()
-        total_cost += float(expense_data.get('cost', 0))
-
-    return total_cost
-
-def update_login_rewards(user_email, user_data, user_doc):
-    singapore_timezone = pytz.timezone('Asia/Singapore')
-    current_datetime = datetime.now(singapore_timezone)
-    current_date = current_datetime.strftime("%Y-%m-%d")
-
-    # Update the 'lastLogin' field to today's date
-    if user_data['lastLogin'] != current_datetime and current_datetime.hour >= 6:
-        if current_datetime > user_data.get('nextRewardTime', datetime.min):
-            if current_datetime.weekday() == 0:
-                user_data['lastLogin'] = current_datetime
-                user_data['loginDays'] = 1
-                coins_rewarded = reward_coins(user_email, user_data['loginDays'])
-                user_data['coins'] += coins_rewarded
-                flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
-                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
-            else:
-                user_data['lastLogin'] = current_datetime
-                user_data['loginDays'] += 1
-                coins_rewarded = reward_coins(user_email, user_data['loginDays'])
-                user_data['coins'] += coins_rewarded
-                flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
-                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
-        else:
-            user_data['lastLogin'] = current_datetime
-    else:
-        user_data['lastLogin'] = current_datetime
-
-    # Save the updated user document back to Firestore
-    db.collection('users').document(user_doc.id).update(user_data)
 
 @app.route('/update_savings_goal', methods=['POST'])
 def update_savings_goal():
@@ -552,8 +414,93 @@ def shop():
             'product_id': product_data.get('product_id', 0)
         })
 
-
     return render_template('shop.html', coins=coins, login_days=login_days, all_product_data=all_product_data)
+
+def update_login_rewards(user_email, user_data, user_doc):
+    singapore_timezone = pytz.timezone('Asia/Singapore')
+    current_datetime = datetime.now(singapore_timezone)
+    current_date = current_datetime.strftime("%Y-%m-%d")
+
+    coins_rewarded = 0  
+
+    # Update the 'lastLogin' field to today's date
+    if user_data['lastLogin'] != current_datetime and current_datetime.hour >= 6:
+        if current_datetime > user_data.get('nextRewardTime', datetime.min):
+            next_week_start = user_data.get('nextWeekDate')
+
+            if current_datetime > next_week_start:
+                print("new week")
+                user_data['lastLogin'] = current_datetime
+                user_data['loginDays'] = 1
+                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
+                user_data['claimedDays'] = []
+                next_week_start = (current_datetime + timedelta(days=(7 - current_datetime.weekday()))).replace(hour=6, minute=0, second=0)
+            
+                user_data['nextWeekDate'] = next_week_start
+            else:
+                user_data['lastLogin'] = current_datetime
+                user_data['loginDays'] += 1
+                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
+        else:
+            user_data['lastLogin'] = current_datetime
+    
+    db.collection('users').document(user_doc.id).update(user_data)
+    
+    if coins_rewarded > 0:
+        flash(f"Congratulations! You've been rewarded {coins_rewarded} coins.", "success")
+
+def reward_coins(login_days):
+    try:
+    # Example: Reward 10 coins for the first day, and 5 additional coins for each subsequent day
+        coins_to_reward = 10 + (login_days - 1) * 5
+        
+        return coins_to_reward
+            
+    except Exception as e:
+        flash(f"Error updating coins: {str(e)}", "danger")
+
+@app.route('/claim_reward', methods=['GET'])
+def claim_reward():
+    try:
+        user_email = session['user']
+        user_ref = db.collection('users').where('email', '==', user_email).limit(1).get()
+
+        if not user_ref:
+            flash("User not found.", "danger")
+            return redirect('/')
+
+        user_doc = user_ref[0]
+        user_data = user_doc.to_dict()
+        coins = user_data.get('coins', 0)
+        login_days = user_data.get('loginDays')
+        claimed_days = user_data.get('claimedDays')
+
+        # Retrieve the 'day' parameter from the query string
+        day = request.args.get('day', type=int)
+
+        if day not in claimed_days:
+        
+            coins_rewarded = reward_coins(day)
+            coins += coins_rewarded
+            claimed_days.append(day)
+
+            # Update the user document with the new coins value
+            db.collection('users').document(user_doc.id).update({
+                'coins': coins,
+                'claimedDays': claimed_days
+                })
+
+            flash(f"Claimed reward for Day {day}: {coins_rewarded} coins", "success")
+            return redirect('/shop')
+        
+        else:
+            flash("Coins have already been claimed for this day.", "warning")
+            return redirect('/shop')
+
+    except Exception as e:
+        flash(f"Error claiming reward: {str(e)}", "danger")
+        return redirect('/shop')
+
 
 @app.route('/deduct-coins/<int:product_id>', methods=['POST', 'GET'])
 def deduct_coins(product_id):
@@ -598,24 +545,10 @@ def deduct_coins(product_id):
 
 def send_purchase_email(email, product_name, product_price):
     subject = 'Purchase Confirmation'
+    body = f'Thank you for purchasing {product_name} for {product_price} coins. Your order has been confirmed.'
 
-    # Use HTML for a nicer email body
-    body = f'''
-        <p>Dear Customer,</p>
-        <p>Thank you for purchasing <strong>{product_name}</strong> for <strong>{product_price} coins</strong>. Your order has been confirmed.</p>
-        <p>Here are the details of your purchase:</p>
-        <ul>
-            <li>Product: {product_name}</li>
-            <li>Price: {product_price} coins</li>
-        </ul>
-        <p>We appreciate your business!</p>
-        <p>Best regards,<br>Finsaver Team</p>
-    '''
-
-    # Create a Message object with both plain text and HTML bodies
     msg = Message(subject, sender=app.config['MAIL_DEFAULT_SENDER'], recipients=[email])
-    msg.body = f'Thank you for purchasing {product_name} for {product_price} coins. Your order has been confirmed.'
-    msg.html = body  # Set the HTML body
+    msg.body = body
 
     try:
         mail.send(msg)
@@ -1959,7 +1892,7 @@ def delete_others_expense(unique_index):
 
 
         
-openai.api_key = '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'
+openai.api_key = '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'
 @app.route('/analysis')
 def total_budget_expense():
     user_email = session['user']
@@ -2055,7 +1988,7 @@ def analysis():
             prompt2 = f"given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}. Recommend 5 investments similar to {similar_investments}."
         else:
             # If the user has no investments, provide a generic recommendation prompt
-            prompt2 = f"Given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}, provide recommendations for 5 stocks based on their current profile.briefly explain why these stocks are reccomended to the user after analyzing their profile"
+            prompt2 = f"Given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}, provide recommendations for 5 stocks based on their current profile."
 
         recommendations = openai_analysis(prompt2)
         session['recommendations'] = recommendations
@@ -2130,7 +2063,7 @@ def download_pdf():
     pdf.set_font('helvetica', size=12)
 
     # Add title
-    pdf.cell(0, 10, "Analysis Report", ln=True, align='C')
+    pdf.cell(0, 10, "Monthly Analysis Report", ln=True, align='C')
     pdf.ln(5)  # Add a little space after the title
 
     # Add analysis result with a border
@@ -2139,19 +2072,17 @@ def download_pdf():
     pdf.multi_cell(0, 10, analysis_result.encode('utf-8').decode('latin-1'), align='L')  # Encode and decode using 'utf-8'
     pdf.ln(5)  # Add a little space after the analysis result
 
-    pdf.set_fill_color(255, 200, 200)
-    pdf.cell(0, 10, "Expense Breakdown:", ln=True, align='L', fill=True)
-    pdf.ln(5)
-    add_graph_to_pdf(pdf)
-    pdf.ln(100)
-
     pdf.set_fill_color(255, 240, 200)  # Light yellow background
     pdf.cell(0, 10, "Recommendations:", ln=True, align='L', fill=True)
     pdf.multi_cell(0, 10, recommendations.encode('utf-8').decode('latin-1'), align='L')  # Encode and decode using 'utf-8'
     pdf.ln(20)
 
+    pdf.set_fill_color(255, 200, 200)
+    pdf.cell(0, 10, "Expense Breakdown:", ln=True, align='L', fill=True)
+    pdf.ln(20)
 
-    
+    add_graph_to_pdf(pdf)
+    pdf.ln(20)
 
     downloads_folder = os.path.expanduser("~" + os.sep + "Downloads")
     pdf_path = os.path.join(downloads_folder, 'finsaver_analysis.pdf')
