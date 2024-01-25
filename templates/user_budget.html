@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/img/favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
         .modal {
@@ -18,18 +20,21 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgba(0, 0, 0, 0.4);
         }
 
         /* Modal content */
         .modal-content {
             background-color: #010129c1;
             margin: 15% auto;
-            padding: 30px; /* Increased padding for a more spacious look */
+            padding: 30px;
+            /* Increased padding for a more spacious look */
             border: 1px solid #888;
             width: 60%;
-            border-radius: 10px; /* Rounded corners */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Adding a subtle box shadow */
+            border-radius: 10px;
+            /* Rounded corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            /* Adding a subtle box shadow */
             color: #fff;
         }
 
@@ -44,7 +49,8 @@
             margin-top: 50px;
         }
 
-        h1, h2 {
+        h1,
+        h2 {
             margin-top: 20px;
             color: #ffffff;
         }
@@ -70,6 +76,7 @@
             border-radius: 0.25rem;
             cursor: pointer;
         }
+
         .delete-btn {
             color: #fff;
             background-color: #ff0000;
@@ -87,146 +94,172 @@
         .modal-container {
             margin-top: 50px;
         }
-       
+
 
         .modal-btn-submit:hover {
             background-color: #207290;
             color: white;
         }
+
+        .modal-btn {
+            background-color: #2B99C0;
+            color: #fff;
+            border-radius: 50%;
+            margin-left: 525px;
+            height: 40px;
+            width: 40px;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            text-decoration: none;
+            padding: 10px;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
     </style>
 </head>
+
 <body>
+    <a href="{{ url_for('home') }}" class="back-button">&lt; Back</a>
+    <div class="container">
 
-<div class="container">
-    <button class="close-button" onclick="window.location.href='/home'">X</button>
-    <button type="button" class="modal-btn" onclick="openAddModal()"">Add Budget Data</button>
+    <form action=" /copy_previous_budget" method="POST">
+            <button type="submit" class="btn btn-primary">Copy Previous Budget</button>
+            </form>
 
-    <form action="/copy_previous_budget" method="POST">
-        <button type="submit" class="btn btn-primary">Copy Previous Budget</button>
-    </form>
+            <h1>User Budget</h1>
 
-    <h1>User Budget</h1>
-
-    {% if user_budget_data %}
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Budget Name</th>
-                    <th>Amount</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for budget_item in user_budget_data %}
+            {% if user_budget_data %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Budget Name</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for budget_item in user_budget_data %}
                     {% if budget_item['date'] == budget_item['current_date'] %}
-                        <tr>
-                            <td>{{ budget_item['budgetName'] }}</td>
-                            <td>{{ budget_item['cost'] }}</td>
-                            <td>
-                                <button class="edit-btn" onclick="openModal('{{ budget_item['budgetName'] }}', '{{ budget_item['cost'] }}', '{{ budget_item['unique_index'] }}')">Edit</button>
-                            </td>
-                            <td>
-                                <button class="delete-btn" onclick="deleteBudget('{{ budget_item['unique_index'] }}')">Delete</button>
-                            </td>
-                    {% endif %}
+                    <tr>
+                        <td>{{ budget_item['budgetName'] }}</td>
+                        <td>{{ budget_item['cost'] }}</td>
+                        <td>
+                            <button class="edit-btn"
+                                onclick="openModal('{{ budget_item['budgetName'] }}', '{{ budget_item['cost'] }}', '{{ budget_item['unique_index'] }}')">Edit</button>
+                        </td>
+                        <td>
+                            <button class="delete-btn"
+                                onclick="deleteBudget('{{ budget_item['unique_index'] }}')">Delete</button>
+                        </td>
+                        {% endif %}
+                        {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No budget data found for the user.</p>
+            {% endif %}
+            <div id="editModal" class="modal">
+                <div class="modal-content">
+                    <form method="POST" action="/edit_budget" enctype="multipart/form-data">
+                        <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
+                        <h2>Edit Budget</h2>
+                        <label for="budgetName">Budget Name:</label>
+                        <input type="text" id="budgetName" name="budgetName" required>
+                        <label for="cost">Amount:</label>
+                        <input type="text" id="cost" name="cost" required>
+                        <input type="hidden" name="unique_index" id="unique_index" value="">
+                        <button class="edit-btn" type="submit">Update Budget</button>
+                    </form>
+                </div>
+            </div>
+
+            <button type="button" class="modal-btn" onclick="openAddModal()""><i class=" fa-solid fa-plus"></i></button>
+
+            <div class="error-message" name="errorMessage">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    <span>{{ message }}</span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
                 {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No budget data found for the user.</p>
-    {% endif %}
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-        <form method="POST" action="/edit_budget" enctype="multipart/form-data">
-            <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
-            <h2>Edit Budget</h2>
-            <label for="budgetName">Budget Name:</label>
-            <input type="text" id="budgetName" name="budgetName" required>
-            <label for="cost">Amount:</label>
-            <input type="text" id="cost" name="cost" required >
-            <input type="hidden" name="unique_index" id="unique_index" value="">
-            <button class="edit-btn" type="submit">Update Budget</button>
-        </form>
-        </div>
-    </div>
-    <div class="error-message" name="errorMessage">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
 
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-            <span>{{ message }}</span>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        {% endfor %}
-
-        {% endif %}
-        {% endwith %}
-    </div>
-</div>
-
-
-
-<div class="modal" id="addbudgetModal" tabindex="-1" role="dialog" aria-labelledby="addbudgetModalLabel" >
-    <div class="modal-dialog" role="modal-content">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addbudgetModalLabel">Add New Budget Data</h5>
-          <span onclick="closeAddModal()" style="float: right; cursor: pointer;">&times;</span>
-        </div>
-        <div class="modal-body">
-          <!-- Form for adding new budget expense -->
-          <form action="/addbudget" method="POST" class="submitbudget" name="submitbudget">
-            <div class="form-group">
-              <label for="budgetName">Budget Name</label>
-              <input type='text' id='budgetName' name='budgetName'>
+                {% endif %}
+                {% endwith %}
             </div>
-            <div class="form-group">
-              <label for="newCost">Cost</label>
-              <input type='text' id='cost' name='cost'>
-            </div>
-            <button type="submit" class='modal-btn-submit'>Add Budget Data</button>
-          </form>
-        </div>
-      </div>
     </div>
-</div>
-
-
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
 
 
-<script>
-    function openModal(budgetName, cost, uniqueIndex) {
-        document.getElementById("budgetName").value = budgetName;
-        document.getElementById("cost").value = cost;
-        document.getElementById("unique_index").value = uniqueIndex;
-        document.getElementById("editModal").style.display = "block";
-    }
-    function closeModal() {
-        document.getElementById("editModal").style.display = "none";
-    }
+    <div class="modal" id="addbudgetModal" tabindex="-1" role="dialog" aria-labelledby="addbudgetModalLabel">
+        <div class="modal-dialog" role="modal-content">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addbudgetModalLabel">Add New Budget Data</h5>
+                    <span onclick="closeAddModal()" style="float: right; cursor: pointer;">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <!-- Form for adding new budget expense -->
+                    <form action="/addbudget" method="POST" class="submitbudget" name="submitbudget">
+                        <div class="form-group">
+                            <label for="budgetName">Budget Name</label>
+                            <input type='text' id='budgetName' name='budgetName'>
+                        </div>
+                        <div class="form-group">
+                            <label for="newCost">Cost</label>
+                            <input type='text' id='cost' name='cost'>
+                        </div>
+                        <button type="submit" class='modal-btn-submit'>Add Budget Data</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
-    function openAddModal() {
-        document.getElementById("addbudgetModal").style.display = "block"; 
-    }
-    function closeAddModal() {
-        document.getElementById("addbudgetModal").style.display = "none";
-    }
-    function deleteBudget(uniqueIndex) {
-        // Use JavaScript to confirm the deletion (you can customize the confirmation dialog)
-        if (confirm("Are you sure you want to delete this item?")) {
-            // Redirect to the delete_budget_expense route with the unique_index parameter
-            window.location.href = "/delete_budget/" + uniqueIndex;
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+
+
+    <script>
+        function openModal(budgetName, cost, uniqueIndex) {
+            document.getElementById("budgetName").value = budgetName;
+            document.getElementById("cost").value = cost;
+            document.getElementById("unique_index").value = uniqueIndex;
+            document.getElementById("editModal").style.display = "block";
         }
-    }
+        function closeModal() {
+            document.getElementById("editModal").style.display = "none";
+        }
 
-</script>
+
+        function openAddModal() {
+            document.getElementById("addbudgetModal").style.display = "block";
+        }
+        function closeAddModal() {
+            document.getElementById("addbudgetModal").style.display = "none";
+        }
+        function deleteBudget(uniqueIndex) {
+            // Use JavaScript to confirm the deletion (you can customize the confirmation dialog)
+            if (confirm("Are you sure you want to delete this item?")) {
+                // Redirect to the delete_budget_expense route with the unique_index parameter
+                window.location.href = "/delete_budget/" + uniqueIndex;
+            }
+        }
+        
+
+    </script>
 </body>
+
 </html>

@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User others Expenses</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/img/favicon.ico') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-
         /* Modal content */
         .modal-content {
             background-color: #010129c1;
             margin: 15% auto;
-            padding: 30px; /* Increased padding for a more spacious look */
+            padding: 30px;
+            /* Increased padding for a more spacious look */
             border: 1px solid #888;
             width: 60%;
-            border-radius: 10px; /* Rounded corners */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Adding a subtle box shadow */
+            border-radius: 10px;
+            /* Rounded corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            /* Adding a subtle box shadow */
             color: #fff;
         }
 
@@ -32,7 +36,8 @@
             margin-top: 50px;
         }
 
-        h1, h2 {
+        h1,
+        h2 {
             margin-top: 20px;
             color: #ffffff;
         }
@@ -58,7 +63,7 @@
             border-radius: 0.25rem;
             cursor: pointer;
         }
-        
+
         .delete-btn {
             color: #fff;
             background-color: #ff0000;
@@ -76,144 +81,170 @@
         .modal-container {
             margin-top: 50px;
         }
-       
+
 
         .modal-btn-submit:hover {
             background-color: #207290;
             color: white;
         }
+
+        .modal-btn {
+            background-color: #2B99C0;
+            color: #fff;
+            border-radius: 50%;
+            margin-left: 525px;
+            height: 40px;
+            width: 40px;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            text-decoration: none;
+            padding: 10px;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
     </style>
 </head>
+
 <body>
+    <a href="{{ url_for('home') }}" class="back-button">&lt; Back</a>
+    <div class="container">
 
-<div class="container">
-    <button class="close-button" onclick="window.location.href='/home'">X</button>
-    <button type="button" class="modal-btn" onclick="openAddModal()"">Add others Expense</button>
+        <h1>User Others Expenses</h1>
 
-    <h1>User others Expenses</h1>
-
-    {% if user_others_data %}
+        {% if user_others_data %}
         <table class="table">
             <thead>
                 <tr>
-                    <th>others Name</th>
+                    <th>Others Name</th>
                     <th>Cost</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for others_item in user_others_data %}
-                    {% if others_item['date'] == others_item['current_date'] %}
-                        <tr>
-                            <td>{{ others_item['othersName'] }}</td>
-                            <td>{{ others_item['cost'] }}</td>
-                            <td>
-                                <button class="edit-btn" onclick="openModal('{{ others_item['othersName'] }}', '{{ others_item['cost'] }}', '{{ others_item['unique_index'] }}')">Edit</button>
-                            </td>
-                            <td>
-                                <button class="delete-btn" onclick="deleteothersExpense('{{ others_item['unique_index'] }}')">Delete</button>
-                            </td>
+                {% if others_item['date'] == others_item['current_date'] %}
+                <tr>
+                    <td>{{ others_item['othersName'] }}</td>
+                    <td>{{ others_item['cost'] }}</td>
+                    <td>
+                        <button class="edit-btn"
+                            onclick="openModal('{{ others_item['othersName'] }}', '{{ others_item['cost'] }}', '{{ others_item['unique_index'] }}')">Edit</button>
+                    </td>
+                    <td>
+                        <button class="delete-btn"
+                            onclick="deleteothersExpense('{{ others_item['unique_index'] }}')">Delete</button>
+                    </td>
                     {% endif %}
-                {% endfor %}
+                    {% endfor %}
             </tbody>
         </table>
-    {% else %}
+        {% else %}
         <p>No others expenses found for the user.</p>
-    {% endif %}
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-        <form method="POST" action="/edit_others_expenses" enctype="multipart/form-data">
-            <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
-            <h2>Edit others Expense</h2>
-            <label for="othersName">others Name:</label>
-            <input type="text" id="othersName" name="othersName" required>
-            <label for="cost">Cost:</label>
-            <input type="text" id="cost" name="cost" required >
-            <input type="hidden" name="unique_index" id="unique_index" value="">
-            <button class="edit-btn" type="submit">Update Expense</button>
-        </form>
-        </div>
-    </div>
-    <div class="error-message" name="errorMessage">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-            <span>{{ message }}</span>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        {% endfor %}
-
         {% endif %}
-        {% endwith %}
-    </div>
-</div>
-
-
-<div class="modal" id="addothersModal" tabindex="-1" role="dialog" aria-labelledby="addothersModalLabel" >
-    <div class="modal-dialog" role="modal-content">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addothersModalLabel">Add New others Expense</h5>
-          <span onclick="closeAddModal()" style="float: right; cursor: pointer;">&times;</span>
-        </div>
-        <div class="modal-body">
-          <!-- Form for adding new others expense -->
-          <form action="/addothers" method="POST" class="submitothers" name="submitothers">
-            <div class="form-group">
-              <label for="othersName">others Name</label>
-              <input type='text' id='othersName' name='othersName'>
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <form method="POST" action="/edit_others_expenses" enctype="multipart/form-data">
+                    <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
+                    <h2>Edit Others Expense</h2>
+                    <label for="othersName">Others Name:</label>
+                    <input type="text" id="othersName" name="othersName" required>
+                    <label for="cost">Cost:</label>
+                    <input type="text" id="cost" name="cost" required>
+                    <input type="hidden" name="unique_index" id="unique_index" value="">
+                    <button class="edit-btn" type="submit">Update Expense</button>
+                </form>
             </div>
-            <div class="form-group">
-              <label for="newCost">Cost</label>
-              <input type='text' id='cost' name='cost'>
-            </div>
-            <button type="submit" class='modal-btn-submit'>Add others Expense</button>
-          </form>
         </div>
-      </div>
+
+        <button type="button" class="modal-btn" onclick="openAddModal()""><i class=" fa-solid fa-plus"></i></button>
+
+        <div class="error-message" name="errorMessage">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                <span>{{ message }}</span>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+
+            {% endif %}
+            {% endwith %}
+        </div>
     </div>
-</div>
 
 
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <div class="modal" id="addothersModal" tabindex="-1" role="dialog" aria-labelledby="addothersModalLabel">
+        <div class="modal-dialog" role="modal-content">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addothersModalLabel">Add New Others Expense</h5>
+                    <span onclick="closeAddModal()" style="float: right; cursor: pointer;">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <!-- Form for adding new others expense -->
+                    <form action="/addothers" method="POST" class="submitothers" name="submitothers">
+                        <div class="form-group">
+                            <label for="othersName">Others Name</label>
+                            <input type='text' id='othersName' name='othersName'>
+                        </div>
+                        <div class="form-group">
+                            <label for="newCost">Cost</label>
+                            <input type='text' id='cost' name='cost'>
+                        </div>
+                        <button type="submit" class='modal-btn-submit'>Add others Expense</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
 
 
-<script>
-    function openModal(othersName, cost, uniqueIndex) {
-        document.getElementById("othersName").value = othersName;
-        document.getElementById("cost").value = cost;
-        document.getElementById("unique_index").value = uniqueIndex;
-        document.getElementById("editModal").style.display = "block";
-    }
-    function closeModal() {
-        document.getElementById("editModal").style.display = "none";
-    }
-
-
-    function openAddModal() {
-        document.getElementById("addothersModal").style.display = "block"; 
-    }
-    function closeAddModal() {
-        document.getElementById("addothersModal").style.display = "none";
-    }
-    function deleteothersExpense(uniqueIndex) {
-        // Use JavaScript to confirm the deletion (you can customize the confirmation dialog)
-        if (confirm("Are you sure you want to delete this item?")) {
-            // Redirect to the delete_others_expense route with the unique_index parameter
-            window.location.href = "/delete_others_expense/" + uniqueIndex;
+    <script>
+        function openModal(othersName, cost, uniqueIndex) {
+            document.getElementById("othersName").value = othersName;
+            document.getElementById("cost").value = cost;
+            document.getElementById("unique_index").value = uniqueIndex;
+            document.getElementById("editModal").style.display = "block";
         }
-    }
+        function closeModal() {
+            document.getElementById("editModal").style.display = "none";
+        }
 
-</script>
+
+        function openAddModal() {
+            document.getElementById("addothersModal").style.display = "block";
+        }
+        function closeAddModal() {
+            document.getElementById("addothersModal").style.display = "none";
+        }
+        function deleteothersExpense(uniqueIndex) {
+            // Use JavaScript to confirm the deletion (you can customize the confirmation dialog)
+            if (confirm("Are you sure you want to delete this item?")) {
+                // Redirect to the delete_others_expense route with the unique_index parameter
+                window.location.href = "/delete_others_expense/" + uniqueIndex;
+            }
+        }
+        
+
+    </script>
 
 
 
 </body>
+
 </html>

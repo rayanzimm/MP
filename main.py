@@ -421,23 +421,24 @@ def update_login_rewards(user_email, user_data, user_doc):
     current_datetime = datetime.now(singapore_timezone)
     current_date = current_datetime.strftime("%Y-%m-%d") 
 
+
     # Update the 'lastLogin' field to today's date
-    if user_data['lastLogin'] != current_datetime and current_datetime.hour >= 6:
+    if user_data['lastLogin'] != current_datetime and current_datetime.hour >= 0:
         if current_datetime > user_data.get('nextRewardTime', datetime.min):
             next_week_start = user_data.get('nextWeekDate')
 
             if current_datetime > next_week_start:
                 user_data['lastLogin'] = current_datetime
                 user_data['loginDays'] = 1
-                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
+                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=0, minute=0, second=0)
                 user_data['claimedDays'] = []
-                next_week_start = (current_datetime + timedelta(days=(7 - current_datetime.weekday()))).replace(hour=6, minute=0, second=0)
+                next_week_start = (current_datetime + timedelta(days=(7 - current_datetime.weekday()))).replace(hour=0, minute=0, second=0)
             
                 user_data['nextWeekDate'] = next_week_start
             else:
                 user_data['lastLogin'] = current_datetime
                 user_data['loginDays'] += 1
-                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=6, minute=0, second=0)
+                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=0, minute=0, second=0)
         else:
             user_data['lastLogin'] = current_datetime
     
@@ -1209,13 +1210,22 @@ def copy_previous_budget():
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
 
-    # Fetch all the budget expenses for the logged-in user on the previous date
-    previous_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-    previous_budget_expenses = db.collection('Budget').where('user_email', '==', user_email).where('date', '==', previous_date).stream()
+    latest_date_query = db.collection('Budget').where('user_email', '==', user_email).order_by('date', direction=firestore.Query.DESCENDING).limit(1)
+    latest_date_result = latest_date_query.get()
+
+    if not latest_date_result:
+        flash("No previous budget data found.", "warning")
+        return redirect('/user_budget')
+    
+    latest_date_doc = latest_date_result[0]
+    latest_date = latest_date_doc.get('date')
+
+    # Fetch all the budget expenses for the logged-in user on the latest date
+    latest_budget_expenses = db.collection('Budget').where('user_email', '==', user_email).where('date', '==', latest_date).stream()
 
     try:
         # Copy all the budget data from the previous date to today's date
-        for budget_doc in previous_budget_expenses:
+        for budget_doc in latest_budget_expenses:
             budget_data = budget_doc.to_dict()
 
             # Generate a new unique index for the copied entry
@@ -1228,7 +1238,7 @@ def copy_previous_budget():
             # Add the copied budget data to today's date
             db.collection('Budget').add(budget_data)
 
-        flash("All budget data copied successfully from the previous day!", "success")
+        flash("All budget data copied successfully from the previous date!", "success")
     except Exception as e:
         flash(f"An error occurred during budget data copying: {str(e)}", "warning")
 
@@ -1239,7 +1249,14 @@ def get_new_unique_index():
     # This can be a random number, a counter, or any other mechanism
     # Ensure that the generated index is unique within the collection
     # For simplicity, let's use a random number between 1 and 1000 in this example
-    return random.randint(1, 1000)
+    latest_budget = db.collection('Budget').order_by('unique_index', direction=firestore.Query.DESCENDING).limit(1).stream()
+    latest_index = 0
+
+    for budget_doc in latest_budget:
+            latest_index = int(budget_doc.to_dict().get('unique_index', 0))
+            
+    unique_index = latest_index + 1
+    return unique_index
 
 
 @app.route('/addbudget', methods=['GET', 'POST'])
