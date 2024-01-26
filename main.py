@@ -51,7 +51,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -1892,7 +1892,7 @@ def delete_others_expense(unique_index):
 
 
         
-openai.api_key = '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'
+openai.api_key = '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'
 @app.route('/analysis')
 def total_budget_expense():
     user_email = session['user']
@@ -2016,18 +2016,16 @@ def analysis():
         investment_ref = db.collection('Investment').where('user_email', '==', user_email).stream()
         user_investments = [investment_doc.to_dict().get('ticker', '') for investment_doc in investment_ref]
 
-        prompt = f"Analyze the impact on savings given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}. Provide a detailed analysis report on the user's financial statistics "
+        prompt = f"Analyze the impact on savings given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}. Provide a detailed analysis report on the user's financial statistics, and give 3 short tips on how to save better based on the users budget, savings and expenses"
 
         analysis_result = openai_analysis(prompt)
         session['analysis_result'] = analysis_result
 
         # Recommend investments based on similar investments the user has bought
-        if user_investments:
-            similar_investments = ', '.join(user_investments[:5])  # Consider the first 5 investments as similar
-            prompt2 = f"given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}. Recommend 5 investments similar to {similar_investments}. Briefly explain why these stocks are reccomended to the user after analyzing their profile."
-        else:
-            # If the user has no investments, provide a generic recommendation prompt
-            prompt2 = f"Given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}, provide recommendations for 5 stocks based on their current profile."
+    
+        similar_investments = ', '.join(user_investments[:5])  # Consider the first 5 investments as similar
+        prompt2 = f"given a budget of {budget}, investment expense of {investment_expense}, food expense of {food_expense}, and transport expense of {transport_expense}. Recommend 5 investments similar to {similar_investments}. Briefly explain why these stocks are reccomended to the user after analyzing their profile."
+        
 
         recommendations = openai_analysis(prompt2)
         session['recommendations'] = recommendations
