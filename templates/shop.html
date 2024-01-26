@@ -115,12 +115,12 @@
         }
 
         .progress-wrapper {
-            margin-top: auto;
+            margin-top: 20px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             margin-bottom: 30px;
             width: 80%;
-            margin-left: 85px;
+            margin-left: 115px;
         }
 
         .stepper-item {
@@ -297,6 +297,11 @@
             margin-top: 30px;
             font-size: 25px;
         }
+        .h4{
+            color: white;
+            display: flex;
+            justify-content: center;
+        }
     </style>
 </head>
 
@@ -334,6 +339,7 @@
             {% endif %}
             {% endwith %}
         </div>
+        <h4 class="h4">Daily Login Rewards</h4>
         <div class="progress-wrapper">
             {% for day in range(1, 8) %}
             {% if day <= login_days %} <div class="stepper-item completed">
