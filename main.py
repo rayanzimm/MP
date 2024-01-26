@@ -51,16 +51,11 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'D:\MP Project-Finsaver\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
 app.secret_key = 'secret'
-
-
-
-
-
 
 app.config['MAIL_SERVER'] = 'smtp.office365.com'
 app.config['MAIL_PORT'] = 587
@@ -155,9 +150,6 @@ def send_email(name, client_email, message_content):
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-from flask import render_template
-
         
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -238,8 +230,6 @@ def home():
     total_others_cost = fetch_total_cost_analysis('Others', user_email)
     # Calculate total expense including food, transport, and investment costs
     
-
-
     # Store values in session
     session['total_food_cost'] = total_food_cost
     session['total_transport_cost'] = total_transport_cost
@@ -326,8 +316,7 @@ def home():
                            progress_percentage=progress_percentage,
                            total_investment_value=total_investment_value,
                            value_difference=value_difference,
-                           value_difference_abs=value_difference_abs,
-                           
+                           value_difference_abs=value_difference_abs, 
                            )
 
 
@@ -399,14 +388,18 @@ def shop():
     coins = user_data.get('coins', 0)
     login_days = user_data.get('loginDays', 0)
 
-    product_ref = db.collection('Products').stream()
+    shares_product_ref = db.collection('Products').where('type', '==', 'shares').stream()
+    voucher_product_ref = db.collection('Products').where('type', '==', 'voucher').stream()
+    accessory_product_ref = db.collection('Products').where('type', '==', 'accessory').stream()
 
-    all_product_data = []
+    shares_product_data = []
+    voucher_product_data = []
+    accessory_product_data = []
 
     # Iterate through the food expenses and extract relevant information
-    for product_doc in product_ref:
-        product_data = product_doc.to_dict()
-        all_product_data.append({
+    for shares_product_doc in sort_products_by_price(shares_product_ref):
+        product_data = shares_product_doc.to_dict()
+        shares_product_data.append({
             'description': product_data.get('description', ''),
             'image': product_data.get('image', ''),
             'name': product_data.get('name', ''),
@@ -414,46 +407,37 @@ def shop():
             'product_id': product_data.get('product_id', 0)
         })
 
-    return render_template('shop.html', coins=coins, login_days=login_days, all_product_data=all_product_data)
+    for voucher_product_doc in sort_products_by_price(voucher_product_ref):
+        product_data = voucher_product_doc.to_dict()
+        voucher_product_data.append({
+            'description': product_data.get('description', ''),
+            'image': product_data.get('image', ''),
+            'name': product_data.get('name', ''),
+            'price': product_data.get('price', 0),
+            'product_id': product_data.get('product_id', 0)
+        })
 
-def update_login_rewards(user_email, user_data, user_doc):
-    singapore_timezone = pytz.timezone('Asia/Singapore')
-    current_datetime = datetime.now(singapore_timezone)
-    current_date = current_datetime.strftime("%Y-%m-%d") 
+    for accessory_product_doc in sort_products_by_price(accessory_product_ref):
+        product_data = accessory_product_doc.to_dict()
+        accessory_product_data.append({
+            'description': product_data.get('description', ''),
+            'image': product_data.get('image', ''),
+            'name': product_data.get('name', ''),
+            'price': product_data.get('price', 0),
+            'product_id': product_data.get('product_id', 0)
+        })
 
+    return render_template('shop.html',
+                            coins=coins,
+                            login_days=login_days,
+                            shares_product_data=shares_product_data,
+                            voucher_product_data=voucher_product_data,
+                            accessory_product_data=accessory_product_data
+                            )
 
-    # Update the 'lastLogin' field to today's date
-    if user_data['lastLogin'] != current_datetime and current_datetime.hour >= 0:
-        if current_datetime > user_data.get('nextRewardTime', datetime.min):
-            next_week_start = user_data.get('nextWeekDate')
+def sort_products_by_price(products):
+    return sorted(products, key=lambda x: int(x.to_dict().get('price', 0)) if isinstance(x.to_dict().get('price', 0), (int, str)) else 0)
 
-            if current_datetime > next_week_start:
-                user_data['lastLogin'] = current_datetime
-                user_data['loginDays'] = 1
-                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=0, minute=0, second=0)
-                user_data['claimedDays'] = []
-                next_week_start = (current_datetime + timedelta(days=(7 - current_datetime.weekday()))).replace(hour=0, minute=0, second=0)
-            
-                user_data['nextWeekDate'] = next_week_start
-            else:
-                user_data['lastLogin'] = current_datetime
-                user_data['loginDays'] += 1
-                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=0, minute=0, second=0)
-        else:
-            user_data['lastLogin'] = current_datetime
-    
-    db.collection('users').document(user_doc.id).update(user_data)
-    
-
-def reward_coins(login_days):
-    try:
-    # Example: Reward 10 coins for the first day, and 5 additional coins for each subsequent day
-        coins_to_reward = 10 + (login_days - 1) * 5
-        
-        return coins_to_reward
-            
-    except Exception as e:
-        flash(f"Error updating coins: {str(e)}", "danger")
 
 @app.route('/claim_reward', methods=['GET'])
 def claim_reward():
@@ -1308,7 +1292,7 @@ def addbudget():
                 # Adding a new food expense
                 db.collection('Budget').add(budget_data)
 
-            flash("budget expense saved successfully!", "success")
+            flash("Budget expense saved successfully!", "success")
             return redirect('/user_budget')
 
         except Exception as e:
@@ -1381,7 +1365,7 @@ def edit_budget_expense():
         budget_doc.reference.update(budget_data)
         user_budget_data.append(budget_data)
 
-        flash("budget expense updated successfully!", "success")
+        flash("Budget expense updated successfully!", "success")
         return redirect('/user_budget')
 
     
@@ -1401,13 +1385,13 @@ def delete_budget_expense(unique_index):
     
     if not budget_doc:
         # Food expense not found
-        flash("budget expense not found.", "warning")
+        flash("Budget expense not found.", "warning")
         return redirect('/user_budget_expenses')
     
     try:
         # Delete the food expense from Firestore
         budget_doc.reference.delete()
-        flash("budget expense deleted successfully!", "success")
+        flash("Budget expense deleted successfully!", "success")
         
         # Fetch the updated list of food expenses for the logged-in user
         budget_expenses = db.collection('Budget').where('user_email', '==', user_email).stream()
@@ -1978,6 +1962,45 @@ def total_budget_expense():
                            progress_percentage=progress_percentage,
                            total_investment_sold=total_investment_sold,
                            user_investment_data=user_investment_data)
+
+def update_login_rewards(user_email, user_data, user_doc):
+    singapore_timezone = pytz.timezone('Asia/Singapore')
+    current_datetime = datetime.now(singapore_timezone)
+    current_date = current_datetime.strftime("%Y-%m-%d") 
+
+
+    # Update the 'lastLogin' field to today's date
+    if user_data['lastLogin'] != current_datetime and current_datetime.hour >= 0:
+        if current_datetime > user_data.get('nextRewardTime', datetime.min):
+            next_week_start = user_data.get('nextWeekDate')
+
+            if current_datetime > next_week_start:
+                user_data['lastLogin'] = current_datetime
+                user_data['loginDays'] = 1
+                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=0, minute=0, second=0)
+                user_data['claimedDays'] = []
+                next_week_start = (current_datetime + timedelta(days=(7 - current_datetime.weekday()))).replace(hour=0, minute=0, second=0)
+            
+                user_data['nextWeekDate'] = next_week_start
+            else:
+                user_data['lastLogin'] = current_datetime
+                user_data['loginDays'] += 1
+                user_data['nextRewardTime'] = (current_datetime + timedelta(days=1)).replace(hour=0, minute=0, second=0)
+        else:
+            user_data['lastLogin'] = current_datetime
+    
+    db.collection('users').document(user_doc.id).update(user_data)
+    
+
+def reward_coins(login_days):
+    try:
+    # Example: Reward 10 coins for the first day, and 5 additional coins for each subsequent day
+        coins_to_reward = 10 + (login_days - 1) * 5
+        
+        return coins_to_reward
+            
+    except Exception as e:
+        flash(f"Error updating coins: {str(e)}", "danger")
 
 @app.route('/analysis', methods=['GET', 'POST'])
 def analysis():
