@@ -51,7 +51,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'D:\MP Project-Finsaver\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -691,6 +691,7 @@ def register():
                 'coins': 0,
                 'nextRewardTime': datetime.min,
                 'savingsGoal': 0,
+                'nextWeekDate': '',
                 'totalSavings': 0
             }
             db.collection('users').add(user_data)
