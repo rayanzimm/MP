@@ -147,7 +147,7 @@
                     {% if budget_item['date'] == budget_item['current_date'] %}
                     <tr>
                         <td>{{ budget_item['budgetName'] }}</td>
-                        <td>{{ budget_item['cost'] }}</td>
+                        <td>${{ '{:.2f}'.format(budget_item['cost']) }}</td>
                         <td>
                             <button class="edit-btn"
                                 onclick="openModal('{{ budget_item['budgetName'] }}', '{{ budget_item['cost'] }}', '{{ budget_item['unique_index'] }}')">Edit</button>

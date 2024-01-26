@@ -130,7 +130,7 @@
                 {% if others_item['date'] == others_item['current_date'] %}
                 <tr>
                     <td>{{ others_item['othersName'] }}</td>
-                    <td>{{ others_item['cost'] }}</td>
+                    <td>${{ '{:.2f}'.format(others_item['cost']) }}</td>
                     <td>
                         <button class="edit-btn"
                             onclick="openModal('{{ others_item['othersName'] }}', '{{ others_item['cost'] }}', '{{ others_item['unique_index'] }}')">Edit</button>

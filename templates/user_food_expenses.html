@@ -132,7 +132,7 @@
                 {% if food_item['date'] == food_item['current_date'] %}
                 <tr>
                     <td>{{ food_item['foodName'] }}</td>
-                    <td>{{ food_item['cost'] }}</td>
+                    <td>${{ '{:.2f}'.format(food_item['cost']) }}</td>
                     <td>
                         <button class="edit-btn"
                             onclick="openModal('{{ food_item['foodName'] }}', '{{ food_item['cost'] }}', '{{ food_item['unique_index'] }}')">Edit</button>

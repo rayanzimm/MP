@@ -851,7 +851,7 @@ def addfood():
         user_email = session['user']
         food_id = request.form.get('food_id')
         foodName = request.form.get('foodName')
-        cost = request.form.get('cost')
+        cost = int(request.form.get('cost'))
 
         try:
             # Check if foodName or cost is empty
@@ -923,7 +923,7 @@ def user_food_expenses():
         food_data = food_doc.to_dict()
         user_food_data.append({
             'foodName': food_data.get('foodName', ''),
-            'cost': food_data.get('cost', ''),
+            'cost': int(food_data.get('cost', '')),
             'unique_index': food_data.get('unique_index', ''),
             'date': food_data.get('date', ''),
             'current_date': current_date
@@ -957,7 +957,7 @@ def edit_food_expense():
     if request.method == 'POST':
         print(request.form)
         new_food_name = request.form.get('foodName')
-        new_cost = request.form.get('cost')
+        new_cost = int(request.form.get('cost'))
 
         food_data={
             'cost': new_cost,
@@ -1026,7 +1026,7 @@ def addtransport():
         user_email = session['user']
         transport_id = request.form.get('transport_id')
         transportName = request.form.get('transportName')
-        cost = request.form.get('cost')
+        cost = int(request.form.get('cost'))
 
         try:
             # Check if foodName or cost is empty
@@ -1094,7 +1094,7 @@ def user_transport_expenses():
         transport_data = transport_doc.to_dict()
         user_transport_data.append({
             'transportName': transport_data.get('transportName', ''),
-            'cost': transport_data.get('cost', ''),
+            'cost': int(transport_data.get('cost', '')),
             'unique_index': transport_data.get('unique_index', ''),
             'date': transport_data.get('date', ''),
             'current_date': current_date
@@ -1128,7 +1128,7 @@ def edit_transport_expense():
     if request.method == 'POST':
         print(request.form)
         new_transport_name = request.form.get('transportName')
-        new_cost = request.form.get('cost')
+        new_cost = int(request.form.get('cost'))
 
         transport_data={
             'cost': new_cost,
@@ -1250,7 +1250,7 @@ def addbudget():
         user_email = session['user']
         budget_id = request.form.get('budget_id')
         budgetName = request.form.get('budgetName')
-        cost = request.form.get('cost')
+        cost = int(request.form.get('cost'))
 
         try:
             # Check if foodName or cost is empty
@@ -1318,7 +1318,7 @@ def user_budget_expenses():
         budget_data = budget_doc.to_dict()
         user_budget_data.append({
             'budgetName': budget_data.get('budgetName', ''),
-            'cost': budget_data.get('cost', ''),
+            'cost': int(budget_data.get('cost', '')),
             'unique_index': budget_data.get('unique_index', ''),
             'date': budget_data.get('date', ''),
             'current_date': current_date
@@ -1354,7 +1354,7 @@ def edit_budget_expense():
     if request.method == 'POST':
         print(request.form)
         new_budget_name = request.form.get('budgetName')
-        new_cost = request.form.get('cost')
+        new_cost = int(request.form.get('cost'))
 
         budget_data={
             'cost': new_cost,
@@ -1722,7 +1722,7 @@ def addothers():
         user_email = session['user']
         others_id = request.form.get('others_id')
         othersName = request.form.get('othersName')
-        cost = request.form.get('cost')
+        cost = int(request.form.get('cost'))
 
         try:
             # Check if othersName or cost is empty
@@ -1794,7 +1794,7 @@ def user_others_expenses():
         others_data = others_doc.to_dict()
         user_others_data.append({
             'othersName': others_data.get('othersName', ''),
-            'cost': others_data.get('cost', ''),
+            'cost': int(others_data.get('cost', '')),
             'unique_index': others_data.get('unique_index', ''),
             'date': others_data.get('date', ''),
             'current_date': current_date
@@ -1828,7 +1828,7 @@ def edit_others_expense():
     if request.method == 'POST':
         print(request.form)
         new_others_name = request.form.get('othersName')
-        new_cost = request.form.get('cost')
+        new_cost = int(request.form.get('cost'))
 
         others_data={
             'cost': new_cost,

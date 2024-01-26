@@ -141,7 +141,7 @@
                 {% if transport_item['date'] == transport_item['current_date'] %}
                 <tr>
                     <td>{{ transport_item['transportName'] }}</td>
-                    <td>{{ transport_item['cost'] }}</td>
+                    <td>${{ '{:.2f}'.format(transport_item['cost']) }}</td>
                     <td>
                         <button class="edit-btn"
                             onclick="openModal('{{ transport_item['transportName'] }}', '{{ transport_item['cost'] }}', '{{ transport_item['unique_index'] }}')">Edit</button>
@@ -250,7 +250,7 @@
                 window.location.href = "/delete_transport_expense/" + uniqueIndex;
             }
         }
-        
+
     </script>
 
 
