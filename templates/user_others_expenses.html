@@ -116,7 +116,7 @@
 
         <h1>User Others Expenses</h1>
 
-        {% if user_others_data %}
+       
         <table class="table">
             <thead>
                 <tr>
@@ -143,9 +143,14 @@
                     {% endfor %}
             </tbody>
         </table>
-        {% else %}
-        <p>No others expenses found for the user.</p>
-        {% endif %}
+        <div class="total-amount">
+            <strong>Total:</strong>
+            $<span id="total-amount">{{ total_amount }}</span>
+        </div>
+        </table>
+        {% if not user_others_data %}
+                
+            {% endif %}
         <div id="editModal" class="modal">
             <div class="modal-content">
                 <form method="POST" action="/edit_others_expenses" enctype="multipart/form-data">

@@ -51,7 +51,7 @@ firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 
 # Use firebase_admin to initialize Firestore
-cred = credentials.Certificate(r'C:\Poly module\Year 3\MP\Website Code\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
+cred = credentials.Certificate(r'C:\Users\S531FL-BQ559T\OneDrive\Documents\MP\Project\MP\src\finsaver3-firebase-adminsdk-udjjx-b479ad6c2d.json')
 firebase_admin.initialize_app(cred, {'projectId': 'finsaver3'})
 db = firestore.client()
 
@@ -918,6 +918,9 @@ def user_food_expenses():
     # Create a list to store the food data
     user_food_data = []
 
+    # Calculate total amount
+    total_amount = 0
+
     # Iterate through the food expenses and extract relevant information
     for food_doc in food_expenses:
         food_data = food_doc.to_dict()
@@ -929,8 +932,12 @@ def user_food_expenses():
             'current_date': current_date
         })
 
-    # Render user_food_expense.html
-    return render_template('user_food_expenses.html', user_food_data=user_food_data)
+        # Add the cost to the total amount
+        total_amount += int(food_data.get('cost', 0))
+
+    # Render user_food_expense.html with total_amount
+    return render_template('user_food_expenses.html', user_food_data=user_food_data, total_amount=total_amount)
+
 
 @app.route('/edit_food_expenses', methods=['GET', 'POST'])
 def edit_food_expense():
@@ -1082,26 +1089,26 @@ def user_transport_expenses():
 
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
-    # Fetch the list of food expenses for the logged-in user
+
+    # Fetch the list of transport expenses for the logged-in user
     transport_expenses = db.collection('Transport').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
-    # Create a list to store the food data
+    # Create a list to store the transport data
     user_transport_data = []
 
-
-    # Iterate through the food expenses and extract relevant information
+    # Iterate through the transport expenses and extract relevant information
     for transport_doc in transport_expenses:
         transport_data = transport_doc.to_dict()
         user_transport_data.append({
             'transportName': transport_data.get('transportName', ''),
-            'cost': int(transport_data.get('cost', '')),
+            'cost': float(transport_data.get('cost', 0)),  # Assuming cost is stored as a float in the database
             'unique_index': transport_data.get('unique_index', ''),
             'date': transport_data.get('date', ''),
             'current_date': current_date
         })
+    total_amount = sum(item['cost'] for item in user_transport_data)
 
-    # Render user_food_expense.html
-    return render_template('user_transport_expenses.html', user_transport_data=user_transport_data)
+    return render_template('user_transport_expenses.html', user_transport_data=user_transport_data, total_amount=total_amount)
 
 @app.route('/edit_transport_expenses', methods=['GET', 'POST'])
 def edit_transport_expense():
@@ -1300,6 +1307,7 @@ def addbudget():
 
     return render_template('user_budget.html')
 
+
 @app.route('/user_budget')
 def user_budget_expenses():
     if 'user' not in session:
@@ -1307,25 +1315,29 @@ def user_budget_expenses():
 
     user_email = session['user']
     current_date = datetime.now().strftime("%Y-%m-%d")
-    # Fetch the list of food expenses for the logged-in user
+
+    # Fetch the list of budget expenses for the logged-in user
     budget_expenses = db.collection('Budget').where('user_email', '==', user_email).where('date', '==', current_date).stream()
 
-    # Create a list to store the food data
+    # Create a list to store the budget data
     user_budget_data = []
 
-    # Iterate through the food expenses and extract relevant information
+    # Iterate through the budget expenses and extract relevant information
     for budget_doc in budget_expenses:
         budget_data = budget_doc.to_dict()
         user_budget_data.append({
             'budgetName': budget_data.get('budgetName', ''),
-            'cost': int(budget_data.get('cost', '')),
+            'cost': float(budget_data.get('cost', 0)),  # Assuming cost is stored as a float in the database
             'unique_index': budget_data.get('unique_index', ''),
             'date': budget_data.get('date', ''),
             'current_date': current_date
         })
 
-    # Render user_food_expense.html
-    return render_template('user_budget.html', user_budget_data=user_budget_data)
+    # Calculate the total cost of budget expenses
+    total_amount = sum(item['cost'] for item in user_budget_data)
+
+    # Render user_budget.html with budget data and total amount
+    return render_template('user_budget.html', user_budget_data=user_budget_data, total_amount=total_amount)
 
 @app.route('/edit_budget', methods=['GET', 'POST'])
 def edit_budget_expense():
@@ -1794,14 +1806,17 @@ def user_others_expenses():
         others_data = others_doc.to_dict()
         user_others_data.append({
             'othersName': others_data.get('othersName', ''),
-            'cost': int(others_data.get('cost', '')),
+            'cost': float(others_data.get('cost', 0)),  # Assuming cost is stored as a float in the database
             'unique_index': others_data.get('unique_index', ''),
             'date': others_data.get('date', ''),
             'current_date': current_date
         })
 
-    # Render user_others_expense.html
-    return render_template('user_others_expenses.html', user_others_data=user_others_data)
+    # Calculate the total cost of others expenses
+    total_amount = sum(item['cost'] for item in user_others_data)
+
+    # Render user_others_expenses.html with others data and total amount
+    return render_template('user_others_expenses.html', user_others_data=user_others_data, total_amount=total_amount)
 
 @app.route('/edit_others_expenses', methods=['GET', 'POST'])
 def edit_others_expense():
@@ -1892,7 +1907,7 @@ def delete_others_expense(unique_index):
 
 
         
-openai.api_key = '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'
+openai.api_key = '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'
 @app.route('/analysis')
 def total_budget_expense():
     user_email = session['user']
@@ -1910,6 +1925,18 @@ def total_budget_expense():
     total_budget_cost = fetch_total_cost_analysis('Budget', user_email)
     total_others_cost = fetch_total_cost_analysis('Others', user_email)
 
+    budget_ref = db.collection('Budget').where('user_email', '==', user_email).order_by('date', direction=firestore.Query.DESCENDING).limit(7).stream()
+
+    user_budget_data = []
+
+    for budget_doc in budget_ref:
+        budget_data = budget_doc.to_dict()
+
+        user_budget_data.append({
+            'cost': int(budget_data.get('cost', 0),)
+            # Add other fields you want to retrieve
+    })
+    
     # Fetch all user investments
     investment_ref = db.collection('Investment').where('user_email', '==', user_email).stream()
     
@@ -1942,6 +1969,7 @@ def total_budget_expense():
     
     total_expense = total_food_cost + total_transport_cost + total_others_cost
     total_savings = float((total_budget_cost + total_investment_sold) - total_expense)
+    total_expense_with_investment = total_food_cost + total_transport_cost + total_others_cost + total_investment_cost
 
     user_doc.reference.update({
             'totalSavings': total_savings
@@ -1961,7 +1989,9 @@ def total_budget_expense():
                            savings_goal=savings_goal,
                            progress_percentage=progress_percentage,
                            total_investment_sold=total_investment_sold,
-                           user_investment_data=user_investment_data)
+                           user_investment_data=user_investment_data,
+                           total_expense_with_investment=total_expense_with_investment,
+                           user_budget_data=user_budget_data)
 
 def update_login_rewards(user_email, user_data, user_doc):
     singapore_timezone = pytz.timezone('Asia/Singapore')
@@ -2088,6 +2118,7 @@ def prompt():
     recommendations = session.get('recommendations', '')
     return render_template('prompt.html', analysis_result=analysis_result, recommendations=recommendations)
 
+
 @app.route('/download_pdf', methods=['POST'])
 def download_pdf():
     # Retrieve the analysis result from the session
@@ -2109,18 +2140,19 @@ def download_pdf():
     pdf.multi_cell(0, 10, analysis_result.encode('utf-8').decode('latin-1'), align='L')  # Encode and decode using 'utf-8'
     pdf.ln(5)  # Add a little space after the analysis result
 
+    # New page for Expense Breakdown
+    pdf.add_page()
     pdf.set_fill_color(255, 200, 200)
     pdf.cell(0, 10, "Expense Breakdown:", ln=True, align='L', fill=True)
     pdf.ln(5)
     add_graph_to_pdf(pdf)
     pdf.ln(100)
 
+    pdf.add_page()
     pdf.set_fill_color(255, 240, 200)  # Light yellow background
     pdf.cell(0, 10, "Recommendations:", ln=True, align='L', fill=True)
     pdf.multi_cell(0, 10, recommendations.encode('utf-8').decode('latin-1'), align='L')  # Encode and decode using 'utf-8'
     pdf.ln(20)
-
-
     
 
     downloads_folder = os.path.expanduser("~" + os.sep + "Downloads")

@@ -111,7 +111,7 @@
             margin-top: 30px;
             width: 170vh;
             margin-bottom: 20px;
-            height: 1450px;
+            height: 1500px;
         }
 
         .progress-wrapper {
@@ -398,7 +398,7 @@
         <div class="products-container">
             {% for product in accessory_product_data %}
             <div class="product-card">
-                <img src="{{ product['image'] }}" alt="{{ product.name }}">
+                <img style="height: 250px;" src="{{ product['image'] }}" alt="{{ product.name }}">
                 <div class="product-details">
                     <h3>{{ product['name'] }}</h3>
                     <p>{{ product['description'] }}</p>

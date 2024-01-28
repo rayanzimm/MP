@@ -4,7 +4,7 @@
 <head>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/img/favicon.ico') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,7 +24,8 @@
             overflow: visible;
             display: flex;
             flex-direction: column;
-            align-items: flex-start; /* Updated this line */
+            align-items: flex-start;
+            /* Updated this line */
         }
 
         .navbar a {
@@ -33,10 +34,10 @@
             padding: 16px 0px 16px 0px;
             /* Add left padding for all items */
             text-decoration: none;
-            
+
         }
 
-       
+
         .navbar a i {
             margin-right: 8px;
         }
@@ -69,8 +70,21 @@
 
         .dashboard {
             display: flex;
-            flex-wrap: wrap;
             gap: 20px;
+            width: 97.5%;
+            height: 460px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 50%;
+        }
+
+        .expenses-column {
+            width: 100%;
+            height: auto;
         }
 
         .card {
@@ -78,19 +92,65 @@
             padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
-            width: calc(33% - 20px);
+            flex-grow: 1;
+        }
+
+        .card.investment {
+            height: 180px;
         }
 
         .card h2 {
-            font-size: 1.5em;
+            font-size: 1.2em;
+            margin-top: 10px;
         }
 
         .card p {
-            font-size: 1.2em;
+            font-size: 1em;
+        }
+
+        .card.expenses {
+            width: 100%;
+            height: 100%;
+            /* Full width for the "Expenses" card */
+        }
+
+        .card.expenses .row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .card.expenses .column {
+            flex: 1;
+            margin-left: 40px;
+            margin-top: 20px;
+            width: 20%;
+        }
+
+        .card.expenses .graph-column {
+            flex: 1;
+
+
+        }
+
+        .card.expenses h2 {
+            margin: 0;
+
+        }
+
+
+        .expenses-p {
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+
+        .card.expenses canvas {
+            width: 100%;
+            /* Full width for the canvas */
         }
 
         .full-width {
             width: 97.5%;
+            margin-top: 20px;
         }
 
         .button {
@@ -190,6 +250,7 @@
             margin: 0;
             color: #ffffff;
         }
+
         .coins-container {
             display: flex;
             align-items: center;
@@ -227,6 +288,7 @@
             margin-left: auto;
             /* Remove default margin for better alignment */
         }
+
         .progress {
             height: 20px;
             margin-bottom: 20px;
@@ -238,13 +300,14 @@
 
         .progress-bar {
             height: 100%;
-            background-color: #4caf50;
+            background-color: #4ca0af;
             text-align: center;
             line-height: 20px;
             color: #fff;
 
             /* Text color */
         }
+
         .header {
             color: #ffffff;
             font-size: 24px;
@@ -257,7 +320,7 @@
 
         .savings-button {
             padding: 10px;
-            background-color: #3498db;
+            background-color: #2B99C0;
             color: #fff;
             border: none;
             border-radius: 5px;
@@ -268,7 +331,13 @@
             margin-right: auto;
             margin-left: 50px;
         }
-  
+
+        .chart-h6 {
+            font-size: 10px;
+            margin-left: 150px;
+            margin-bottom: 0;
+            
+        }
     </style>
 </head>
 
@@ -288,12 +357,12 @@
         <a href="javascript:void(0);" class="logout" onclick="confirmLogout()"><i
                 class="fas fa-sign-out-alt"></i>Logout</a>
     </div>
-    
+
     <div class="main-content">
         <div class="error-message" name="errorMessage">
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-    
+
             {% for category, message in messages %}
             <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                 <span>{{ message }}</span>
@@ -302,7 +371,7 @@
                 </button>
             </div>
             {% endfor %}
-    
+
             {% endif %}
             {% endwith %}
         </div>
@@ -310,7 +379,7 @@
             <div>
                 <h3>Final Savings Goal</h3>
                 <p>${{ '{:.2f}'.format(total_savings) }}/${{ '{:.2f}'.format(savings_goal) }}</p>
-            </div> 
+            </div>
 
             <button type="button" class="savings-button" onclick="openModal()">
                 Update Goal
@@ -323,84 +392,101 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="progress">
             <div class="progress-bar" role="progressbar" style="width: {{ progress_percentage }}%;"
                 aria-valuenow="{{ progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
-        
+
         <div class="top-bar">
             <div class="date-indicator">
                 <p id="current-date"></p>
             </div>
         </div>
         <div class="dashboard">
-            <div class="card">
-                <h2>Budget</h2>
-                <p>Total Budget Cost: ${{ '{:.2f}'.format(total_budget_cost) }}</p>
-                <!-- Chart placeholder -->
-                <canvas id="budgetLineChart" width="300" height="200"></canvas>
+            <div class="column">
+                <div class="card budget">
+                    <h2>Total Budget</h2>
+                    <p>${{ '{:.2f}'.format(total_budget_cost) }}</p>
+                    <!-- Chart placeholder -->
+                    <canvas id="budgetLineChart" width="300" height="100"></canvas>
+                    <h6 class="chart-h6">(previous 7 days)</h6>
+                </div>
+                <div class="card investment">
+                    <h2>Total Investment Earnings</h2>
+                    <p>${{ '{:.2f}'.format(total_investment_sold) }}</p>
+                    <h2>Total Savings</h2>
+                    <p>${{ '{:.2f}'.format(total_savings) }}</p>
+                    <!-- Chart placeholder -->
+                </div>
             </div>
-            <div class="card">
-                <h2>Investment Earnings</h2>
-                <p>${{ '{:.2f}'.format(total_investment_sold) }}</p>
-                <h2>Total Savings</h2>
-                <p>${{ '{:.2f}'.format(total_savings) }}</p>
-                <!-- Chart placeholder -->
+            <div class="expenses-column">
+                <div class="card expenses">
+                    <div class="row">
+                        <div class="column">
+                            <h2>Total Expenses</h2>
+                            <div class="expenses-p">
+                                <p>Total : ${{ '{:.2f}'.format(total_expense_with_investment) }}</p>
+                                <p>Investment: ${{ '{:.2f}'.format(total_investment_cost) }}</p>
+                                <p>Transport: ${{ '{:.2f}'.format(total_transport_cost) }}</p>
+                                <p>Food: ${{ '{:.2f}'.format(total_food_cost) }}</p>
+                                <p>Others: ${{ '{:.2f}'.format(total_others_cost) }}</p>
+                            </div>
+                        </div>
+                        <div class="graph-column">
+                            <canvas id="expensesPieChart" width="200" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card">
-                <h2>Expenses</h2>
-                <p>Total : ${{ '{:.2f}'.format(total_expense) }}</p>
-                <p>Investment: ${{ '{:.2f}'.format(total_investment_cost) }}</p>
-                <p>Transport: ${{ '{:.2f}'.format(total_transport_cost) }}</p>
-                <p>Food: ${{ '{:.2f}'.format(total_food_cost) }}</p>
-                <p>Others: ${{ '{:.2f}'.format(total_others_cost) }}</p>
-                <canvas id="expensesPieChart"  width="50" height="50"></canvas>
-            </div>
-            <div class="card full-width">
-                <h2>Financial Statistics</h2>
-                <canvas id="expensesChart" width="300" height="70"></canvas>
-            </div>
-            <a href="#" class="button">View Analysis Report</a>
-            <!-- Form for Savings Analysis -->
         </div>
+        <div class="card full-width">
+            <h2>Financial Statistics</h2>
+            <canvas id="expensesChart" width="300" height="70"></canvas>
+        </div>
+        <a href="#" class="button">View Analysis Report</a>
     </div>
 
     <div id="analysisModal" class="modal">
         <!-- Modal content -->
         <div class="modal-content">
-                <span class="close">&times;</span>
+            <span class="close">&times;</span>
             <div class="modal-body d-flex justify-content-center align-items-center">
                 <form method="post" action="/analysis">
                     <div class="mb-3">
                         <label for="budget" class="form-label">Budget: $</label>
-                        <input type="text" name="budget" value="{{ '%.2f'|format(total_budget_cost) }}" class="form-control" readonly required>
+                        <input type="text" name="budget" value="{{ '%.2f'|format(total_budget_cost) }}"
+                            class="form-control" readonly required>
                     </div>
-            
+
                     <div class="mb-3">
                         <label for="investment_expense" class="form-label">Investment Expense: $</label>
-                        <input type="text" name="investment_expense" value="{{ '%.2f'|format(total_investment_cost) }}" class="form-control" readonly required>
+                        <input type="text" name="investment_expense" value="{{ '%.2f'|format(total_investment_cost) }}"
+                            class="form-control" readonly required>
                     </div>
-            
+
                     <div class="mb-3">
                         <label for="food_expense" class="form-label">Food Expense: $</label>
-                        <input type="text" name="food_expense" value="{{ '%.2f'|format(total_food_cost) }}" class="form-control" readonly required>
+                        <input type="text" name="food_expense" value="{{ '%.2f'|format(total_food_cost) }}"
+                            class="form-control" readonly required>
                     </div>
-            
+
                     <div class="mb-3">
                         <label for="transport_expense" class="form-label">Transport Expense: $</label>
-                        <input type="text" name="transport_expense" value="{{ '%.2f'|format(total_transport_cost) }}" class="form-control" readonly required>
+                        <input type="text" name="transport_expense" value="{{ '%.2f'|format(total_transport_cost) }}"
+                            class="form-control" readonly required>
                     </div>
-            
+
                     <div class="mb-3">
                         <label for="other_expense" class="form-label">Other Expenses: $</label>
-                        <input type="text" name="others_expense" value="{{ '%.2f'|format(total_others_cost) }}" class="form-control" readonly required>
+                        <input type="text" name="others_expense" value="{{ '%.2f'|format(total_others_cost) }}"
+                            class="form-control" readonly required>
                     </div>
-            
+
                     <button type="submit" class="btn btn-primary">Analyze</button>
                 </form>
             </div>
-            
+
         </div>
     </div>
 
@@ -483,89 +569,135 @@
                     datasets: [{
                         label: 'Amount',
                         data: data,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgb(76, 160, 175)',
+                        borderColor: 'rgb(76, 160, 175)',
                         borderWidth: 1
                     }]
                 },
                 options: {
                     scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+
+                        yAxes: [{
+                            ticks: {
+                                fontColor: "lightgrey",
+                                fontSize: 10
+                            },
+                            gridLines: {
+                                color: "lightgrey"
+                            }
+                        }],
+                        xAxes: [{
+                            ticks: {
+                                fontColor: "lightgrey"
+                            },
+                            gridLines: {
+                                color: "lightgrey"
+                            }
+                        }]
                     }
                 }
             });
         }
 
         function createPieChart(canvasId, labels, data) {
-    var ctx = document.getElementById(canvasId).getContext('2d');
-    new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.7)',
-                    'rgba(54, 162, 235, 0.7)',
-                    'rgba(255, 206, 86, 0.7)',
-                    'rgba(75, 192, 192, 0.7)'
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)'
-                ],
-                borderWidth: 0.5
-            }]
-        },
-        options: {
-            radius: '80%',
-            responsive: true,
-            maintainAspectRatio: true,
-            cutout: '60%',  // Use cutout to create a hole in the middle of the pie chart
-            plugins: {
-                legend: {
-                    position: 'right',  // Adjust the position of the legend as needed
+            var ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 0.5
+                    }]
                 },
-            },
-            layout: {
+                options: {
+                    radius: '80%',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '60%',  // Use cutout to create a hole in the middle of the pie chart
+                    layout: {
+                        padding: {
+                            right: 100
+                        }
+                    },
+                    legend: {
+                        align: 'center',
+                        position: 'bottom',
+                        labels: {
+                            fontColor: 'white',
 
-            },
-        },
-    });
-}
+                        }
+                    }
+                },
+            });
+        }
 
 
 
         function createLineChart(canvasId, labels, data) {
-        var ctx = document.getElementById(canvasId).getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Budget Amount',
-                    data: data,
-                    fill: false,
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-            }
-        });
-    }
+            var ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Budget Amount',
+                        data: data,
+                        fill: false,
+                        borderColor: 'rgb(76, 160, 175)',
+                        borderWidth: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    legend: {
+                        labels: {
+                            fontColor: "white"
+                        }
+                    },
+
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                fontColor: "lightgrey",
+                                fontSize: 10
+                            },
+                            gridLines: {
+                                color: "lightgrey"
+                            }
+                        }],
+                        xAxes: [{
+                            ticks: {
+                                fontColor: "lightgrey"
+                            },
+                            gridLines: {
+                                color: "lightgrey"
+                            }
+                        }]
+
+                    }
+                }
+            });
+        }
 
 
         function createCharts() {
             var expensesLabel = ['Total', 'Investment', 'Transport', 'Food', 'others'];
             var expensesData = [
-                parseFloat("{{ total_expense }}"),
+                parseFloat("{{ total_expense_with_investment }}"),
                 parseFloat("{{ total_investment_cost }}"),
                 parseFloat("{{ total_transport_cost }}"),
                 parseFloat("{{ total_food_cost }}"),
@@ -575,7 +707,7 @@
 
             var expensesLabels = ['Investment', 'Transport', 'Food', 'others'];
             var expensesData = [
-                
+
                 parseFloat("{{ total_investment_cost }}"),
                 parseFloat("{{ total_transport_cost }}"),
                 parseFloat("{{ total_food_cost }}"),
@@ -583,11 +715,15 @@
             ];
             createPieChart('expensesPieChart', expensesLabels, expensesData);
 
-            var budgetLabels = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri','Sat','Sun'];  // Add your actual day labels
-            var budgetData = [
-                parseFloat("{{ total_budget_cost }}")
-            ];
-            createLineChart('budgetLineChart', budgetLabels, budgetData);
+            var budgetLabels = ["", "", "", "", "", "", ""];  // Add your actual day labels
+
+            var budgetData = {{ user_budget_data | tojson | safe}};
+            var costs = budgetData.map(function (item) {
+                return item.cost;
+            });
+        console.log('User Budget Data:', budgetData);  // Parse the JSON string
+        console.log('Budget Labels:', budgetLabels);
+        createLineChart('budgetLineChart', budgetLabels, costs);
         }
 
         createCharts();

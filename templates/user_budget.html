@@ -127,75 +127,82 @@
     <a href="{{ url_for('home') }}" class="back-button">&lt; Back</a>
     <div class="container">
 
-    <form action=" /copy_previous_budget" method="POST">
+        <form action=" /copy_previous_budget" method="POST">
             <button type="submit" class="btn btn-primary">Copy Previous Budget</button>
-            </form>
+        </form>
 
-            <h1>User Budget</h1>
+        <h1>User Budget</h1>
 
-            {% if user_budget_data %}
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Budget Name</th>
-                        <th>Amount</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for budget_item in user_budget_data %}
-                    {% if budget_item['date'] == budget_item['current_date'] %}
-                    <tr>
-                        <td>{{ budget_item['budgetName'] }}</td>
-                        <td>${{ '{:.2f}'.format(budget_item['cost']) }}</td>
-                        <td>
-                            <button class="edit-btn"
-                                onclick="openModal('{{ budget_item['budgetName'] }}', '{{ budget_item['cost'] }}', '{{ budget_item['unique_index'] }}')">Edit</button>
-                        </td>
-                        <td>
-                            <button class="delete-btn"
-                                onclick="deleteBudget('{{ budget_item['unique_index'] }}')">Delete</button>
-                        </td>
-                        {% endif %}
-                        {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <p>No budget data found for the user.</p>
-            {% endif %}
-            <div id="editModal" class="modal">
-                <div class="modal-content">
-                    <form method="POST" action="/edit_budget" enctype="multipart/form-data">
-                        <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
-                        <h2>Edit Budget</h2>
-                        <label for="budgetName">Budget Name:</label>
-                        <input type="text" id="budgetName" name="budgetName" required>
-                        <label for="cost">Amount:</label>
-                        <input type="text" id="cost" name="cost" required>
-                        <input type="hidden" name="unique_index" id="unique_index" value="">
-                        <button class="edit-btn" type="submit">Update Budget</button>
-                    </form>
-                </div>
-            </div>
-
-            <button type="button" class="modal-btn" onclick="openAddModal()""><i class=" fa-solid fa-plus"></i></button>
-
-            <div class="error-message" name="errorMessage">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    <span>{{ message }}</span>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                {% endfor %}
-
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Budget Name</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for budget_item in user_budget_data %}
+                {% if budget_item['date'] == budget_item['current_date'] %}
+                <tr>
+                    <td>{{ budget_item['budgetName'] }}</td>
+                    <td>${{ '{:.2f}'.format(budget_item['cost']) }}</td>
+                    <td>
+                        <button class="edit-btn"
+                            onclick="openModal('{{ budget_item['budgetName'] }}', '{{ budget_item['cost'] }}', '{{ budget_item['unique_index'] }}')">Edit</button>
+                    </td>
+                    <td>
+                        <button class="delete-btn"
+                            onclick="deleteBudget('{{ budget_item['unique_index'] }}')">Delete</button>
+                    </td>
+                </tr>
                 {% endif %}
-                {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="total-amount">
+            <strong>Total:</strong>
+            $<span id="total-amount">{{ total_amount }}</span>
+        </div>
+        </table>
+
+        {% if not user_budget_data %}
+
+        {% endif %}
+
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <form method="POST" action="/edit_budget" enctype="multipart/form-data">
+                    <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
+                    <h2>Edit Budget</h2>
+                    <label for="budgetName">Budget Name:</label>
+                    <input type="text" id="budgetName" name="budgetName" required>
+                    <label for="cost">Amount:</label>
+                    <input type="text" id="cost" name="cost" required>
+                    <input type="hidden" name="unique_index" id="unique_index" value="">
+                    <button class="edit-btn" type="submit">Update Budget</button>
+                </form>
             </div>
+        </div>
+
+        <button type="button" class="modal-btn" onclick="openAddModal()""><i class=" fa-solid fa-plus"></i></button>
+
+        <div class="error-message" name="errorMessage">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                <span>{{ message }}</span>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+
+            {% endif %}
+            {% endwith %}
+        </div>
     </div>
 
 
@@ -257,7 +264,7 @@
                 window.location.href = "/delete_budget/" + uniqueIndex;
             }
         }
-        
+
 
     </script>
 </body>

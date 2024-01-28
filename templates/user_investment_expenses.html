@@ -210,7 +210,7 @@
     <h1>User Investments</h1>
   </div>
   
-  {% if user_investment_data %}
+  
   <table class="table">
     <thead>
       <tr>
@@ -249,9 +249,9 @@
         {% endfor %}
     </tbody>
   </table>
-  {% else %}
+  
   <p>No investment expenses found for the user.</p>
-  {% endif %}
+  
   <div id="editModal" class="modal">
     <div class="modal-content">
       <form method="POST" action="/edit_investment_expenses" enctype="multipart/form-data">

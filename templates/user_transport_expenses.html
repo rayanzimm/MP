@@ -127,7 +127,7 @@
 
         <h1>User Transport Expenses</h1>
 
-        {% if user_transport_data %}
+
         <table class="table">
             <thead>
                 <tr>
@@ -154,8 +154,13 @@
                     {% endfor %}
             </tbody>
         </table>
-        {% else %}
-        <p>No transport expenses found for the user.</p>
+        <div class="total-amount">
+            <strong>Total:</strong>
+            $<span id="total-amount">{{ total_amount }}</span>
+        </div>
+        </table>
+
+        {% if not user_transport_data %}
         {% endif %}
         <div id="editModal" class="modal">
             <div class="modal-content">
