@@ -278,6 +278,10 @@
             color: #ffffff;
             /* Set text color */
         }
+
+        .label {
+            color: white
+        }
     </style>
 
 
@@ -353,7 +357,7 @@
 
             <div class="card" onclick="redirectTo('/user_investment_expenses')">
                 <h6>INVESTMENT</h6>
-                {% if 'total_investment_cost' in session %}
+                {% if 'total_investment_value' in session %}
                 <p>Total Investment Value: ${{ '{:.2f}'.format(total_investment_value) }}
                     {% if value_difference > 0 %}
                     <span style="color: green">+${{ '{:.2f}'.format(value_difference_abs) }}</span>
@@ -395,7 +399,7 @@
             <div class="modal-content">
                 <span class="close" onclick="closeModal()">&times;</span>
                 <form action="/update_savings_goal" method="post" id="savingsForm">
-                    <label for="savings_goal">New Savings Goal:</label>
+                    <label class="label" for="savings_goal">New Savings Goal:</label>
                     <input type="text" id="savings_goal" name="savings_goal" required>
                     <button type="submit">Update</button>
                 </form>

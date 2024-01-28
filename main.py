@@ -67,59 +67,7 @@ app.config['MAIL_DEFAULT_SENDER'] = 'finsaver@outlook.com'  # Replace with your 
 # Initialize Flask-Mail
 mail = Mail(app)
 
-# scheduler = BackgroundScheduler()
-
-# def send_daily_reminder(user_email):
-#     try:
-#         print(user_email)
-
-#         if user_email:
-#             with app.app_context():
-#                 msg = Message('Daily Expense Reminder', recipients=[user_email])
-#                 msg.body = 'Don\'t forget to upload your daily Budget & Expenses'
-#                 msg.html = '<p>Don\'t forget to upload your daily Budget & Expenses</p>'
-
-#                 mail.send(msg)
-
-#                 print("Daily reminder email sent successfully")
-#         else:
-#             print("User email not found. Unable to send reminder.")
-
-#     except Exception as e:
-#         print(f"Error sending email: {str(e)}")
-
-
-
-
-# @app.route('/store_user_email', methods=['POST'])
-# def store_user_email():
-#     try:
-#         data = request.get_json()
-#         user_email = data.get('email')
-
-#         # Now you can use user_email in your send_daily_reminder function
-#         send_daily_reminder(user_email)
-
-#         return "Email received and processed successfully"
-
-#     except Exception as e:
-#         return f"Error storing email: {str(e)}"
-
-
-# def get_user_email_for_daily_reminder():
-#     try:
-#         user_email = session['user']
-#         # Fetch any user's email from the database
-#         user_ref = db.collection('users').where('email', '==', user_email).limit(1).stream()
-
-#         for user_doc in user_ref:
-#             user_data = user_doc.to_dict()
-#             return user_data.get('email')
-
-#     except Exception as e:
-#         # Handle any exceptions during database query
-#         print(f"Error fetching user email: {str(e)}")
-#         return None
+scheduler = BackgroundScheduler()
 
 @app.route('/about', methods=['GET', 'POST'])
 def about():
@@ -525,14 +473,14 @@ def deduct_coins(product_id):
 
 def send_purchase_email(email, product_name, product_price):
     subject = 'Purchase Confirmation'
-    body = f'Thank you for purchasing {product_name} for {product_price} coins. Your order has been confirmed.'
-
+    body = f'Dear Customer,\n\nThank you for purchasing {product_name} for {product_price} coins. Your order has been confirmed.\n\nHere are the details of your purchase:\n\nProduct: {product_name}\nPrice: {product_price} coins\n\nWe appreciate your business!\n\nBest regards,\nFinsaver Team'
+ 
     msg = Message(subject, sender=app.config['MAIL_DEFAULT_SENDER'], recipients=[email])
     msg.body = body
-
+ 
     try:
         mail.send(msg)
-        print('Email sent successfully.')
+        flash('Purchased successfully', "warning")
     except Exception as e:
         print(f'Error sending email: {e}')
 
@@ -641,6 +589,8 @@ def logout():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    singapore_timezone = pytz.timezone('Asia/Singapore')
+    current_datetime = datetime.now(singapore_timezone)
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -675,7 +625,7 @@ def register():
                 'coins': 0,
                 'nextRewardTime': datetime.min,
                 'savingsGoal': 0,
-                'nextWeekDate': '',
+                'nextWeekDate': (current_datetime + timedelta(days=(7 - current_datetime.weekday()))).replace(hour=0, minute=0, second=0),
                 'totalSavings': 0
             }
             db.collection('users').add(user_data)
@@ -700,6 +650,7 @@ def reset_password():
             if re.match(r"[^@]+@[^@]+\.[^@]+", email) and email.endswith('.com'):
                 auth.send_password_reset_email(email)
                 flash("Reset email has been successfuly sent! Please check your inbox.", "success")
+                return render_template('login.html')
                 
             else:
                 flash("Please enter a valid email", "warning")
@@ -1907,7 +1858,7 @@ def delete_others_expense(unique_index):
 
 
         
-openai.api_key = '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'
+openai.api_key = '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'
 @app.route('/analysis')
 def total_budget_expense():
     user_email = session['user']
